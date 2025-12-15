@@ -1,0 +1,75 @@
+/* ====== Page Layout ====== */
+.join-container {
+  background: linear-gradient(135deg, #f9f9ff, #eef2ff);
+}
+
+/* ====== Card Styling ====== */
+.main-card {
+  border-radius: 18px;
+  background: #ffffff;
+}
+
+.main-title {
+  font-weight: 800;
+  color: #1e293b;
+}
+
+.sub-text {
+  color: #64748b;
+}
+
+/* ====== Fee Box ====== */
+.fee-box {
+  background: #f1f5f9;
+  padding: 14px;
+  border-radius: 12px;
+}
+
+/* ====== Checkbox Section ====== */
+.payment-options {
+  background: #f8fafc;
+  padding: 12px;
+  border-radius: 12px;
+  border: 1px dashed #c7d2fe;
+}
+
+/* ====== Action Buttons ====== */
+.action-btn {
+  border-radius: 12px !important;
+  padding: 10px 20px !important;
+  font-weight: 600 !important;
+}
+
+/* ====== Sidebar ====== */
+.sidebar-card {
+  border-radius: 16px;
+  background: linear-gradient(180deg, #ffffff, #f8fafc);
+}
+
+.sidebar-title {
+  font-weight: 700;
+  border-bottom: 2px solid #e5e7eb;
+  padding-bottom: 8px;
+}
+
+/* ====== Status Badges ====== */
+.status-paid {
+  color: #16a34a;
+  font-weight: 600;
+}
+
+.status-unpaid {
+  color: #f97316;
+  font-weight: 600;
+}
+
+/* ====== Dialog ====== */
+.MuiDialog-paper {
+  border-radius: 16px !important;
+}
+
+/* ====== Icons ====== */
+.icon {
+  vertical-align: middle;
+  margin-right: 6px;
+}
