@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect, useState, memo } from "react";
 import {
   Box,
   Grid,
@@ -15,13 +15,30 @@ import {
   DialogContent,
   DialogActions,
   IconButton,
+  Stack,
 } from "@mui/material";
 
 import CloseIcon from "@mui/icons-material/Close";
+import SchoolIcon from "@mui/icons-material/School";
+import LiveTvIcon from "@mui/icons-material/LiveTv";
+import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
+import SearchIcon from "@mui/icons-material/Search";
+
 import { motion } from "framer-motion";
 import img1 from "../Images/banner.jpeg";
 
-// ⭐ Dummy Data
+/* ================= SEO (React 19 SAFE) ================= */
+const setSEO = () => {
+  document.title = "IT Wale | Learn Online with Live Classes";
+  document
+    .querySelector('meta[name="description"]')
+    ?.setAttribute(
+      "content",
+      "IT Wale offers live online classes, expert teachers, recorded courses and notes to grow your career."
+    );
+};
+
+/* ================= STATIC DATA ================= */
 const categories = [
   "Programming",
   "Business",
@@ -39,108 +56,105 @@ const popularCourses = [
 
 const teachers = [
   { name: "Pooja Singh", subject: "Maths" },
-  { name: "Ankit Verma", subject: "Web Dev" },
-  { name: "Neha Basu", subject: "Business" },
+  { name: "Ankit Verma", subject: "Web Development" },
+  { name: "Neha Basu", subject: "Business Studies" },
 ];
 
-export default function HomePage() {
+/* ================= COMPONENT ================= */
+function HomePage() {
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [openHelp, setOpenHelp] = useState(false);
-  const [openBanner, setOpenBanner] = useState(true); // ⭐ always true
+  const [openBanner, setOpenBanner] = useState(true);
 
-  const handleOpenHelp = () => setOpenHelp(true);
-  const handleCloseHelp = () => setOpenHelp(false);
-  const handleCloseBanner = () => setOpenBanner(false);
-
-  const isLoggedIn = Boolean(localStorage.getItem("token"));
-
+  /* 🔐 AUTH + SEO */
   useEffect(() => {
-    if (!isLoggedIn) {
-      setOpenHelp(true);
-      setOpenBanner(true);
-    } else {
-      // ⭐ login hone ke baad bhi banner dikhana hai
-      setOpenBanner(true);
-    }
-  }, [isLoggedIn]);
+    setSEO();
+    const token = localStorage.getItem("accessToken");
+    setIsLoggedIn(!!token);
+    if (!token) setOpenHelp(true);
+  }, []);
 
   return (
-    <Box sx={{ width: "100%", bgcolor: "#f8f9fa" }}>
+    <Box sx={{ bgcolor: "#f5f7fb" }}>
 
-      {/* ⭐ HERO SECTION */}
+      {/* ================= HERO ================= */}
       <Box
         sx={{
-          width: "100%",
-          bgcolor: "#1a73e8",
+          background: "linear-gradient(135deg,#1a73e8,#6c63ff)",
           color: "white",
-          py: { xs: 6, md: 10 },
+          py: { xs: 7, md: 10 },
         }}
       >
         <Container>
           <Grid container spacing={4} alignItems="center">
             <Grid item xs={12} md={6}>
-              <Typography variant="h3" sx={{ fontWeight: 700, mb: 2 }}>
-                Learn Anytime, Anywhere with <br />
-                <span style={{ color: "#ffeb3b" }}>IT Wale</span>
+              <Typography variant="h3" fontWeight={800} gutterBottom>
+                Learn Anytime, Anywhere <br />
+                with <span style={{ color: "#ffeb3b" }}>IT Wale</span>
               </Typography>
 
-              <Typography sx={{ opacity: 0.9, mb: 3 }}>
-                Join live classes, watch recorded lectures, download notes, and
-                grow your career from home.
+              <Typography sx={{ opacity: 0.9, mb: 4 }}>
+                Live classes • Expert teachers • Notes • Career growth
               </Typography>
 
-              <Button
-                variant="contained"
-                size="large"
-                sx={{
-                  px: 4,
-                  bgcolor: "#ffeb3b",
-                  color: "#000",
-                  fontWeight: 600,
-                  "&:hover": { bgcolor: "#ffe92a" },
-                }}
-              >
-                Join Live Class
-              </Button>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  size="large"
+                  variant="contained"
+                  startIcon={<LiveTvIcon />}
+                  sx={{
+                    bgcolor: "#ffeb3b",
+                    color: "#000",
+                    fontWeight: 700,
+                  }}
+                  onClick={() =>
+                    (window.location.href = isLoggedIn
+                      ? "/dashboard"
+                      : "/login")
+                  }
+                >
+                  {isLoggedIn ? "Go to Dashboard" : "Join Live Class"}
+                </Button>
+
+                <Button
+                  size="large"
+                  variant="outlined"
+                  sx={{ color: "white", borderColor: "white" }}
+                >
+                  Explore Courses
+                </Button>
+              </Stack>
             </Grid>
 
             <Grid item xs={12} md={6}>
               <motion.img
                 src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
-                alt="Hero"
-                style={{
-                  width: "100%",
-                  maxWidth: "380px",
-                  display: "block",
-                  margin: "0 auto",
-                }}
-                initial={{ opacity: 0, scale: 0.8 }}
-                animate={{ opacity: 1, scale: 1 }}
-                transition={{ duration: 0.8 }}
+                alt="Online Learning"
+                loading="lazy"
+                style={{ width: "100%", maxWidth: 380, margin: "auto" }}
+                initial={{ opacity: 0, y: 40 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.6 }}
               />
             </Grid>
           </Grid>
         </Container>
       </Box>
 
-      {/* ⭐ SEARCH BAR */}
+      {/* ================= SEARCH ================= */}
       <Container sx={{ mt: -4 }}>
-        <Box
-          sx={{
-            bgcolor: "white",
-            p: 3,
-            borderRadius: 3,
-            boxShadow: "0 4px 20px rgba(0,0,0,0.1)",
-          }}
-        >
+        <Card sx={{ p: 3, borderRadius: 3, boxShadow: 4 }}>
           <TextField
             fullWidth
-            label="Search for courses, teachers, subjects..."
-            variant="outlined"
+            placeholder="Search courses, teachers, subjects..."
+            InputProps={{
+              startAdornment: <SearchIcon sx={{ mr: 1 }} />,
+            }}
           />
-        </Box>
+        </Card>
       </Container>
 
-      {/* ⭐ PERFECT CONTINUOUS MARQUEE */}
+       {/* ⭐ PERFECT CONTINUOUS MARQUEE */}
       <Box sx={{ width: "100%", background: "#6C63FF", py: 2, overflow: "hidden" }}>
         <motion.div
           animate={{ x: ["0%", "-100%"] }}
@@ -158,83 +172,51 @@ export default function HomePage() {
         </motion.div>
       </Box>
 
-      {/* ⭐ CATEGORIES */}
-      <Container sx={{ py: 6 }}>
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
-          Categories
+      {/* ================= CATEGORIES ================= */}
+      <Container sx={{ py: 7 }}>
+        <Typography variant="h5" fontWeight={700} mb={3}>
+          Popular Categories
         </Typography>
 
-        <Grid container spacing={2}>
-          {categories.map((cat, index) => (
-            <Grid item xs={6} sm={4} md={2} key={index}>
-              <Box
+        <Grid container spacing={3}>
+          {categories.map((cat) => (
+            <Grid item xs={6} sm={4} md={2} key={cat}>
+              <Card
                 sx={{
-                  bgcolor: "white",
-                  p: 2,
                   textAlign: "center",
-                  borderRadius: 2,
-                  boxShadow: "0 3px 8px rgba(0,0,0,0.1)",
-                  fontWeight: 600,
+                  py: 3,
+                  borderRadius: 3,
+                  transition: "0.3s",
+                  "&:hover": {
+                    transform: "translateY(-6px)",
+                    boxShadow: 6,
+                  },
                 }}
               >
-                {cat}
-              </Box>
+                <SchoolIcon color="primary" sx={{ fontSize: 36, mb: 1 }} />
+                <Typography fontWeight={600}>{cat}</Typography>
+              </Card>
             </Grid>
           ))}
         </Grid>
       </Container>
 
-      {/* ⭐ HELP BUTTON ONLY WHEN NOT LOGGED IN */}
-      { (
-        <Box
-          sx={{
-            position: "fixed",
-            bottom: 30,
-            right: 30,
-            zIndex: 999,
-          }}
-        >
-          <Button
-            onClick={handleOpenHelp}
-            variant="contained"
-            sx={{
-              bgcolor: "#ff4081",
-              color: "white",
-              fontWeight: 600,
-              borderRadius: "50px",
-              px: 3,
-              py: 1.2,
-              boxShadow: "0px 4px 12px rgba(0,0,0,0.2)",
-              "&:hover": { bgcolor: "#f50057" },
-            }}
-          >
-            Need Help?
-          </Button>
-        </Box>
-      )}
-
-      {/* ⭐ POPULAR COURSES */}
-      <Container sx={{ py: 6 }}>
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+      {/* ================= POPULAR COURSES ================= */}
+      <Container sx={{ pb: 7 }}>
+        <Typography variant="h5" fontWeight={700} mb={3}>
           Popular Courses
         </Typography>
 
         <Grid container spacing={3}>
-          {popularCourses.map((course, index) => (
-            <Grid item xs={12} sm={6} md={4} key={index}>
-              <Card sx={{ borderRadius: 3, p: 1 }}>
+          {popularCourses.map((c) => (
+            <Grid item xs={12} sm={6} md={4} key={c.title}>
+              <Card sx={{ borderRadius: 3 }}>
                 <CardContent>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {course.title}
+                  <Typography variant="h6" fontWeight={600}>
+                    {c.title}
                   </Typography>
-                  <Typography sx={{ opacity: 0.8 }}>{course.teacher}</Typography>
-
-                  <Rating
-                    value={course.rating}
-                    precision={0.1}
-                    readOnly
-                    sx={{ mt: 1 }}
-                  />
+                  <Typography sx={{ opacity: 0.7 }}>{c.teacher}</Typography>
+                  <Rating value={c.rating} precision={0.1} readOnly />
                 </CardContent>
               </Card>
             </Grid>
@@ -242,93 +224,16 @@ export default function HomePage() {
         </Grid>
       </Container>
 
-      {/* ⭐ HELP POPUP */}
-      <Dialog open={openHelp && !isLoggedIn} onClose={handleCloseHelp}>
-        <DialogTitle sx={{ fontWeight: 700 }}>Need Help?</DialogTitle>
-
-        <DialogContent>
-          <Typography sx={{ mb: 2 }}>
-            To access live classes, courses, notes, and teachers – you need to
-            create an account.
-          </Typography>
-
-          <Typography sx={{ fontWeight: 600, color: "#1a73e8" }}>
-            Please Register or Login to continue.
-          </Typography>
-        </DialogContent>
-
-        <DialogActions>
-          <Button
-            variant="contained"
-            sx={{ bgcolor: "#1a73e8" }}
-            onClick={() => {
-              handleCloseHelp();
-              window.location.href = "/register";
-            }}
-          >
-            Register
-          </Button>
-
-          <Button onClick={handleCloseHelp}>Close</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ⭐ BANNER POPUP (Always visible unless closed) */}
-     {/* ⭐ BANNER POPUP (Clickable Banner Redirect) */}
-<Dialog open={openBanner} onClose={handleCloseBanner} maxWidth="sm" fullWidth>
-  <Box sx={{ position: "relative", cursor: "pointer" }} onClick={() => {
-      handleCloseBanner();
-      window.location.href = "/join-batch"; // 👉 Yaha redirect hoga
-    }}
-  >
-    {/* Close Button */}
-    <IconButton
-      onClick={(e) => {
-        e.stopPropagation(); // ❗ click bubble stop so banner click not trigger
-        handleCloseBanner();
-      }}
-      sx={{
-        position: "absolute",
-        top: 8,
-        right: 8,
-        bgcolor: "white",
-        zIndex: 10,
-        "&:hover": { bgcolor: "#f0f0f0" },
-      }}
-    >
-      <CloseIcon />
-    </IconButton>
-
-    {/* Clickable Banner Image */}
-    <img
-      src={img1}
-      alt="Banner"
-      style={{ width: "100%", borderRadius: "6px 6px 0 0" }}
-    />
-
-    <Box sx={{ p: 2 }}>
-      <Typography variant="h6" sx={{ fontWeight: 700 }}>
-        Special Announcement!
-      </Typography>
-      <Typography sx={{ mt: 1 }}>
-        New courses, discounts, and special batches launching this week.
-        Tap here to know more.
-      </Typography>
-    </Box>
-  </Box>
-</Dialog>
-
-
-      {/* ⭐ TOP TEACHERS */}
-      <Container sx={{ py: 6 }}>
-        <Typography variant="h5" sx={{ mb: 3, fontWeight: 600 }}>
+      {/* ================= TEACHERS ================= */}
+      <Container sx={{ pb: 8 }}>
+        <Typography variant="h5" fontWeight={700} mb={3}>
           Top Teachers
         </Typography>
 
         <Grid container spacing={3}>
-          {teachers.map((t, index) => (
-            <Grid item xs={12} sm={4} key={index}>
-              <Card sx={{ textAlign: "center", borderRadius: 3, py: 3 }}>
+          {teachers.map((t) => (
+            <Grid item xs={12} sm={4} key={t.name}>
+              <Card sx={{ textAlign: "center", py: 4, borderRadius: 3 }}>
                 <Avatar
                   sx={{
                     width: 80,
@@ -340,7 +245,6 @@ export default function HomePage() {
                 >
                   {t.name.charAt(0)}
                 </Avatar>
-
                 <Typography variant="h6">{t.name}</Typography>
                 <Typography sx={{ opacity: 0.7 }}>{t.subject}</Typography>
               </Card>
@@ -349,6 +253,59 @@ export default function HomePage() {
         </Grid>
       </Container>
 
+      {/* ================= HELP BUTTON ================= */}
+      {!isLoggedIn && (
+        <Box sx={{ position: "fixed", bottom: 30, right: 30, zIndex: 1000 }}>
+          <Button
+            startIcon={<HelpOutlineIcon />}
+            variant="contained"
+            sx={{ bgcolor: "#ff4081", borderRadius: 50, px: 3 }}
+            onClick={() => setOpenHelp(true)}
+          >
+            Need Help?
+          </Button>
+        </Box>
+      )}
+
+      {/* ================= HELP POPUP ================= */}
+      <Dialog open={openHelp && !isLoggedIn} onClose={() => setOpenHelp(false)}>
+        <DialogTitle fontWeight={700}>Login Required</DialogTitle>
+        <DialogContent>
+          <Typography>
+            Please login or register to access live classes and courses.
+          </Typography>
+        </DialogContent>
+        <DialogActions>
+          <Button
+            variant="contained"
+            onClick={() => (window.location.href = "/register")}
+          >
+            Register
+          </Button>
+          <Button onClick={() => setOpenHelp(false)}>Close</Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ================= BANNER ================= */}
+      <Dialog open={openBanner} onClose={() => setOpenBanner(false)}>
+        <Box
+          sx={{ position: "relative", cursor: "pointer" }}
+          onClick={() => (window.location.href = "/join-batch")}
+        >
+          <IconButton
+            sx={{ position: "absolute", right: 8, top: 8, bgcolor: "white" }}
+            onClick={(e) => {
+              e.stopPropagation();
+              setOpenBanner(false);
+            }}
+          >
+            <CloseIcon />
+          </IconButton>
+          <img src={img1} alt="Special Offer" style={{ width: "100%" }} />
+        </Box>
+      </Dialog>
     </Box>
   );
 }
+
+export default memo(HomePage);

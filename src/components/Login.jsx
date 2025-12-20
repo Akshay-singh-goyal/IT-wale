@@ -9,6 +9,7 @@ import {
   InputAdornment,
   Tabs,
   Tab,
+  CircularProgress,
 } from "@mui/material";
 import EmailIcon from "@mui/icons-material/Email";
 import LockIcon from "@mui/icons-material/Lock";
@@ -20,51 +21,81 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-export default function Login() {
-  const [showPass, setShowPass] = useState(false);
-  const [loginType, setLoginType] = useState(0); // 0=email, 1=mobile
-  const [form, setForm] = useState({ email: "", mobile: "", password: "" });
+const API_URL = "http://localhost:5000/api/auth/login";
 
+export default function Login() {
   const navigate = useNavigate();
 
+  const [loginType, setLoginType] = useState(0); // 0=email, 1=mobile
+  const [showPass, setShowPass] = useState(false);
+  const [loading, setLoading] = useState(false);
+
+  const [form, setForm] = useState({
+    email: "",
+    mobile: "",
+    password: "",
+  });
+
+  // ======================
+  // LOGIN HANDLER
+  // ======================
   const handleLogin = async () => {
-    if ((loginType === 0 && !form.email) || (loginType === 1 && !form.mobile)) {
-      toast.error("Please enter your email or mobile number!");
+    const email = form.email.trim();
+    const mobile = form.mobile.trim();
+    const password = form.password.trim();
+
+    if (loginType === 0 && !email) {
+      toast.error("Email is required");
       return;
     }
-    if (!form.password) {
-      toast.error("Please enter your password!");
+
+    if (loginType === 1 && !mobile) {
+      toast.error("Mobile number is required");
+      return;
+    }
+
+    if (!password) {
+      toast.error("Password is required");
       return;
     }
 
     try {
+      setLoading(true);
+
       const payload =
         loginType === 0
-          ? { email: form.email, password: form.password }
-          : { mobile: form.mobile, password: form.password };
+          ? { email, password }
+          : { mobile, password };
 
-      const res = await axios.post("http://localhost:5000/api/auth/login", payload);
+      const res = await axios.post(API_URL, payload);
 
-      // ✅ Save BOTH token and user
-      localStorage.setItem("token", res.data.token);
+      // ======================
+      // SAVE AUTH DATA
+      // ======================
+      localStorage.setItem("accessToken", res.data.accessToken);
+      localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
-      toast.success("Login Successful!", { position: "bottom-center" });
+      toast.success("Login successful!");
 
+      // ======================
       // ROLE BASED REDIRECT
+      // ======================
       setTimeout(() => {
         if (res.data.user.role === "admin") {
           navigate("/admin-dashboard");
         } else {
           navigate("/");
         }
-        window.location.reload(); // refresh Navbar
-      }, 1000);
+        window.location.reload();
+      }, 1200);
+
     } catch (err) {
-      console.log(err);
-      toast.error(err.response?.data?.message || "Login failed!", {
-        position: "bottom-center",
-      });
+      toast.error(
+        err.response?.data?.message || "Invalid credentials"
+      );
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -72,7 +103,7 @@ export default function Login() {
     <Box
       sx={{
         minHeight: "100vh",
-        background: "linear-gradient(135deg,#eef2ff,#f4f7ff)",
+        background: "linear-gradient(135deg,#eef2ff,#f5f7ff)",
         display: "flex",
         justifyContent: "center",
         alignItems: "center",
@@ -80,31 +111,31 @@ export default function Login() {
       }}
     >
       <Paper
-        elevation={5}
+        elevation={6}
         sx={{
           width: "100%",
           maxWidth: 420,
           p: 4,
-          borderRadius: "18px",
-          background: "rgba(255,255,255,0.8)",
-          backdropFilter: "blur(12px)",
+          borderRadius: "20px",
+          background: "rgba(255,255,255,0.95)",
         }}
       >
-        <Box textAlign="center" mb={2}>
+        {/* LOGO */}
+        <Box textAlign="center" mb={3}>
           <img
             src="https://cdn-icons-png.flaticon.com/512/619/619153.png"
-            width="48"
+            width="52"
             alt="logo"
           />
           <Typography fontSize="26px" fontWeight={700} mt={1}>
             ITWale ✨
           </Typography>
-          <Typography color="gray" fontSize="14px">
-            Welcome back! Sign in to your study account.
+          <Typography fontSize="14px" color="gray">
+            Login to your account
           </Typography>
         </Box>
 
-        {/* LOGIN TYPE SWITCHER */}
+        {/* LOGIN TYPE */}
         <Tabs
           value={loginType}
           onChange={(e, val) => setLoginType(val)}
@@ -115,35 +146,36 @@ export default function Login() {
           <Tab label="Mobile Login" />
         </Tabs>
 
-        {/* EMAIL LOGIN */}
-        {loginType === 0 && (
+        {/* EMAIL / MOBILE */}
+        {loginType === 0 ? (
           <TextField
             fullWidth
-            placeholder="name@company.com"
+            placeholder="email@example.com"
             value={form.email}
-            onChange={(e) => setForm({ ...form, email: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, email: e.target.value })
+            }
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <EmailIcon color="primary" />
+                  <EmailIcon />
                 </InputAdornment>
               ),
             }}
             sx={{ mb: 2 }}
           />
-        )}
-
-        {/* MOBILE LOGIN */}
-        {loginType === 1 && (
+        ) : (
           <TextField
             fullWidth
             placeholder="9876543210"
             value={form.mobile}
-            onChange={(e) => setForm({ ...form, mobile: e.target.value })}
+            onChange={(e) =>
+              setForm({ ...form, mobile: e.target.value })
+            }
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
-                  <PhoneAndroidIcon color="primary" />
+                  <PhoneAndroidIcon />
                 </InputAdornment>
               ),
             }}
@@ -151,17 +183,19 @@ export default function Login() {
           />
         )}
 
-        {/* PASSWORD FIELD */}
+        {/* PASSWORD */}
         <TextField
           fullWidth
           type={showPass ? "text" : "password"}
           placeholder="••••••••"
           value={form.password}
-          onChange={(e) => setForm({ ...form, password: e.target.value })}
+          onChange={(e) =>
+            setForm({ ...form, password: e.target.value })
+          }
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
-                <LockIcon color="primary" />
+                <LockIcon />
               </InputAdornment>
             ),
             endAdornment: (
@@ -170,16 +204,16 @@ export default function Login() {
               </IconButton>
             ),
           }}
+          sx={{ mb: 1 }}
         />
 
         <Typography
           sx={{
-            mt: 1,
-            mb: 1,
             textAlign: "right",
             fontSize: "13px",
             color: "#6a5acd",
             cursor: "pointer",
+            mb: 2,
           }}
         >
           Forgot password?
@@ -188,25 +222,29 @@ export default function Login() {
         {/* LOGIN BUTTON */}
         <Button
           fullWidth
+          onClick={handleLogin}
+          disabled={loading}
           sx={{
             background: "linear-gradient(135deg,#7b3eff,#6242ff)",
             color: "white",
             py: 1.4,
-            mt: 1,
-            borderRadius: "12px",
+            borderRadius: "14px",
             fontSize: "16px",
             fontWeight: 600,
           }}
-          onClick={handleLogin}
         >
-          Sign in →
+          {loading ? (
+            <CircularProgress size={24} sx={{ color: "white" }} />
+          ) : (
+            "Sign In →"
+          )}
         </Button>
 
-        {/* FOOTER */}
+        {/* REGISTER LINK */}
         <Typography textAlign="center" mt={2} fontSize={14}>
           Don’t have an account?{" "}
           <span
-            style={{ color: "#6a5acd", cursor: "pointer", fontWeight: "bold" }}
+            style={{ color: "#6a5acd", fontWeight: "bold", cursor: "pointer" }}
             onClick={() => navigate("/register")}
           >
             Sign up
@@ -214,8 +252,7 @@ export default function Login() {
         </Typography>
       </Paper>
 
-      {/* Toast Container */}
-      <ToastContainer />
+      <ToastContainer position="bottom-center" />
     </Box>
   );
 }

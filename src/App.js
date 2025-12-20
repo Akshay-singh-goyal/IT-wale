@@ -12,8 +12,6 @@ import Contact from "./pages/Contact";
 import About from "./pages/About";
 
 import AdminDashboard from "./pages/AdminDashboard";
-import AdminUsers from "./components/AdminUsers";
-import AdminSupport from "./components/AdminSupport";
 
 export default function App() {
   return (
@@ -31,8 +29,6 @@ export default function App() {
 
         {/* ===== ADMIN ROUTES ===== */}
         <Route path="/admin-dashboard" element={<AdminDashboard />} />
-        <Route path="/admin/users" element={<AdminUsers />} />
-        <Route path="/admin/support" element={<AdminSupport />} />
       </Routes>
 
       <Footer />
