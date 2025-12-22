@@ -9,234 +9,262 @@ import {
   InputAdornment,
   MenuItem,
   LinearProgress,
+  Divider,
 } from "@mui/material";
-import { Visibility, VisibilityOff, DarkMode, LightMode } from "@mui/icons-material";
-import { motion } from "framer-motion";
+import {
+  Visibility,
+  VisibilityOff,
+  DarkMode,
+  LightMode,
+  Person,
+  Email,
+  Phone,
+  Lock,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import axios from "axios";
-import { useFormik } from "formik";
-import * as Yup from "yup";
 
-/* ---------------------------
-   Password Strength Utility
----------------------------- */
-const getPasswordStrength = (password) => {
-  let score = 0;
-  if (password.length >= 8) score++;
-  if (/[A-Z]/.test(password)) score++;
-  if (/[0-9]/.test(password)) score++;
-  if (/[^A-Za-z0-9]/.test(password)) score++;
-  return score;
+/* Password Strength */
+const getStrength = (pwd) => {
+  let s = 0;
+  if (pwd.length >= 8) s++;
+  if (/[A-Z]/.test(pwd)) s++;
+  if (/[0-9]/.test(pwd)) s++;
+  if (/[^A-Za-z0-9]/.test(pwd)) s++;
+  return s;
 };
 
 export default function Register() {
   const navigate = useNavigate();
-  const [showPassword, setShowPassword] = useState(false);
   const [darkMode, setDarkMode] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  /* ---------------------------
-     Formik + Yup
-  ---------------------------- */
-  const formik = useFormik({
-    initialValues: {
-      name: "",
-      email: "",
-      countryCode: "+91",
-      mobile: "",
-      password: "",
-    },
-    validationSchema: Yup.object({
-      name: Yup.string().min(3).required("Full name is required"),
-      email: Yup.string().email("Invalid email").required("Email is required"),
-      mobile: Yup.string()
-        .min(10, "Must be at least 10 digits")
-        .required("Mobile number is required"),
-      password: Yup.string()
-        .min(8, "Minimum 8 characters")
-        .matches(/[A-Z]/, "One uppercase letter required")
-        .matches(/[0-9]/, "One number required")
-        .matches(/[^A-Za-z0-9]/, "One special character required")
-        .required("Password is required"),
-    }),
-    onSubmit: async (values) => {
-      try {
-        setLoading(true);
-        await axios.post("http://localhost:5000/api/auth/register", {
-          ...values,
-          mobile: `${values.countryCode}${values.mobile}`,
-        });
-        navigate("/login");
-      } catch (err) {
-        alert(err.response?.data?.message || "Registration failed");
-      } finally {
-        setLoading(false);
-      }
-    },
+  const [form, setForm] = useState({
+    name: "",
+    email: "",
+    countryCode: "+91",
+    mobile: "",
+    password: "",
   });
 
-  const strength = getPasswordStrength(formik.values.password);
+  const strength = getStrength(form.password);
+
+  const handleChange = (e) => {
+    setForm({ ...form, [e.target.name]: e.target.value });
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    setError("");
+
+    if (!form.name || !form.email || !form.mobile || !form.password) {
+      setError("All fields are required");
+      return;
+    }
+
+    try {
+      setLoading(true);
+
+      await axios.post("http://localhost:5000/api/auth/register", {
+        name: form.name.trim(),
+        email: form.email.trim().toLowerCase(),
+        mobile: `${form.countryCode}${form.mobile.trim()}`,
+        password: form.password,
+      });
+
+      alert("Registration successful 🎉");
+      navigate("/login");
+    } catch (err) {
+      setError(err.response?.data?.message || "Registration failed");
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
     <Box
       sx={{
         minHeight: "100vh",
-        background: darkMode
-          ? "linear-gradient(135deg,#0f172a,#020617)"
-          : "linear-gradient(135deg,#eef2ff,#e3e6ff)",
+        bgcolor: darkMode ? "#0f172a" : "#f4f6fb",
         display: "flex",
-        justifyContent: "center",
         alignItems: "center",
-        transition: "0.3s",
+        justifyContent: "center",
+        px: 2,
       }}
     >
-      <motion.div
-        initial={{ opacity: 0, y: 40 }}
-        animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
-        style={{ width: "100%", maxWidth: "420px" }}
+      <Paper
+        elevation={10}
+        sx={{
+          width: "100%",
+          maxWidth: 430,
+          p: 4,
+          borderRadius: 3,
+          position: "relative",
+          bgcolor: darkMode ? "#020617" : "#fff",
+          color: darkMode ? "#fff" : "#000",
+        }}
       >
-        <Paper
-          elevation={6}
-          sx={{
-            p: 4,
-            borderRadius: "20px",
-            background: darkMode ? "#020617" : "#fff",
-            color: darkMode ? "#fff" : "#000",
-          }}
+        {/* Theme Button */}
+        <IconButton
+          onClick={() => setDarkMode(!darkMode)}
+          sx={{ position: "absolute", right: 16, top: 16 }}
         >
-          {/* Header */}
-          <Box textAlign="center" mb={3} position="relative">
-            <IconButton
-              onClick={() => setDarkMode(!darkMode)}
-              sx={{ position: "absolute", right: 0, top: 0 }}
+          {darkMode ? <LightMode /> : <DarkMode />}
+        </IconButton>
+
+        {/* Header */}
+        <Box textAlign="center" mb={3}>
+          <img
+            src="https://cdn-icons-png.flaticon.com/512/619/619153.png"
+            width="52"
+            alt="logo"
+          />
+          <Typography fontSize={26} fontWeight={700} mt={1}>
+            ITWale ✨
+          </Typography>
+          <Typography variant="body2" sx={{ opacity: 0.8 }}>
+            Create your learning account
+          </Typography>
+        </Box>
+
+        <Divider sx={{ mb: 3 }} />
+
+        {/* Error */}
+        {error && (
+          <Typography color="error" fontSize={14} mb={2} textAlign="center">
+            {error}
+          </Typography>
+        )}
+
+        {/* Form */}
+        <form onSubmit={handleSubmit}>
+          <TextField
+            fullWidth
+            label="Full Name"
+            name="name"
+            value={form.name}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Person />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <TextField
+            fullWidth
+            label="Email Address"
+            name="email"
+            value={form.email}
+            onChange={handleChange}
+            sx={{ mb: 2 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Email />
+                </InputAdornment>
+              ),
+            }}
+          />
+
+          <Box display="flex" gap={1} mb={2}>
+            <TextField
+              select
+              name="countryCode"
+              value={form.countryCode}
+              onChange={handleChange}
+              sx={{ width: "35%" }}
             >
-              {darkMode ? <LightMode /> : <DarkMode />}
-            </IconButton>
-
-            <Typography fontSize={26} fontWeight={700}>
-              ITWale
-            </Typography>
-            <Typography fontSize={14} color="gray">
-              Create your study account
-            </Typography>
-          </Box>
-
-          {/* Form */}
-          <form onSubmit={formik.handleSubmit}>
-            <TextField
-              fullWidth
-              label="Full Name"
-              name="name"
-              sx={{ mb: 2 }}
-              {...formik.getFieldProps("name")}
-              error={formik.touched.name && Boolean(formik.errors.name)}
-              helperText={formik.touched.name && formik.errors.name}
-            />
+              <MenuItem value="+91">🇮🇳 +91</MenuItem>
+              <MenuItem value="+1">🇺🇸 +1</MenuItem>
+              <MenuItem value="+44">🇬🇧 +44</MenuItem>
+            </TextField>
 
             <TextField
               fullWidth
-              label="Email Address"
-              name="email"
-              sx={{ mb: 2 }}
-              {...formik.getFieldProps("email")}
-              error={formik.touched.email && Boolean(formik.errors.email)}
-              helperText={formik.touched.email && formik.errors.email}
-            />
-
-            {/* Country Code + Mobile */}
-            <Box display="flex" gap={1} mb={2}>
-              <TextField
-                select
-                name="countryCode"
-                sx={{ width: "35%" }}
-                {...formik.getFieldProps("countryCode")}
-              >
-                <MenuItem value="+91">🇮🇳 +91</MenuItem>
-                <MenuItem value="+1">🇺🇸 +1</MenuItem>
-                <MenuItem value="+44">🇬🇧 +44</MenuItem>
-              </TextField>
-
-              <TextField
-                fullWidth
-                label="Mobile Number"
-                name="mobile"
-                {...formik.getFieldProps("mobile")}
-                error={formik.touched.mobile && Boolean(formik.errors.mobile)}
-                helperText={formik.touched.mobile && formik.errors.mobile}
-              />
-            </Box>
-
-            {/* Password */}
-            <TextField
-              fullWidth
-              type={showPassword ? "text" : "password"}
-              label="Password"
-              name="password"
-              sx={{ mb: 1 }}
-              {...formik.getFieldProps("password")}
-              error={formik.touched.password && Boolean(formik.errors.password)}
-              helperText={formik.touched.password && formik.errors.password}
+              label="Mobile Number"
+              name="mobile"
+              value={form.mobile}
+              onChange={handleChange}
               InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? <VisibilityOff /> : <Visibility />}
-                    </IconButton>
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <Phone />
                   </InputAdornment>
                 ),
               }}
             />
+          </Box>
 
-            {/* Password Strength */}
-            {formik.values.password && (
-              <Box mb={2}>
-                <LinearProgress
-                  variant="determinate"
-                  value={(strength / 4) * 100}
-                  sx={{
-                    height: 6,
-                    borderRadius: 5,
-                    backgroundColor: "#ddd",
-                  }}
-                />
-                <Typography fontSize={12} mt={0.5}>
-                  Strength: {["Weak", "Fair", "Good", "Strong"][strength - 1] || "Weak"}
-                </Typography>
-              </Box>
-            )}
+          <TextField
+            fullWidth
+            label="Password"
+            name="password"
+            type={showPassword ? "text" : "password"}
+            value={form.password}
+            onChange={handleChange}
+            sx={{ mb: 1 }}
+            InputProps={{
+              startAdornment: (
+                <InputAdornment position="start">
+                  <Lock />
+                </InputAdornment>
+              ),
+              endAdornment: (
+                <InputAdornment position="end">
+                  <IconButton onClick={() => setShowPassword(!showPassword)}>
+                    {showPassword ? <VisibilityOff /> : <Visibility />}
+                  </IconButton>
+                </InputAdornment>
+              ),
+            }}
+          />
 
-            <motion.div whileTap={{ scale: 0.97 }}>
-              <Button
-                type="submit"
-                fullWidth
-                disabled={loading}
-                sx={{
-                  mt: 2,
-                  py: 1.3,
-                  borderRadius: "12px",
-                  fontWeight: "bold",
-                  color: "#fff",
-                  background:
-                    "linear-gradient(135deg,#7b3eff,#6242ff)",
-                }}
-              >
-                {loading ? "Creating Account..." : "Register"}
-              </Button>
-            </motion.div>
-          </form>
+          {form.password && (
+            <Box mb={2}>
+              <LinearProgress
+                variant="determinate"
+                value={(strength / 4) * 100}
+                sx={{ height: 8, borderRadius: 5 }}
+              />
+              <Typography variant="caption">
+                Strength:{" "}
+                {["Weak", "Fair", "Good", "Strong"][strength - 1] || "Weak"}
+              </Typography>
+            </Box>
+          )}
 
-          <Typography textAlign="center" mt={3} fontSize={14}>
-            Already have an account?{" "}
-            <span
-              style={{ color: "#6a5acd", cursor: "pointer", fontWeight: 600 }}
-              onClick={() => navigate("/login")}
-            >
-              Login
-            </span>
-          </Typography>
-        </Paper>
-      </motion.div>
+          <Button
+            type="submit"
+            fullWidth
+            disabled={loading}
+            sx={{
+              mt: 1,
+              py: 1.2,
+              fontWeight: "bold",
+              bgcolor: "#2563eb",
+              ":hover": { bgcolor: "#1d4ed8" },
+            }}
+          >
+            {loading ? "Creating Account..." : "Register"}
+          </Button>
+        </form>
+
+        <Typography textAlign="center" mt={3} fontSize={14}>
+          Already have an account?{" "}
+          <span
+            onClick={() => navigate("/login")}
+            style={{ color: "#2563eb", cursor: "pointer", fontWeight: "bold" }}
+          >
+            Login
+          </span>
+        </Typography>
+      </Paper>
     </Box>
   );
 }
