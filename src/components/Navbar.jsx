@@ -20,7 +20,7 @@ import { useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-import banner from "../Images/Logo.jpg";
+import banner from "../Images/logo.jpeg";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -35,7 +35,9 @@ export default function Navbar() {
   // ==========================
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
 
     const savedTheme = localStorage.getItem("theme");
     if (savedTheme === "dark") {
@@ -80,7 +82,6 @@ export default function Navbar() {
         background: darkMode ? "#1e1e1e" : "#fff",
         color: darkMode ? "#fff" : "#000",
         borderBottom: "1px solid #ddd",
-        transition: "0.3s ease",
         py: 0.5,
       }}
     >
@@ -94,16 +95,10 @@ export default function Navbar() {
         }}
       >
         {/* LOGO */}
-         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <img src={banner} alt="Banner" width="32 />
+        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+          <img src={banner} alt="Logo" width="32" />
           <Box>
-            <Typography
-              sx={{
-                fontWeight: 700,
-                fontSize: "18px",
-                color: "#3a3a3a",
-              }}
-            >
+            <Typography sx={{ fontWeight: 700, fontSize: "18px" }}>
               ITWale
             </Typography>
             <Typography sx={{ fontSize: "11px", color: "#6c6c6c" }}>
@@ -138,12 +133,101 @@ export default function Navbar() {
 
         {/* RIGHT SECTION */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          {/* DARK MODE TOGGLE */}
           <Switch checked={darkMode} onChange={toggleDarkMode} />
 
-          {/* NOTIFICATION BELL */}
           {user && (
             <Badge badgeContent={3} color="error">
+              <NotificationsIcon sx={{ cursor: "pointer" }} />
+            </Badge>
+          )}
+
+          {!user ? (
+            <>
+              <Button onClick={() => navigate("/login")}>Sign In</Button>
+              <Button
+                onClick={() => navigate("/register")}
+                sx={{
+                  background: "linear-gradient(135deg,#7b3eff,#6242ff)",
+                  color: "#fff",
+                }}
+              >
+                Get Started
+              </Button>
+            </>
+          ) : (
+            <>
+              <Avatar
+                sx={{ bgcolor: "#7b3eff", cursor: "pointer" }}
+                onClick={openMenu}
+              >
+                {user?.name?.charAt(0).toUpperCase()}
+              </Avatar>
+
+              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
+                <MenuItem disabled>
+                  {user?.name}
+                </MenuItem>
+                <Divider />
+                <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
+                <MenuItem onClick={() => navigate("/courses")}>Courses</MenuItem>
+                <MenuItem onClick={() => navigate("/books")}>Books</MenuItem>
+                <MenuItem onClick={() => navigate("/contact-us")}>Contact</MenuItem>
+                <MenuItem onClick={() => navigate("/about")}>About</MenuItem>
+                <Divider />
+                <MenuItem onClick={handleLogout} sx={{ color: "red" }}>
+                  Logout
+                </MenuItem>
+              </Menu>
+            </>
+          )}
+
+          <IconButton
+            sx={{ display: { xs: "flex", md: "none" } }}
+            onClick={() => setOpen(true)}
+          >
+            <MenuIcon />
+          </IconButton>
+        </Box>
+      </Toolbar>
+
+      {/* MOBILE DRAWER */}
+      <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
+        <Box sx={{ width: 250, p: 2 }}>
+          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
+            <IconButton onClick={() => setOpen(false)}>
+              <CloseIcon />
+            </IconButton>
+          </Box>
+          <Divider />
+          <List>
+            {!user ? (
+              <>
+                <ListItem button onClick={() => navigate("/login")}>
+                  Sign In
+                </ListItem>
+                <ListItem button onClick={() => navigate("/register")}>
+                  Register
+                </ListItem>
+              </>
+            ) : (
+              <>
+                <ListItem>{user?.name}</ListItem>
+                <ListItem button onClick={() => navigate("/")}>Home</ListItem>
+                <ListItem button onClick={() => navigate("/courses")}>Courses</ListItem>
+                <ListItem button onClick={() => navigate("/books")}>Books</ListItem>
+                <ListItem button onClick={() => navigate("/contact-us")}>Contact</ListItem>
+                <ListItem button onClick={() => navigate("/about")}>About</ListItem>
+                <ListItem button onClick={handleLogout} sx={{ color: "red" }}>
+                  Logout
+                </ListItem>
+              </>
+            )}
+          </List>
+        </Box>
+      </Drawer>
+    </AppBar>
+  );
+}            <Badge badgeContent={3} color="error">
               <NotificationsIcon sx={{ cursor: "pointer" }} />
             </Badge>
           )}
