@@ -20,6 +20,7 @@ import { useNavigate } from "react-router-dom";
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+import banner from "../Images/Logo.jpg";
 
 export default function Navbar() {
   const [open, setOpen] = useState(false);
@@ -94,11 +95,7 @@ export default function Navbar() {
       >
         {/* LOGO */}
          <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <img
-            src="https://cdn-icons-png.flaticon.com/512/619/619153.png"
-            alt="logo"
-            width="32"
-          />
+          <img src={banner} alt="Banner" width="32 />
           <Box>
             <Typography
               sx={{
