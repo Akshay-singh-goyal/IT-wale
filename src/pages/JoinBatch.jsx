@@ -57,7 +57,7 @@ export default function JoinPage() {
 
   // Axios instance
   const api = axios.create({
-    baseURL: "http://localhost:5000",
+    baseURL: "https://sm-backend-8me3.onrender.com",
     headers: { Authorization: accessToken ? `Bearer ${accessToken}` : "" },
   });
 
