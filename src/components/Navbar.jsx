@@ -17,9 +17,11 @@ import {
   Switch,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+
 import MenuIcon from "@mui/icons-material/Menu";
 import CloseIcon from "@mui/icons-material/Close";
 import NotificationsIcon from "@mui/icons-material/Notifications";
+
 import banner from "../Images/logo.jpeg";
 
 export default function Navbar() {
@@ -69,7 +71,7 @@ export default function Navbar() {
   };
 
   // ==========================
-  // PROFILE MENU HANDLERS
+  // PROFILE MENU
   // ==========================
   const openMenu = (event) => setAnchorEl(event.currentTarget);
   const closeMenu = () => setAnchorEl(null);
@@ -82,7 +84,6 @@ export default function Navbar() {
         background: darkMode ? "#1e1e1e" : "#fff",
         color: darkMode ? "#fff" : "#000",
         borderBottom: "1px solid #ddd",
-        py: 0.5,
       }}
     >
       <Toolbar
@@ -96,12 +97,10 @@ export default function Navbar() {
       >
         {/* LOGO */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <img src={banner} alt="Logo" width="32" />
+          <img src={banner} alt="logo" width="34" />
           <Box>
-            <Typography sx={{ fontWeight: 700, fontSize: "18px" }}>
-              ITWale
-            </Typography>
-            <Typography sx={{ fontSize: "11px", color: "#6c6c6c" }}>
+            <Typography fontWeight={700}>ITWale</Typography>
+            <Typography fontSize="11px" color="gray">
               Learn • Grow • Succeed
             </Typography>
           </Box>
@@ -110,22 +109,22 @@ export default function Navbar() {
         {/* DESKTOP MENU */}
         {user && (
           <Box sx={{ display: { xs: "none", md: "flex" }, gap: 3 }}>
-            <Typography onClick={() => navigate("/")} sx={{ cursor: "pointer" }}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
               Home
             </Typography>
-            <Typography onClick={() => navigate("/courses")} sx={{ cursor: "pointer" }}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/courses")}>
               Courses
             </Typography>
-            <Typography onClick={() => navigate("/books")} sx={{ cursor: "pointer" }}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/books")}>
               Books
             </Typography>
-            <Typography onClick={() => navigate("/contact-us")} sx={{ cursor: "pointer" }}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/contact-us")}>
               Contact
             </Typography>
-            <Typography onClick={() => navigate("/about")} sx={{ cursor: "pointer" }}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/about")}>
               About
             </Typography>
-            <Typography onClick={() => navigate("/join-batch")} sx={{ cursor: "pointer" }}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/join-batch")}>
               Join Batch
             </Typography>
           </Box>
@@ -164,9 +163,7 @@ export default function Navbar() {
               </Avatar>
 
               <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-                <MenuItem disabled>
-                  {user?.name}
-                </MenuItem>
+                <MenuItem disabled>{user?.name}</MenuItem>
                 <Divider />
                 <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
                 <MenuItem onClick={() => navigate("/courses")}>Courses</MenuItem>
@@ -181,6 +178,7 @@ export default function Navbar() {
             </>
           )}
 
+          {/* MOBILE MENU ICON */}
           <IconButton
             sx={{ display: { xs: "flex", md: "none" } }}
             onClick={() => setOpen(true)}
@@ -198,7 +196,9 @@ export default function Navbar() {
               <CloseIcon />
             </IconButton>
           </Box>
+
           <Divider />
+
           <List>
             {!user ? (
               <>
@@ -217,107 +217,6 @@ export default function Navbar() {
                 <ListItem button onClick={() => navigate("/books")}>Books</ListItem>
                 <ListItem button onClick={() => navigate("/contact-us")}>Contact</ListItem>
                 <ListItem button onClick={() => navigate("/about")}>About</ListItem>
-                <ListItem button onClick={handleLogout} sx={{ color: "red" }}>
-                  Logout
-                </ListItem>
-              </>
-            )}
-          </List>
-        </Box>
-      </Drawer>
-    </AppBar>
-  );
-}            <Badge badgeContent={3} color="error">
-              <NotificationsIcon sx={{ cursor: "pointer" }} />
-            </Badge>
-          )}
-
-          {/* LOGIN / PROFILE DROPDOWN */}
-          {!user ? (
-            <>
-              <Button onClick={() => navigate("/login")}>Sign In</Button>
-              <Button
-                onClick={() => navigate("/register")}
-                sx={{
-                  background: "linear-gradient(135deg,#7b3eff,#6242ff)",
-                  color: "white",
-                  px: 2,
-                }}
-              >
-                Get Started
-              </Button>
-            </>
-          ) : (
-            <>
-              <Avatar sx={{ bgcolor: "#7b3eff", cursor: "pointer" }} onClick={openMenu}>
-                {user.name.charAt(0).toUpperCase()}
-              </Avatar>
-
-              <Menu anchorEl={anchorEl} open={Boolean(anchorEl)} onClose={closeMenu}>
-                <MenuItem disabled>{user.name}</MenuItem>
-                <Divider />
-
-                <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
-                <MenuItem onClick={() => navigate("/courses")}>Courses</MenuItem>
-                <MenuItem onClick={() => navigate("/books")}>Books</MenuItem>
-                <MenuItem onClick={() => navigate("/contact")}>Contact</MenuItem>
-                <MenuItem onClick={() => navigate("/about")}>About</MenuItem>
-
-                <Divider />
-                <MenuItem onClick={handleLogout} sx={{ color: "red" }}>
-                  Logout
-                </MenuItem>
-              </Menu>
-            </>
-          )}
-
-          {/* MOBILE MENU BUTTON */}
-          <IconButton
-            sx={{ display: { xs: "flex", md: "none" }, color: darkMode ? "#fff" : "#000" }}
-            onClick={() => setOpen(true)}
-          >
-            <MenuIcon />
-          </IconButton>
-        </Box>
-      </Toolbar>
-
-      {/* MOBILE DRAWER */}
-      <Drawer anchor="right" open={open} onClose={() => setOpen(false)}>
-        <Box sx={{ width: 250, p: 2 }}>
-          <Box sx={{ display: "flex", justifyContent: "flex-end" }}>
-            <IconButton onClick={() => setOpen(false)}>
-              <CloseIcon />
-            </IconButton>
-          </Box>
-          <Divider />
-          <List>
-            {!user ? (
-              <>
-                <ListItem button onClick={() => navigate("/login")}>
-                  Sign In
-                </ListItem>
-                <ListItem button onClick={() => navigate("/register")}>
-                  Register
-                </ListItem>
-              </>
-            ) : (
-              <>
-                <ListItem button>{user.name}</ListItem>
-                <ListItem button onClick={() => navigate("/")}>
-                  Home
-                </ListItem>
-                <ListItem button onClick={() => navigate("/courses")}>
-                  Courses
-                </ListItem>
-                <ListItem button onClick={() => navigate("/books")}>
-                  Books
-                </ListItem>
-                <ListItem button onClick={() => navigate("/contact")}>
-                  Contact
-                </ListItem>
-                <ListItem button onClick={() => navigate("/about")}>
-                  About
-                </ListItem>
                 <ListItem button onClick={handleLogout} sx={{ color: "red" }}>
                   Logout
                 </ListItem>
