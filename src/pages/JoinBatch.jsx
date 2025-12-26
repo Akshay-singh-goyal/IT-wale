@@ -28,7 +28,7 @@ import FreeIcon from "@mui/icons-material/School";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import PendingIcon from "@mui/icons-material/HourglassBottom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-
+import img2 from "../Images/Qr.jpeg";
 
 export default function JoinPage() {
   const navigate = useNavigate();
