@@ -67,7 +67,7 @@ export default function Register() {
     try {
       setLoading(true);
 
-      await axios.post("http://localhost:5000/api/auth/register", {
+      await axios.post("https://sm-backend-8me3.onrender.com/api/auth/register", {
         name: form.name.trim(),
         email: form.email.trim().toLowerCase(),
         mobile: `${form.countryCode}${form.mobile.trim()}`,
