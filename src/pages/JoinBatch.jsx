@@ -360,7 +360,19 @@ export default function JoinPage() {
 </Button>
 
         <DialogContent>
-          <TextField fullWidth label="Transaction ID" value={txnId} onChange={(e) => setTxnId(e.target.value)} />
+          <Box sx={{ textAlign: "center", mb: 2 }}>
+            <img src={img2} alt="QR Code" width="220" />
+            <Typography variant="body2" color="text.secondary">
+              Scan QR & complete payment
+            </Typography>
+          </Box>
+
+          <TextField
+            fullWidth
+            label="Transaction ID"
+            value={txnId}
+            onChange={(e) => setTxnId(e.target.value)}
+          />
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenQR(false)}>Cancel</Button>
