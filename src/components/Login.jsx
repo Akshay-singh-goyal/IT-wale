@@ -21,7 +21,7 @@ import { useNavigate } from "react-router-dom";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 
-const API_URL = "http://localhost:5000/api/auth/login";
+const API_URL = "https://sm-backend-8me3.onrender.com/api/auth/login";
 
 export default function Login() {
   const navigate = useNavigate();
