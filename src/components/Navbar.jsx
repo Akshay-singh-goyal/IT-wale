@@ -97,9 +97,8 @@ export default function Navbar() {
       >
         {/* LOGO */}
         <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <img src={banner} alt="logo" width="34" />
+          <img src={banner} alt="logo" width="54" />
           <Box>
-            <Typography fontWeight={700}>ITWale</Typography>
             <Typography fontSize="11px" color="gray">
               Learn • Grow • Succeed
             </Typography>
