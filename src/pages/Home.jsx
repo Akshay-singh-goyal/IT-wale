@@ -29,12 +29,12 @@ import img1 from "../Images/banner.jpeg";
 
 /* ================= SEO (React 19 SAFE) ================= */
 const setSEO = () => {
-  document.title = "IT Wale | Learn Online with Live Classes";
+  document.title = "The IT Wallah | Learn Online with Live Classes";
   document
     .querySelector('meta[name="description"]')
     ?.setAttribute(
       "content",
-      "IT Wale offers live online classes, expert teachers, recorded courses and notes to grow your career."
+      "The IT Wallah offers live online classes, expert teachers, recorded courses and notes to grow your career."
     );
 };
 
@@ -90,7 +90,7 @@ function HomePage() {
             <Grid item xs={12} md={6}>
               <Typography variant="h3" fontWeight={800} gutterBottom>
                 Learn Anytime, Anywhere <br />
-                with <span style={{ color: "#ffeb3b" }}>IT Wale</span>
+                with <span style={{ color: "#ffeb3b" }}>The IT Wallah</span>
               </Typography>
 
               <Typography sx={{ opacity: 0.9, mb: 4 }}>
