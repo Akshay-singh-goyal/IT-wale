@@ -32,7 +32,7 @@ import img2 from "../Images/Qr.jpeg";
 
 export default function JoinPage() {
   const navigate = useNavigate();
-  const token = localStorage.getItem("token");
+  const accessToken = localStorage.getItem("accessToken");
 
   // User & Registration States
   const [user, setUser] = useState(null);
@@ -58,7 +58,7 @@ export default function JoinPage() {
   // Axios instance
   const api = axios.create({
     baseURL: "http://localhost:5000",
-    headers: { Authorization: token ? `Bearer ${token}` : "" },
+    headers: { Authorization: accessToken ? `Bearer ${accessToken}` : "" },
   });
 
   // Load user from localStorage
@@ -69,7 +69,7 @@ export default function JoinPage() {
 
   // Fetch registration status (check both paid/unpaid separately)
   const fetchStatus = async () => {
-    if (!token) return;
+    if (!accessToken) return;
     try {
       const resPaid = await api.get("/api/register/status/default123?type=paid");
       const resUnpaid = await api.get("/api/register/status/default123?type=unpaid");
@@ -87,7 +87,7 @@ export default function JoinPage() {
 
   useEffect(() => {
     fetchStatus();
-  }, [token]);
+  }, [accessToken]);
 
   // ===== Enrollment via Roadmap =====
   const handleEnrollFromRoadmap = (lang) => {
@@ -100,7 +100,7 @@ export default function JoinPage() {
   // ===== Paid Registration =====
   const handleOpenQR = () => {
     if (!agree) return toast.warning("Please accept terms & conditions");
-    if (!user || !token) return navigate("/login");
+    if (!user || !accessToken) return navigate("/login");
 
     if (!registrationStatus || !registrationStatus.registrationFeePaid) {
       setOpenQR(true);
@@ -150,7 +150,7 @@ export default function JoinPage() {
   // ===== Unpaid Flow =====
   const handleUnpaidClick = () => {
     if (!agree) return toast.warning("Please accept terms & conditions");
-    if (!user || !token) return navigate("/login");
+    if (!user || !accessToken) return navigate("/login");
 
     if (!registrationStatus || registrationStatus.paymentType !== "unpaid") {
       setOpenUnpaidReg(true);
