@@ -29,31 +29,32 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import img2 from "../Images/Qr.jpeg";
 
-/* ================= AXIOS INSTANCE (FIXED) ================= */
+/* ================= AXIOS INSTANCE ================= */
 const api = axios.create({
   baseURL: "https://sm-backend-8me3.onrender.com",
 });
 
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
-  return config;
-});
+api.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem("accessToken");
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
+    }
+    return config;
+  },
+  (error) => Promise.reject(error)
+);
 
 export default function JoinPage() {
   const navigate = useNavigate();
 
-  // User & Registration States
+  /* ================= STATES ================= */
   const [user, setUser] = useState(null);
   const [registrationStatus, setRegistrationStatus] = useState(null);
 
-  // Payment / Flow
   const [paymentType, setPaymentType] = useState("paid");
   const [agree, setAgree] = useState(false);
 
-  // Dialog States
   const [openQR, setOpenQR] = useState(false);
   const [openCourseQR, setOpenCourseQR] = useState(false);
   const [openUnpaidReg, setOpenUnpaidReg] = useState(false);
@@ -70,14 +71,25 @@ export default function JoinPage() {
   /* ================= LOAD USER ================= */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) setUser(JSON.parse(storedUser));
+    const token = localStorage.getItem("accessToken");
+
+    if (!storedUser || !token) return;
+
+    setUser(JSON.parse(storedUser));
   }, []);
 
-  /* ================= FETCH STATUS ================= */
+  /* ================= FETCH STATUS (FIXED) ================= */
   const fetchStatus = async () => {
     try {
-      const paid = await api.get("/api/register/status/default123?type=paid");
-      const unpaid = await api.get("/api/register/status/default123?type=unpaid");
+      const token = localStorage.getItem("accessToken");
+      if (!token) return;
+
+      const paid = await api.get(
+        "/api/register/status/default123?type=paid"
+      );
+      const unpaid = await api.get(
+        "/api/register/status/default123?type=unpaid"
+      );
 
       const status = paid.data || unpaid.data || null;
       setRegistrationStatus(status);
@@ -92,14 +104,17 @@ export default function JoinPage() {
     }
   };
 
+  /* 🔥 FIX: only call when user exists */
   useEffect(() => {
-    fetchStatus();
-  }, []);
+    if (user) {
+      fetchStatus();
+    }
+  }, [user]);
 
   /* ================= ROADMAP ================= */
   const handleEnrollFromRoadmap = (lang) => {
     toast.info(`You selected "${lang.title}" batch`);
-    paymentType === "paid" ? setOpenQR(true) : handleUnpaidClick();
+    paymentType === "paid" ? handleOpenQR() : handleUnpaidClick();
   };
 
   /* ================= PAID FLOW ================= */
@@ -108,9 +123,15 @@ export default function JoinPage() {
     if (!user) return navigate("/login");
 
     if (!registrationStatus) setOpenQR(true);
-    else if (registrationStatus.registrationFeePaid && !registrationStatus.adminApproved)
+    else if (
+      registrationStatus.registrationFeePaid &&
+      !registrationStatus.adminApproved
+    )
       toast.info("Waiting for admin approval");
-    else if (registrationStatus.adminApproved && !registrationStatus.courseFeePaid)
+    else if (
+      registrationStatus.adminApproved &&
+      !registrationStatus.courseFeePaid
+    )
       setOpenCourseQR(true);
   };
 
@@ -138,10 +159,13 @@ export default function JoinPage() {
     if (!txnId) return toast.error("Enter transaction ID");
     setSubmitting(true);
     try {
-      const res = await api.post(`/api/register/course/pay/${registrationStatus._id}`, {
-        amount: 2000,
-        transactionId: txnId,
-      });
+      const res = await api.post(
+        `/api/register/course/pay/${registrationStatus._id}`,
+        {
+          amount: 2000,
+          transactionId: txnId,
+        }
+      );
       toast.success(res.data.message);
       setRegistrationStatus(res.data.registration);
       setOpenCourseQR(false);
@@ -208,7 +232,6 @@ export default function JoinPage() {
   };
 
   const handleGoForTest = () => navigate("/test-page");
-
   return (
     <Container sx={{ py: 6 }}>
       <ToastContainer position="bottom-center" />
