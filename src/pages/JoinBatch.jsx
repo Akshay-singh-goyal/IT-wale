@@ -17,6 +17,7 @@ import {
   Paper,
   Radio,
   RadioGroup,
+  Checkbox,
 } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -31,7 +32,9 @@ import bannerImg from "../images/banner.jpg";
 
 /* ================= API ================= */
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL,
+  baseURL:
+    process.env.REACT_APP_API_URL ||
+    "https://sm-backend-8me3.onrender.com",
 });
 
 api.interceptors.request.use((config) => {
@@ -44,8 +47,6 @@ export default function JoinPage() {
   const navigate = useNavigate();
 
   const [user, setUser] = useState(null);
-  const [registrationStatus, setRegistrationStatus] = useState(null);
-
   const [paymentType, setPaymentType] = useState("paid");
   const [agree, setAgree] = useState(false);
 
@@ -63,31 +64,17 @@ export default function JoinPage() {
     if (u && t) setUser(JSON.parse(u));
   }, []);
 
-  /* ================= FETCH STATUS ================= */
-  const fetchStatus = async () => {
-    try {
-      const res = await api.get("/api/register/status/default123");
-      setRegistrationStatus(res.data);
-    } catch (err) {
-      console.error(err);
-    }
-  };
-
-  useEffect(() => {
-    if (user) fetchStatus();
-  }, [user]);
-
   /* ================= ENROLL ================= */
   const handleEnroll = () => {
     if (!user) return navigate("/login");
-    if (!agree) return toast.warning("Please accept Terms & Conditions");
+    if (!agree) return toast.warning("Accept Terms & Conditions");
 
     paymentType === "paid"
       ? setOpenPaidQR(true)
       : setOpenUnpaidQR(true);
   };
 
-  /* ================= PAID REGISTER ================= */
+  /* ================= PAID ================= */
   const handlePaidRegister = async () => {
     if (!txnId.trim()) return toast.error("Enter transaction ID");
 
@@ -97,31 +84,27 @@ export default function JoinPage() {
         batchId: "default123",
         transactionId: txnId,
       });
-
       toast.success(res.data.message);
-      setRegistrationStatus(res.data.registration);
-      setTxnId("");
       setOpenPaidQR(false);
+      setTxnId("");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong");
+      toast.error(err.response?.data?.message || "Error");
     } finally {
       setSubmitting(false);
     }
   };
 
-  /* ================= UNPAID REGISTER ================= */
+  /* ================= UNPAID ================= */
   const handleUnpaidRegister = async () => {
     setSubmitting(true);
     try {
       const res = await api.post("/api/register/unpaid", {
         batchId: "default123",
       });
-
       toast.success(res.data.message);
-      setRegistrationStatus(res.data.registration);
       setOpenUnpaidQR(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Something went wrong");
+      toast.error(err.response?.data?.message || "Error");
     } finally {
       setSubmitting(false);
     }
@@ -145,13 +128,13 @@ export default function JoinPage() {
             Full Stack MERN Bootcamp
           </Typography>
           <Typography color="#ddd">
-            Learn React, Node, MongoDB with Live Projects
+            Learn React, Node & MongoDB with Projects
           </Typography>
         </Box>
       </Box>
 
       <Grid container spacing={3}>
-        {/* ===== LEFT ===== */}
+        {/* LEFT */}
         <Grid item xs={12} md={8}>
           <Card>
             <CardContent>
@@ -180,9 +163,9 @@ export default function JoinPage() {
               <FormControlLabel
                 sx={{ mt: 2 }}
                 control={
-                  <Radio
+                  <Checkbox
                     checked={agree}
-                    onChange={() => setAgree(!agree)}
+                    onChange={(e) => setAgree(e.target.checked)}
                   />
                 }
                 label={
@@ -205,13 +188,12 @@ export default function JoinPage() {
           </Card>
         </Grid>
 
-        {/* ===== RIGHT ===== */}
+        {/* RIGHT */}
         <Grid item xs={12} md={4}>
           <Paper sx={{ p: 3 }}>
             <Typography variant="h6">
               <AccountCircleIcon /> User Info
             </Typography>
-
             {user ? (
               <>
                 <Typography>Name: {user.name}</Typography>
@@ -225,7 +207,7 @@ export default function JoinPage() {
         </Grid>
       </Grid>
 
-      {/* ===== PAID QR ===== */}
+      {/* PAID */}
       <Dialog open={openPaidQR} onClose={() => setOpenPaidQR(false)}>
         <DialogTitle>Pay ₹2000 & Register</DialogTitle>
         <DialogContent>
@@ -248,9 +230,9 @@ export default function JoinPage() {
         </DialogActions>
       </Dialog>
 
-      {/* ===== UNPAID ===== */}
+      {/* UNPAID */}
       <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
-        <DialogTitle>Register (Unpaid Course)</DialogTitle>
+        <DialogTitle>Register (Unpaid)</DialogTitle>
         <DialogActions>
           <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
           <Button variant="contained" onClick={handleUnpaidRegister}>
@@ -259,154 +241,13 @@ export default function JoinPage() {
         </DialogActions>
       </Dialog>
 
-      {/* ===== TERMS ===== */}
+      {/* TERMS */}
       <Dialog open={openTerms} onClose={() => setOpenTerms(false)}>
         <DialogTitle>Terms & Conditions</DialogTitle>
         <DialogContent>
           <Typography>
-            Registration fee ₹2000 is mandatory for paid course.  
-            Unpaid course requires test clearance and admin approval.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenTerms(false)}>Close</Button>
-        </DialogActions>
-      </Dialog>
-    </Container>
-  );
-}          </Typography>
-          <Typography color="#ddd">
-            Learn React, Node, MongoDB with Live Projects
-          </Typography>
-        </Box>
-      </Box>
-
-      <Grid container spacing={3}>
-        {/* ===== LEFT ===== */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h5" gutterBottom>
-                Course Registration
-              </Typography>
-
-              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={paymentType === "paid"}
-                      onChange={() => setPaymentType("paid")}
-                    />
-                  }
-                  label="Paid Course (₹2000)"
-                />
-                <FormControlLabel
-                  control={
-                    <Checkbox
-                      checked={paymentType === "unpaid"}
-                      onChange={() => setPaymentType("unpaid")}
-                    />
-                  }
-                  label="Unpaid Course (Test Required)"
-                />
-              </Box>
-
-              <Roadmap onEnroll={handleEnroll} />
-
-              <FormControlLabel
-                sx={{ mt: 2 }}
-                control={
-                  <Checkbox checked={agree} onChange={(e) => setAgree(e.target.checked)} />
-                }
-                label={
-                  <span>
-                    I agree to{" "}
-                    <span
-                      style={{ color: "blue", cursor: "pointer" }}
-                      onClick={() => setOpenTerms(true)}
-                    >
-                      Terms & Conditions
-                    </span>
-                  </span>
-                }
-              />
-
-              <Button
-                variant="contained"
-                sx={{ mt: 3 }}
-                onClick={handleEnroll}
-              >
-                Proceed
-              </Button>
-            </CardContent>
-          </Card>
-        </Grid>
-
-        {/* ===== RIGHT ===== */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">
-              <AccountCircleIcon /> User Info
-            </Typography>
-            {user ? (
-              <>
-                <Typography>Name: {user.name}</Typography>
-                <Typography>Email: {user.email}</Typography>
-                <Typography>Mobile: {user.mobile}</Typography>
-              </>
-            ) : (
-              <Typography>Please login</Typography>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
-
-      {/* ===== PAID QR ===== */}
-      <Dialog open={openPaidQR} onClose={() => setOpenPaidQR(false)}>
-        <DialogTitle>Pay ₹200 & Register</DialogTitle>
-        <DialogContent>
-          <Box textAlign="center">
-            <img src={qrImg} width="220" alt="QR" />
-          </Box>
-          <TextField
-            fullWidth
-            label="Transaction ID"
-            value={txnId}
-            onChange={(e) => setTxnId(e.target.value)}
-            sx={{ mt: 2 }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenPaidQR(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handlePaidRegister}>
-            {submitting ? "Submitting..." : "Submit"}
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ===== UNPAID QR ===== */}
-      <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
-        <DialogTitle>Register (Unpaid Course)</DialogTitle>
-        <DialogContent>
-          <Box textAlign="center">
-            <img src={qrImg} width="220" alt="QR" />
-          </Box>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUnpaidRegister}>
-            Register
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ===== TERMS ===== */}
-      <Dialog open={openTerms} onClose={() => setOpenTerms(false)}>
-        <DialogTitle>Terms & Conditions</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Registration fee ₹200 is mandatory. Paid course requires admin
-            approval. Unpaid course requires test clearance.
+            Paid course requires ₹2000 registration.  
+            Unpaid course requires test clearance.
           </Typography>
         </DialogContent>
         <DialogActions>
