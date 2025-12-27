@@ -28,7 +28,7 @@ export default function Footer() {
         {/* Brand Info */}
         <Box>
           <Typography sx={{ fontSize: "26px", fontWeight: 700 }}>
-            ITWale
+          The IT Wallah
           </Typography>
           <Typography sx={{ color: "#ccc", marginTop: "10px" }}>
             Learn • Build • Succeed  
