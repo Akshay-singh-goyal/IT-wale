@@ -27,8 +27,8 @@ import { useNavigate } from "react-router-dom";
 import Roadmap from "./Roadmap";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 
-import qrImg from "../images/qr.jpg";
-import bannerImg from "../images/banner.jpg";
+import qrImg from "../Images/Qr.jpeg";
+import bannerImg from "../Images/banner.jpeg";
 
 /* ================= API ================= */
 const api = axios.create({
