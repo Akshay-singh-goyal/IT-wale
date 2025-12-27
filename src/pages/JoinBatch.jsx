@@ -26,20 +26,31 @@ import Roadmap from "./Roadmap";
 import PaidIcon from "@mui/icons-material/Payments";
 import FreeIcon from "@mui/icons-material/School";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import PendingIcon from "@mui/icons-material/HourglassBottom";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import img2 from "../Images/Qr.jpeg";
 
+/* ================= AXIOS INSTANCE (FIXED) ================= */
+const api = axios.create({
+  baseURL: "https://sm-backend-8me3.onrender.com",
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem("accessToken");
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+});
+
 export default function JoinPage() {
   const navigate = useNavigate();
-  const accessToken = localStorage.getItem("accessToken");
 
   // User & Registration States
   const [user, setUser] = useState(null);
   const [registrationStatus, setRegistrationStatus] = useState(null);
 
   // Payment / Flow
-  const [paymentType, setPaymentType] = useState("paid"); // default
+  const [paymentType, setPaymentType] = useState("paid");
   const [agree, setAgree] = useState(false);
 
   // Dialog States
@@ -49,75 +60,70 @@ export default function JoinPage() {
   const [openSlot, setOpenSlot] = useState(false);
   const [openTest, setOpenTest] = useState(false);
   const [openTerms, setOpenTerms] = useState(false);
+
   const [txnId, setTxnId] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [selectedSlot, setSelectedSlot] = useState("");
   const [testScore, setTestScore] = useState("");
   const [goForTest, setGoForTest] = useState(false);
 
-  // Axios instance
-  const api = axios.create({
-    baseURL: "https://sm-backend-8me3.onrender.com",
-    headers: { Authorization: accessToken ? `Bearer ${accessToken}` : "" },
-  });
-
-  // Load user from localStorage
+  /* ================= LOAD USER ================= */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
     if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  // Fetch registration status (check both paid/unpaid separately)
+  /* ================= FETCH STATUS ================= */
   const fetchStatus = async () => {
-    if (!accessToken) return;
     try {
-      const resPaid = await api.get("/api/register/status/default123?type=paid");
-      const resUnpaid = await api.get("/api/register/status/default123?type=unpaid");
-      const status = resPaid.data || resUnpaid.data || null;
+      const paid = await api.get("/api/register/status/default123?type=paid");
+      const unpaid = await api.get("/api/register/status/default123?type=unpaid");
+
+      const status = paid.data || unpaid.data || null;
       setRegistrationStatus(status);
 
       if (status?.paymentType === "unpaid" && status.testSlot) {
-        const testTime = new Date(status.testSlot).getTime();
-        if (new Date().getTime() >= testTime) setGoForTest(true);
+        if (Date.now() >= new Date(status.testSlot).getTime()) {
+          setGoForTest(true);
+        }
       }
     } catch (err) {
-      console.error(err);
+      console.error("Status error:", err);
     }
   };
 
   useEffect(() => {
     fetchStatus();
-  }, [accessToken]);
+  }, []);
 
-  // ===== Enrollment via Roadmap =====
+  /* ================= ROADMAP ================= */
   const handleEnrollFromRoadmap = (lang) => {
-    if (paymentType === "paid") {
-      if (!registrationStatus) setOpenQR(true);
-    } else handleUnpaidClick();
     toast.info(`You selected "${lang.title}" batch`);
+    paymentType === "paid" ? setOpenQR(true) : handleUnpaidClick();
   };
 
-  // ===== Paid Registration =====
+  /* ================= PAID FLOW ================= */
   const handleOpenQR = () => {
-    if (!agree) return toast.warning("Please accept terms & conditions");
-    if (!user || !accessToken) return navigate("/login");
+    if (!agree) return toast.warning("Accept terms & conditions");
+    if (!user) return navigate("/login");
 
-    if (!registrationStatus || !registrationStatus.registrationFeePaid) {
-      setOpenQR(true);
-    } else if (registrationStatus.registrationFeePaid && !registrationStatus.adminApproved) {
+    if (!registrationStatus) setOpenQR(true);
+    else if (registrationStatus.registrationFeePaid && !registrationStatus.adminApproved)
       toast.info("Waiting for admin approval");
-    } else if (registrationStatus.adminApproved && !registrationStatus.courseFeePaid) {
+    else if (registrationStatus.adminApproved && !registrationStatus.courseFeePaid)
       setOpenCourseQR(true);
-    }
   };
 
   const handleSubmitRegistration = async () => {
-    if (!txnId) return toast.error("Enter transaction id after payment");
+    if (!txnId) return toast.error("Enter transaction ID");
     setSubmitting(true);
     try {
-      const payload = { batchId: "default123", transactionId: txnId, paymentType: "paid" };
-      const res = await api.post("/api/register", payload);
-      toast.success(res.data.message || "Registration submitted. Await admin approval.");
+      const res = await api.post("/api/register", {
+        batchId: "default123",
+        transactionId: txnId,
+        paymentType: "paid",
+      });
+      toast.success(res.data.message);
       setRegistrationStatus(res.data.registration);
       setOpenQR(false);
       setTxnId("");
@@ -129,14 +135,14 @@ export default function JoinPage() {
   };
 
   const handleSubmitCoursePayment = async () => {
-    if (!txnId) return toast.error("Enter transaction id after payment");
+    if (!txnId) return toast.error("Enter transaction ID");
     setSubmitting(true);
     try {
       const res = await api.post(`/api/register/course/pay/${registrationStatus._id}`, {
         amount: 2000,
         transactionId: txnId,
       });
-      toast.success(res.data.message || "Course fee submitted. Await admin approval.");
+      toast.success(res.data.message);
       setRegistrationStatus(res.data.registration);
       setOpenCourseQR(false);
       setTxnId("");
@@ -147,68 +153,57 @@ export default function JoinPage() {
     }
   };
 
-  // ===== Unpaid Flow =====
+  /* ================= UNPAID FLOW ================= */
   const handleUnpaidClick = () => {
-    if (!agree) return toast.warning("Please accept terms & conditions");
-    if (!user || !accessToken) return navigate("/login");
-
-    if (!registrationStatus || registrationStatus.paymentType !== "unpaid") {
-      setOpenUnpaidReg(true);
-    } else if (registrationStatus.registrationFeePaid && !registrationStatus.adminApproved) {
-      toast.info("Waiting for admin approval");
-    } else if (registrationStatus.adminApproved && !registrationStatus.testSlot) {
-      setOpenSlot(true);
-    } else if (registrationStatus.testSlot) {
-      const testTime = new Date(registrationStatus.testSlot).getTime();
-      if (new Date().getTime() >= testTime) setGoForTest(true);
-      else toast.info("Test not started yet. Your slot: " + new Date(testTime).toLocaleString());
-    }
+    if (!agree) return toast.warning("Accept terms");
+    if (!user) return navigate("/login");
+    setOpenUnpaidReg(true);
   };
 
   const handleSubmitUnpaidRegistration = async () => {
     setSubmitting(true);
     try {
-      const payload = { batchId: "default123", paymentType: "unpaid" };
-      const res = await api.post("/api/register/unpaid", payload);
-      toast.success(res.data.message || "Registration submitted. Await admin approval.");
+      const res = await api.post("/api/register/unpaid", {
+        batchId: "default123",
+        paymentType: "unpaid",
+      });
+      toast.success(res.data.message);
       setRegistrationStatus(res.data.registration);
       setOpenUnpaidReg(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed");
+      toast.error(err.response?.data?.message || "Failed");
     } finally {
       setSubmitting(false);
     }
   };
 
   const handleBookSlot = async () => {
-    if (!selectedSlot) return toast.error("Select a slot for your test");
+    if (!selectedSlot) return toast.error("Select slot");
     try {
       const res = await api.post("/api/register/unpaid/slot", {
         batchId: "default123",
         slot: selectedSlot,
       });
-      toast.success(res.data.message || "Slot booked");
+      toast.success(res.data.message);
       setRegistrationStatus(res.data.registration);
       setOpenSlot(false);
-      const testTime = new Date(selectedSlot).getTime();
-      if (new Date().getTime() >= testTime) setGoForTest(true);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to book slot");
+      toast.error(err.response?.data?.message);
     }
   };
 
   const handleSubmitTest = async () => {
-    if (!testScore) return toast.error("Enter your test score");
+    if (!testScore) return toast.error("Enter test score");
     try {
       const res = await api.post("/api/register/unpaid/test", {
         batchId: "default123",
         testScore,
       });
-      toast.success(res.data.message || "Test submitted. Await admin review.");
+      toast.success(res.data.message);
       setOpenTest(false);
       setRegistrationStatus({ ...registrationStatus, testScore });
     } catch (err) {
-      toast.error(err.response?.data?.message || "Failed to submit test");
+      toast.error(err.response?.data?.message);
     }
   };
 
