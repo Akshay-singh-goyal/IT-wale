@@ -1,257 +1,184 @@
 import React, { useEffect, useState } from "react";
-import "./roadmap.css";
+import api from "../api/api";
 import {
-  Box,
   Container,
-  Typography,
   Card,
   CardContent,
   Button,
+  Typography,
+  TextField,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
-  TextField,
-  FormControlLabel,
-  Grid,
-  Paper,
-  Radio,
-  RadioGroup,
-  Checkbox,
 } from "@mui/material";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
 
-import Roadmap from "./Roadmap";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+const BATCH_ID = "default123";
 
-import qrImg from "../Images/Qr.jpeg";
-import bannerImg from "../Images/banner.jpeg";
-
-/* ================= API ================= */
-const api = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL ||
-    "https://sm-backend-8me3.onrender.com",
-});
-
-api.interceptors.request.use((config) => {
-  const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
-  return config;
-});
-
-export default function JoinPage() {
-  const navigate = useNavigate();
-
-  const [user, setUser] = useState(null);
-  const [paymentType, setPaymentType] = useState("paid");
-  const [agree, setAgree] = useState(false);
-
-  const [openPaidQR, setOpenPaidQR] = useState(false);
-  const [openUnpaidQR, setOpenUnpaidQR] = useState(false);
-  const [openTerms, setOpenTerms] = useState(false);
-
+export default function JoinBatch() {
+  const [status, setStatus] = useState(null);
   const [txnId, setTxnId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [openPaid, setOpenPaid] = useState(false);
+  const [openUnpaid, setOpenUnpaid] = useState(false);
+  const [slot, setSlot] = useState("");
+  const [testScore, setTestScore] = useState("");
 
-  /* ================= LOAD USER ================= */
-  useEffect(() => {
-    const u = localStorage.getItem("user");
-    const t = localStorage.getItem("accessToken");
-    if (u && t) setUser(JSON.parse(u));
-  }, []);
-
-  /* ================= ENROLL ================= */
-  const handleEnroll = () => {
-    if (!user) return navigate("/login");
-    if (!agree) return toast.warning("Accept Terms & Conditions");
-
-    paymentType === "paid"
-      ? setOpenPaidQR(true)
-      : setOpenUnpaidQR(true);
-  };
-
-  /* ================= PAID ================= */
-  const handlePaidRegister = async () => {
-    if (!txnId.trim()) return toast.error("Enter transaction ID");
-
-    setSubmitting(true);
+  /* ================= FETCH STATUS ================= */
+  const fetchStatus = async () => {
     try {
-      const res = await api.post("/api/register", {
-        batchId: "default123",
-        transactionId: txnId,
-      });
-      toast.success(res.data.message);
-      setOpenPaidQR(false);
-      setTxnId("");
+      const res = await api.get(`/api/register/status/${BATCH_ID}`);
+      setStatus(res.data);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error");
-    } finally {
-      setSubmitting(false);
+      console.error(err);
     }
   };
 
-  /* ================= UNPAID ================= */
-  const handleUnpaidRegister = async () => {
-    setSubmitting(true);
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  /* ================= PAID REGISTER ================= */
+  const handlePaidRegister = async () => {
+    if (!txnId) return toast.error("Enter transaction id");
+
     try {
-      const res = await api.post("/api/register/unpaid", {
-        batchId: "default123",
+      const res = await api.post("/api/register", {
+        batchId: BATCH_ID,
+        transactionId: txnId,
       });
       toast.success(res.data.message);
-      setOpenUnpaidQR(false);
+      setOpenPaid(false);
+      fetchStatus();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error");
-    } finally {
-      setSubmitting(false);
+      toast.error(err.response?.data?.message);
+    }
+  };
+
+  /* ================= UNPAID REGISTER ================= */
+  const handleUnpaidRegister = async () => {
+    try {
+      const res = await api.post("/api/register/unpaid", {
+        batchId: BATCH_ID,
+      });
+      toast.success(res.data.message);
+      setOpenUnpaid(false);
+      fetchStatus();
+    } catch (err) {
+      toast.error(err.response?.data?.message);
+    }
+  };
+
+  /* ================= SLOT BOOK ================= */
+  const handleSlotBook = async () => {
+    try {
+      const res = await api.post("/api/register/unpaid/slot", {
+        batchId: BATCH_ID,
+        slot,
+      });
+      toast.success(res.data.message);
+      fetchStatus();
+    } catch (err) {
+      toast.error(err.response?.data?.message);
+    }
+  };
+
+  /* ================= SUBMIT TEST ================= */
+  const handleSubmitTest = async () => {
+    try {
+      const res = await api.post("/api/register/unpaid/test", {
+        batchId: BATCH_ID,
+        testScore,
+      });
+      toast.success(res.data.message);
+      fetchStatus();
+    } catch (err) {
+      toast.error(err.response?.data?.message);
     }
   };
 
   return (
-    <Container sx={{ py: 6 }}>
-      <ToastContainer position="bottom-center" />
+    <Container sx={{ mt: 5 }}>
+      <Card>
+        <CardContent>
+          <Typography variant="h5">Join MERN Bootcamp</Typography>
 
-      {/* ===== Banner ===== */}
-      <Box
-        sx={{
-          height: 220,
-          background: `url(${bannerImg}) center/cover`,
-          borderRadius: 3,
-          mb: 4,
-        }}
-      >
-        <Box sx={{ bgcolor: "rgba(0,0,0,0.55)", height: "100%", p: 3 }}>
-          <Typography variant="h4" color="#fff">
-            Full Stack MERN Bootcamp
-          </Typography>
-          <Typography color="#ddd">
-            Learn React, Node & MongoDB with Projects
-          </Typography>
-        </Box>
-      </Box>
-
-      <Grid container spacing={3}>
-        {/* LEFT */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h5">Course Registration</Typography>
-
-              <RadioGroup
-                row
-                sx={{ mt: 2 }}
-                value={paymentType}
-                onChange={(e) => setPaymentType(e.target.value)}
-              >
-                <FormControlLabel
-                  value="paid"
-                  control={<Radio />}
-                  label="Paid Course (₹2000)"
-                />
-                <FormControlLabel
-                  value="unpaid"
-                  control={<Radio />}
-                  label="Unpaid Course (Test Required)"
-                />
-              </RadioGroup>
-
-              <Roadmap onEnroll={handleEnroll} />
-
-              <FormControlLabel
-                sx={{ mt: 2 }}
-                control={
-                  <Checkbox
-                    checked={agree}
-                    onChange={(e) => setAgree(e.target.checked)}
-                  />
-                }
-                label={
-                  <span>
-                    I agree to{" "}
-                    <span
-                      style={{ color: "blue", cursor: "pointer" }}
-                      onClick={() => setOpenTerms(true)}
-                    >
-                      Terms & Conditions
-                    </span>
-                  </span>
-                }
-              />
-
-              <Button variant="contained" sx={{ mt: 3 }} onClick={handleEnroll}>
-                Proceed
+          {!status?.paymentType && (
+            <>
+              <Button sx={{ mt: 2 }} variant="contained" onClick={() => setOpenPaid(true)}>
+                Paid Registration (₹200)
               </Button>
-            </CardContent>
-          </Card>
-        </Grid>
 
-        {/* RIGHT */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">
-              <AccountCircleIcon /> User Info
+              <Button sx={{ mt: 2, ml: 2 }} variant="outlined" onClick={() => setOpenUnpaid(true)}>
+                Unpaid Registration
+              </Button>
+            </>
+          )}
+
+          {status?.paymentType === "paid" && (
+            <Typography sx={{ mt: 2, color: "green" }}>
+              Paid Registered – Waiting Admin Approval
             </Typography>
-            {user ? (
-              <>
-                <Typography>Name: {user.name}</Typography>
-                <Typography>Email: {user.email}</Typography>
-                <Typography>Mobile: {user.mobile}</Typography>
-              </>
-            ) : (
-              <Typography>Please login</Typography>
-            )}
-          </Paper>
-        </Grid>
-      </Grid>
+          )}
 
-      {/* PAID */}
-      <Dialog open={openPaidQR} onClose={() => setOpenPaidQR(false)}>
-        <DialogTitle>Pay ₹2000 & Register</DialogTitle>
+          {status?.paymentType === "unpaid" && (
+            <>
+              {!status.testSlot && (
+                <>
+                  <Typography sx={{ mt: 2 }}>Book Test Slot</Typography>
+                  <TextField
+                    type="datetime-local"
+                    value={slot}
+                    onChange={(e) => setSlot(e.target.value)}
+                  />
+                  <Button onClick={handleSlotBook}>Book Slot</Button>
+                </>
+              )}
+
+              {status.testSlot && !status.testScore && (
+                <>
+                  <Typography sx={{ mt: 2 }}>Submit Test Score</Typography>
+                  <TextField
+                    value={testScore}
+                    onChange={(e) => setTestScore(e.target.value)}
+                  />
+                  <Button onClick={handleSubmitTest}>Submit Test</Button>
+                </>
+              )}
+
+              {status.testScore && (
+                <Typography sx={{ mt: 2, color: "orange" }}>
+                  Test Submitted – Waiting Admin Approval
+                </Typography>
+              )}
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* ================= PAID DIALOG ================= */}
+      <Dialog open={openPaid} onClose={() => setOpenPaid(false)}>
+        <DialogTitle>Paid Registration</DialogTitle>
         <DialogContent>
-          <Box textAlign="center">
-            <img src={qrImg} alt="QR" width="220" />
-          </Box>
           <TextField
             fullWidth
-            sx={{ mt: 2 }}
             label="Transaction ID"
             value={txnId}
             onChange={(e) => setTxnId(e.target.value)}
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenPaidQR(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handlePaidRegister}>
-            {submitting ? "Submitting..." : "Submit"}
-          </Button>
+          <Button onClick={() => setOpenPaid(false)}>Cancel</Button>
+          <Button onClick={handlePaidRegister}>Submit</Button>
         </DialogActions>
       </Dialog>
 
-      {/* UNPAID */}
-      <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
-        <DialogTitle>Register (Unpaid)</DialogTitle>
+      {/* ================= UNPAID DIALOG ================= */}
+      <Dialog open={openUnpaid} onClose={() => setOpenUnpaid(false)}>
+        <DialogTitle>Unpaid Registration</DialogTitle>
         <DialogActions>
-          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUnpaidRegister}>
-            Register
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* TERMS */}
-      <Dialog open={openTerms} onClose={() => setOpenTerms(false)}>
-        <DialogTitle>Terms & Conditions</DialogTitle>
-        <DialogContent>
-          <Typography>
-            Paid course requires ₹2000 registration.  
-            Unpaid course requires test clearance.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenTerms(false)}>Close</Button>
+          <Button onClick={() => setOpenUnpaid(false)}>Cancel</Button>
+          <Button onClick={handleUnpaidRegister}>Register</Button>
         </DialogActions>
       </Dialog>
     </Container>
