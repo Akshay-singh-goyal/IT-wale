@@ -48,15 +48,20 @@ api.interceptors.request.use((config) => {
 export default function JoinPage() {
   const navigate = useNavigate();
 
+  /* ================= STATES ================= */
   const [user, setUser] = useState(null);
   const [paymentType, setPaymentType] = useState("paid");
   const [agree, setAgree] = useState(false);
 
   const [openPaidQR, setOpenPaidQR] = useState(false);
   const [openUnpaidConfirm, setOpenUnpaidConfirm] = useState(false);
+  const [openTestDialog, setOpenTestDialog] = useState(false);
 
   const [txnId, setTxnId] = useState("");
+  const [testDate, setTestDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
+
+  const [status, setStatus] = useState("NOT_REGISTERED");
 
   /* ================= LOAD USER ================= */
   useEffect(() => {
@@ -65,16 +70,37 @@ export default function JoinPage() {
     if (u && t) setUser(JSON.parse(u));
   }, []);
 
+  /* ================= CHECK REGISTRATION STATUS ================= */
+  useEffect(() => {
+    const checkStatus = async () => {
+      try {
+        const res = await api.get("/api/register/status/default123");
+
+        if (!res.data.registered) {
+          setStatus("NOT_REGISTERED");
+        } else if (!res.data.adminApproved) {
+          setStatus("WAITING");
+        } else if (res.data.paymentType === "unpaid") {
+          setStatus("APPROVED");
+        } else {
+          setStatus("APPROVED");
+        }
+      } catch (err) {
+        console.error(err);
+      }
+    };
+
+    checkStatus();
+  }, []);
+
   /* ================= ENROLL ================= */
   const handleEnroll = () => {
     if (!user) return navigate("/login");
     if (!agree) return toast.warning("Accept Terms & Conditions");
 
-    if (paymentType === "paid") {
-      setOpenPaidQR(true);
-    } else {
-      setOpenUnpaidConfirm(true);
-    }
+    paymentType === "paid"
+      ? setOpenPaidQR(true)
+      : setOpenUnpaidConfirm(true);
   };
 
   /* ================= PAID REGISTER ================= */
@@ -91,6 +117,7 @@ export default function JoinPage() {
       toast.success(res.data.message);
       setOpenPaidQR(false);
       setTxnId("");
+      setStatus("WAITING");
     } catch (err) {
       toast.error(err.response?.data?.message || "Payment failed");
     } finally {
@@ -108,6 +135,7 @@ export default function JoinPage() {
 
       toast.success(res.data.message);
       setOpenUnpaidConfirm(false);
+      setStatus("WAITING");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -115,6 +143,15 @@ export default function JoinPage() {
     }
   };
 
+  /* ================= TEST DATE SUBMIT ================= */
+  const submitTestDate = () => {
+    if (!testDate) return toast.error("Select test date");
+    toast.success("Test date submitted");
+    setOpenTestDialog(false);
+    setStatus("TEST_SCHEDULED");
+  };
+
+  /* ================= UI ================= */
   return (
     <Container sx={{ py: 6 }}>
       <ToastContainer position="bottom-center" />
@@ -138,6 +175,26 @@ export default function JoinPage() {
         </Box>
       </Box>
 
+      {/* ===== STATUS VIEW ===== */}
+      {status === "WAITING" && (
+        <Typography color="orange" sx={{ mb: 2 }}>
+          ⏳ Waiting for admin approval
+        </Typography>
+      )}
+
+      {status === "APPROVED" && (
+        <Button sx={{ mb: 2 }} onClick={() => setOpenTestDialog(true)}>
+          Select Test Date
+        </Button>
+      )}
+
+      {status === "TEST_SCHEDULED" && (
+        <Typography color="green" sx={{ mb: 2 }}>
+          🧪 Test Scheduled – Countdown running
+        </Typography>
+      )}
+
+      {/* ===== MAIN GRID ===== */}
       <Grid container spacing={3}>
         {/* LEFT */}
         <Grid item xs={12} md={8}>
@@ -176,9 +233,15 @@ export default function JoinPage() {
                 label="I agree to Terms & Conditions"
               />
 
-              <Button variant="contained" sx={{ mt: 3 }} onClick={handleEnroll}>
-                Proceed
-              </Button>
+              {status === "NOT_REGISTERED" && (
+                <Button
+                  variant="contained"
+                  sx={{ mt: 3 }}
+                  onClick={handleEnroll}
+                >
+                  Proceed
+                </Button>
+              )}
             </CardContent>
           </Card>
         </Grid>
@@ -225,8 +288,26 @@ export default function JoinPage() {
         </DialogActions>
       </Dialog>
 
+      {/* ===== TEST DATE ===== */}
+      <Dialog open={openTestDialog} onClose={() => setOpenTestDialog(false)}>
+        <DialogTitle>Select Test Date</DialogTitle>
+        <DialogContent>
+          <TextField
+            fullWidth
+            type="datetime-local"
+            onChange={(e) => setTestDate(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={submitTestDate}>Submit</Button>
+        </DialogActions>
+      </Dialog>
+
       {/* ===== UNPAID CONFIRM ===== */}
-      <Dialog open={openUnpaidConfirm} onClose={() => setOpenUnpaidConfirm(false)}>
+      <Dialog
+        open={openUnpaidConfirm}
+        onClose={() => setOpenUnpaidConfirm(false)}
+      >
         <DialogTitle>Confirm Unpaid Registration</DialogTitle>
         <DialogContent>
           <Typography>
