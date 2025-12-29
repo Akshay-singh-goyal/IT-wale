@@ -39,7 +39,9 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
-  if (token) config.headers.Authorization = `Bearer ${token}`;
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
   return config;
 });
 
@@ -51,10 +53,9 @@ export default function JoinPage() {
   const [agree, setAgree] = useState(false);
 
   const [openPaidQR, setOpenPaidQR] = useState(false);
-  const [openUnpaidQR, setOpenUnpaidQR] = useState(false);
+  const [openUnpaidConfirm, setOpenUnpaidConfirm] = useState(false);
 
   const [txnId, setTxnId] = useState("");
-  const [showTxnInput, setShowTxnInput] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   /* ================= LOAD USER ================= */
@@ -72,9 +73,7 @@ export default function JoinPage() {
     if (paymentType === "paid") {
       setOpenPaidQR(true);
     } else {
-      setShowTxnInput(false);
-      setTxnId("");
-      setOpenUnpaidQR(true);
+      setOpenUnpaidConfirm(true);
     }
   };
 
@@ -88,11 +87,12 @@ export default function JoinPage() {
         batchId: "default123",
         transactionId: txnId,
       });
+
       toast.success(res.data.message);
       setOpenPaidQR(false);
       setTxnId("");
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error");
+      toast.error(err.response?.data?.message || "Payment failed");
     } finally {
       setSubmitting(false);
     }
@@ -100,19 +100,16 @@ export default function JoinPage() {
 
   /* ================= UNPAID REGISTER ================= */
   const handleUnpaidRegister = async () => {
-    if (!txnId.trim()) return toast.error("Enter transaction ID");
-
     setSubmitting(true);
     try {
       const res = await api.post("/api/register/unpaid", {
         batchId: "default123",
-        transactionId: txnId,
       });
+
       toast.success(res.data.message);
-      setOpenUnpaidQR(false);
-      setTxnId("");
+      setOpenUnpaidConfirm(false);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Error");
+      toast.error(err.response?.data?.message || "Registration failed");
     } finally {
       setSubmitting(false);
     }
@@ -228,42 +225,19 @@ export default function JoinPage() {
         </DialogActions>
       </Dialog>
 
-      {/* ===== UNPAID QR ===== */}
-      <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
-        <DialogTitle>Unpaid Registration</DialogTitle>
+      {/* ===== UNPAID CONFIRM ===== */}
+      <Dialog open={openUnpaidConfirm} onClose={() => setOpenUnpaidConfirm(false)}>
+        <DialogTitle>Confirm Unpaid Registration</DialogTitle>
         <DialogContent>
-          <Box textAlign="center">
-            <img src={qrImg} alt="QR" width="220" />
-          </Box>
-
-          {showTxnInput && (
-            <TextField
-              fullWidth
-              sx={{ mt: 2 }}
-              label="Transaction ID"
-              value={txnId}
-              onChange={(e) => setTxnId(e.target.value)}
-            />
-          )}
+          <Typography>
+            You will need to clear a test to join this course.
+          </Typography>
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
-
-          {!showTxnInput ? (
-            <Button
-              variant="contained"
-              onClick={() => setShowTxnInput(true)}
-            >
-              I Have Paid
-            </Button>
-          ) : (
-            <Button
-              variant="contained"
-              onClick={handleUnpaidRegister}
-            >
-              {submitting ? "Submitting..." : "Submit"}
-            </Button>
-          )}
+          <Button onClick={() => setOpenUnpaidConfirm(false)}>Cancel</Button>
+          <Button variant="contained" onClick={handleUnpaidRegister}>
+            {submitting ? "Submitting..." : "Confirm"}
+          </Button>
         </DialogActions>
       </Dialog>
     </Container>
