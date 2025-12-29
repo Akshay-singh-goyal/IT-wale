@@ -24,11 +24,8 @@ import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
 
-import Roadmap from "./Roadmap";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-
 import qrImg from "../Images/Qr.jpeg";
-import bannerImg from "../Images/banner.jpeg";
 
 /* ================= API ================= */
 const api = axios.create({
@@ -54,7 +51,7 @@ export default function JoinPage() {
   const [agree, setAgree] = useState(false);
 
   const [openPaidQR, setOpenPaidQR] = useState(false);
-  const [openUnpaidConfirm, setOpenUnpaidConfirm] = useState(false);
+  const [openUnpaidQR, setOpenUnpaidQR] = useState(false);
   const [openTestDialog, setOpenTestDialog] = useState(false);
 
   const [txnId, setTxnId] = useState("");
@@ -70,26 +67,18 @@ export default function JoinPage() {
     if (u && t) setUser(JSON.parse(u));
   }, []);
 
-  /* ================= CHECK REGISTRATION STATUS ================= */
+  /* ================= CHECK STATUS ================= */
   useEffect(() => {
     const checkStatus = async () => {
       try {
         const res = await api.get("/api/register/status/default123");
-
-        if (!res.data.registered) {
-          setStatus("NOT_REGISTERED");
-        } else if (!res.data.adminApproved) {
-          setStatus("WAITING");
-        } else if (res.data.paymentType === "unpaid") {
-          setStatus("APPROVED");
-        } else {
-          setStatus("APPROVED");
-        }
+        if (!res.data.registered) setStatus("NOT_REGISTERED");
+        else if (!res.data.adminApproved) setStatus("WAITING");
+        else setStatus("APPROVED");
       } catch (err) {
         console.error(err);
       }
     };
-
     checkStatus();
   }, []);
 
@@ -100,10 +89,10 @@ export default function JoinPage() {
 
     paymentType === "paid"
       ? setOpenPaidQR(true)
-      : setOpenUnpaidConfirm(true);
+      : setOpenUnpaidQR(true);
   };
 
-  /* ================= PAID REGISTER ================= */
+  /* ================= PAID REGISTER (₹2000) ================= */
   const handlePaidRegister = async () => {
     if (!txnId.trim()) return toast.error("Enter transaction ID");
 
@@ -113,11 +102,10 @@ export default function JoinPage() {
         batchId: "default123",
         transactionId: txnId,
       });
-
       toast.success(res.data.message);
+      setStatus("WAITING");
       setOpenPaidQR(false);
       setTxnId("");
-      setStatus("WAITING");
     } catch (err) {
       toast.error(err.response?.data?.message || "Payment failed");
     } finally {
@@ -125,17 +113,20 @@ export default function JoinPage() {
     }
   };
 
-  /* ================= UNPAID REGISTER ================= */
+  /* ================= UNPAID REGISTER (₹200) ================= */
   const handleUnpaidRegister = async () => {
+    if (!txnId.trim()) return toast.error("Enter transaction ID");
+
     setSubmitting(true);
     try {
       const res = await api.post("/api/register/unpaid", {
         batchId: "default123",
+        transactionId: txnId,
       });
-
       toast.success(res.data.message);
-      setOpenUnpaidConfirm(false);
       setStatus("WAITING");
+      setOpenUnpaidQR(false);
+      setTxnId("");
     } catch (err) {
       toast.error(err.response?.data?.message || "Registration failed");
     } finally {
@@ -143,7 +134,7 @@ export default function JoinPage() {
     }
   };
 
-  /* ================= TEST DATE SUBMIT ================= */
+  /* ================= TEST DATE ================= */
   const submitTestDate = () => {
     if (!testDate) return toast.error("Select test date");
     toast.success("Test date submitted");
@@ -151,31 +142,24 @@ export default function JoinPage() {
     setStatus("TEST_SCHEDULED");
   };
 
-  /* ================= UI ================= */
   return (
     <Container sx={{ py: 6 }}>
       <ToastContainer position="bottom-center" />
 
-      {/* ===== Banner ===== */}
-      <Box
-        sx={{
-          height: 220,
-          background: `url(${bannerImg}) center/cover`,
-          borderRadius: 3,
-          mb: 4,
-        }}
-      >
-        <Box sx={{ bgcolor: "rgba(0,0,0,0.55)", height: "100%", p: 3 }}>
-          <Typography variant="h4" color="#fff">
-            Full Stack MERN Bootcamp
-          </Typography>
-          <Typography color="#ddd">
-            Learn React, Node & MongoDB with Projects
-          </Typography>
-        </Box>
+      {/* ===== VIDEO BANNER (YouTube Style) ===== */}
+      <Box sx={{ mb: 4 }}>
+        <iframe
+          width="100%"
+          height="315"
+          src="https://www.youtube.com/embed/dGcsHMXbSOA"
+          title="Course Intro"
+          frameBorder="0"
+          allowFullScreen
+          style={{ borderRadius: 12 }}
+        />
       </Box>
 
-      {/* ===== STATUS VIEW ===== */}
+      {/* ===== STATUS ===== */}
       {status === "WAITING" && (
         <Typography color="orange" sx={{ mb: 2 }}>
           ⏳ Waiting for admin approval
@@ -194,7 +178,6 @@ export default function JoinPage() {
         </Typography>
       )}
 
-      {/* ===== MAIN GRID ===== */}
       <Grid container spacing={3}>
         {/* LEFT */}
         <Grid item xs={12} md={8}>
@@ -216,11 +199,9 @@ export default function JoinPage() {
                 <FormControlLabel
                   value="unpaid"
                   control={<Radio />}
-                  label="Unpaid Course (Test Required)"
+                  label="Unpaid Course (₹200 Registration + Test)"
                 />
               </RadioGroup>
-
-              <Roadmap onEnroll={handleEnroll} />
 
               <FormControlLabel
                 sx={{ mt: 2 }}
@@ -265,13 +246,11 @@ export default function JoinPage() {
         </Grid>
       </Grid>
 
-      {/* ===== PAID QR ===== */}
+      {/* ===== PAID QR ₹2000 ===== */}
       <Dialog open={openPaidQR} onClose={() => setOpenPaidQR(false)}>
-        <DialogTitle>Pay ₹2000 & Register</DialogTitle>
+        <DialogTitle>Pay ₹2000</DialogTitle>
         <DialogContent>
-          <Box textAlign="center">
-            <img src={qrImg} alt="QR" width="220" />
-          </Box>
+          <img src={qrImg} alt="QR" width="220" />
           <TextField
             fullWidth
             sx={{ mt: 2 }}
@@ -282,7 +261,28 @@ export default function JoinPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={() => setOpenPaidQR(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handlePaidRegister}>
+          <Button onClick={handlePaidRegister}>
+            {submitting ? "Submitting..." : "Submit"}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* ===== UNPAID QR ₹200 ===== */}
+      <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
+        <DialogTitle>Pay ₹200 (Registration)</DialogTitle>
+        <DialogContent>
+          <img src={qrImg} alt="QR" width="220" />
+          <TextField
+            fullWidth
+            sx={{ mt: 2 }}
+            label="Transaction ID"
+            value={txnId}
+            onChange={(e) => setTxnId(e.target.value)}
+          />
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
+          <Button onClick={handleUnpaidRegister}>
             {submitting ? "Submitting..." : "Submit"}
           </Button>
         </DialogActions>
@@ -300,25 +300,6 @@ export default function JoinPage() {
         </DialogContent>
         <DialogActions>
           <Button onClick={submitTestDate}>Submit</Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ===== UNPAID CONFIRM ===== */}
-      <Dialog
-        open={openUnpaidConfirm}
-        onClose={() => setOpenUnpaidConfirm(false)}
-      >
-        <DialogTitle>Confirm Unpaid Registration</DialogTitle>
-        <DialogContent>
-          <Typography>
-            You will need to clear a test to join this course.
-          </Typography>
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenUnpaidConfirm(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUnpaidRegister}>
-            {submitting ? "Submitting..." : "Confirm"}
-          </Button>
         </DialogActions>
       </Dialog>
     </Container>
