@@ -52,9 +52,9 @@ export default function JoinPage() {
 
   const [openPaidQR, setOpenPaidQR] = useState(false);
   const [openUnpaidQR, setOpenUnpaidQR] = useState(false);
-  const [openTerms, setOpenTerms] = useState(false);
 
   const [txnId, setTxnId] = useState("");
+  const [showTxnInput, setShowTxnInput] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   /* ================= LOAD USER ================= */
@@ -69,12 +69,16 @@ export default function JoinPage() {
     if (!user) return navigate("/login");
     if (!agree) return toast.warning("Accept Terms & Conditions");
 
-    paymentType === "paid"
-      ? setOpenPaidQR(true)
-      : setOpenUnpaidQR(true);
+    if (paymentType === "paid") {
+      setOpenPaidQR(true);
+    } else {
+      setShowTxnInput(false);
+      setTxnId("");
+      setOpenUnpaidQR(true);
+    }
   };
 
-  /* ================= PAID ================= */
+  /* ================= PAID REGISTER ================= */
   const handlePaidRegister = async () => {
     if (!txnId.trim()) return toast.error("Enter transaction ID");
 
@@ -94,15 +98,19 @@ export default function JoinPage() {
     }
   };
 
-  /* ================= UNPAID ================= */
+  /* ================= UNPAID REGISTER ================= */
   const handleUnpaidRegister = async () => {
+    if (!txnId.trim()) return toast.error("Enter transaction ID");
+
     setSubmitting(true);
     try {
       const res = await api.post("/api/register/unpaid", {
         batchId: "default123",
+        transactionId: txnId,
       });
       toast.success(res.data.message);
       setOpenUnpaidQR(false);
+      setTxnId("");
     } catch (err) {
       toast.error(err.response?.data?.message || "Error");
     } finally {
@@ -168,17 +176,7 @@ export default function JoinPage() {
                     onChange={(e) => setAgree(e.target.checked)}
                   />
                 }
-                label={
-                  <span>
-                    I agree to{" "}
-                    <span
-                      style={{ color: "blue", cursor: "pointer" }}
-                      onClick={() => setOpenTerms(true)}
-                    >
-                      Terms & Conditions
-                    </span>
-                  </span>
-                }
+                label="I agree to Terms & Conditions"
               />
 
               <Button variant="contained" sx={{ mt: 3 }} onClick={handleEnroll}>
@@ -207,7 +205,7 @@ export default function JoinPage() {
         </Grid>
       </Grid>
 
-      {/* PAID */}
+      {/* ===== PAID QR ===== */}
       <Dialog open={openPaidQR} onClose={() => setOpenPaidQR(false)}>
         <DialogTitle>Pay ₹2000 & Register</DialogTitle>
         <DialogContent>
@@ -230,28 +228,42 @@ export default function JoinPage() {
         </DialogActions>
       </Dialog>
 
-      {/* UNPAID */}
+      {/* ===== UNPAID QR ===== */}
       <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
-        <DialogTitle>Register (Unpaid)</DialogTitle>
-        <DialogActions>
-          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
-          <Button variant="contained" onClick={handleUnpaidRegister}>
-            Register
-          </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* TERMS */}
-      <Dialog open={openTerms} onClose={() => setOpenTerms(false)}>
-        <DialogTitle>Terms & Conditions</DialogTitle>
+        <DialogTitle>Unpaid Registration</DialogTitle>
         <DialogContent>
-          <Typography>
-            Paid course requires ₹2000 registration.  
-            Unpaid course requires test clearance.
-          </Typography>
+          <Box textAlign="center">
+            <img src={qrImg} alt="QR" width="220" />
+          </Box>
+
+          {showTxnInput && (
+            <TextField
+              fullWidth
+              sx={{ mt: 2 }}
+              label="Transaction ID"
+              value={txnId}
+              onChange={(e) => setTxnId(e.target.value)}
+            />
+          )}
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenTerms(false)}>Close</Button>
+          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
+
+          {!showTxnInput ? (
+            <Button
+              variant="contained"
+              onClick={() => setShowTxnInput(true)}
+            >
+              I Have Paid
+            </Button>
+          ) : (
+            <Button
+              variant="contained"
+              onClick={handleUnpaidRegister}
+            >
+              {submitting ? "Submitting..." : "Submit"}
+            </Button>
+          )}
         </DialogActions>
       </Dialog>
     </Container>
