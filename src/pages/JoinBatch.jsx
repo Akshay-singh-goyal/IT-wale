@@ -18,14 +18,20 @@ import {
   Radio,
   RadioGroup,
   Checkbox,
+  Stepper,
+  Step,
+  StepLabel,
+  useMediaQuery,
 } from "@mui/material";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
-
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
+import jsPDF from "jspdf";
+
 import qrImg from "../Images/Qr.jpeg";
+import courseImg from "../Images/banner1.jpeg";
 
 /* ================= API ================= */
 const api = axios.create({
@@ -36,85 +42,57 @@ const api = axios.create({
 
 api.interceptors.request.use((config) => {
   const token = localStorage.getItem("accessToken");
-  if (token) {
-    config.headers.Authorization = `Bearer ${token}`;
-  }
+  if (token) config.headers.Authorization = `Bearer ${token}`;
   return config;
 });
 
+/* ================= TIMELINE STEPS ================= */
+const steps = [
+  "Registration Fee Paid (₹200)",
+  "Admin Approval",
+  "Course Fee Paid (₹2000)",
+  "Seat Confirmed",
+];
+
 export default function JoinPage() {
   const navigate = useNavigate();
+  const isMobile = useMediaQuery("(max-width:900px)");
 
   /* ================= STATES ================= */
   const [user, setUser] = useState(null);
-  const [paymentType, setPaymentType] = useState("paid");
   const [agree, setAgree] = useState(false);
 
-  const [openPaidQR, setOpenPaidQR] = useState(false);
-  const [openUnpaidQR, setOpenUnpaidQR] = useState(false);
-  const [openTestDialog, setOpenTestDialog] = useState(false);
+  const [status, setStatus] = useState("NOT_REGISTERED");
+  const [openPay200, setOpenPay200] = useState(false);
+  const [openPay2000, setOpenPay2000] = useState(false);
 
   const [txnId, setTxnId] = useState("");
-  const [testDate, setTestDate] = useState("");
   const [submitting, setSubmitting] = useState(false);
-
-  const [status, setStatus] = useState("NOT_REGISTERED");
 
   /* ================= LOAD USER ================= */
   useEffect(() => {
     const u = localStorage.getItem("user");
     const t = localStorage.getItem("accessToken");
-    if (u && t) setUser(JSON.parse(u));
-  }, []);
+    if (!t) navigate("/login");
+    if (u) setUser(JSON.parse(u));
+  }, [navigate]);
 
   /* ================= CHECK STATUS ================= */
-  useEffect(() => {
-    const checkStatus = async () => {
-      try {
-        const res = await api.get("/api/register/status/default123");
-        if (!res.data.registered) setStatus("NOT_REGISTERED");
-        else if (!res.data.adminApproved) setStatus("WAITING");
-        else setStatus("APPROVED");
-      } catch (err) {
-        console.error(err);
-      }
-    };
-    checkStatus();
-  }, []);
-
-  /* ================= ENROLL ================= */
-  const handleEnroll = () => {
-    if (!user) return navigate("/login");
-    if (!agree) return toast.warning("Accept Terms & Conditions");
-
-    paymentType === "paid"
-      ? setOpenPaidQR(true)
-      : setOpenUnpaidQR(true);
-  };
-
-  /* ================= PAID REGISTER (₹2000) ================= */
-  const handlePaidRegister = async () => {
-    if (!txnId.trim()) return toast.error("Enter transaction ID");
-
-    setSubmitting(true);
+  const fetchStatus = async () => {
     try {
-      const res = await api.post("/api/register", {
-        batchId: "default123",
-        transactionId: txnId,
-      });
-      toast.success(res.data.message);
-      setStatus("WAITING");
-      setOpenPaidQR(false);
-      setTxnId("");
+      const res = await api.get("/api/register/status/default123");
+      setStatus(res.data.status);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed");
-    } finally {
-      setSubmitting(false);
+      console.error(err);
     }
   };
 
-  /* ================= UNPAID REGISTER (₹200) ================= */
-  const handleUnpaidRegister = async () => {
+  useEffect(() => {
+    fetchStatus();
+  }, []);
+
+  /* ================= PAY ₹200 ================= */
+  const payRegistrationFee = async () => {
     if (!txnId.trim()) return toast.error("Enter transaction ID");
 
     setSubmitting(true);
@@ -124,59 +102,89 @@ export default function JoinPage() {
         transactionId: txnId,
       });
       toast.success(res.data.message);
-      setStatus("WAITING");
-      setOpenUnpaidQR(false);
+      setOpenPay200(false);
       setTxnId("");
+      fetchStatus();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Registration failed");
+      toast.error(err.response?.data?.message || "Payment failed");
     } finally {
       setSubmitting(false);
     }
   };
 
-  /* ================= TEST DATE ================= */
-  const submitTestDate = () => {
-    if (!testDate) return toast.error("Select test date");
-    toast.success("Test date submitted");
-    setOpenTestDialog(false);
-    setStatus("TEST_SCHEDULED");
+  /* ================= PAY ₹2000 ================= */
+  const payCourseFee = async () => {
+    if (!txnId.trim()) return toast.error("Enter transaction ID");
+
+    setSubmitting(true);
+    try {
+      const res = await api.post("/api/register", {
+        batchId: "default123",
+        transactionId: txnId,
+      });
+      toast.success(res.data.message);
+      setOpenPay2000(false);
+      setTxnId("");
+      fetchStatus();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Payment failed");
+    } finally {
+      setSubmitting(false);
+    }
   };
 
+  /* ================= RECEIPT PDF ================= */
+  const downloadReceipt = () => {
+    const pdf = new jsPDF();
+    pdf.text("Payment Receipt", 20, 20);
+    pdf.text(`Name: ${user.name}`, 20, 40);
+    pdf.text(`Email: ${user.email}`, 20, 50);
+    pdf.text(`Batch: default123`, 20, 60);
+    pdf.text(`Status: Seat Confirmed`, 20, 70);
+    pdf.text(`Note: Registration fee is non-refundable`, 20, 90);
+    pdf.save("payment-receipt.pdf");
+  };
+
+  const activeStep =
+    status === "NOT_REGISTERED"
+      ? 0
+      : status === "WAITING"
+      ? 1
+      : status === "APPROVED_WAITING_PAYMENT"
+      ? 2
+      : status === "SEAT_CONFIRMED"
+      ? 3
+      : 0;
+
   return (
-    <Container sx={{ py: 6 }}>
+    <Container sx={{ py: 5 }}>
       <ToastContainer position="bottom-center" />
 
-      {/* ===== VIDEO BANNER (YouTube Style) ===== */}
-      <Box sx={{ mb: 4 }}>
-        <iframe
-          width="100%"
-          height="315"
-          src="https://www.youtube.com/embed/dGcsHMXbSOA"
-          title="Course Intro"
-          frameBorder="0"
-          allowFullScreen
-          style={{ borderRadius: 12 }}
-        />
+      {/* ===== COURSE IMAGE ===== */}
+      <Box textAlign="center" mb={3}>
+        <img src={courseImg} width="100" height="100" alt="course" />
       </Box>
 
-      {/* ===== STATUS ===== */}
-      {status === "WAITING" && (
-        <Typography color="orange" sx={{ mb: 2 }}>
-          ⏳ Waiting for admin approval
-        </Typography>
+      {/* ===== USER INFO (TOP ON MOBILE) ===== */}
+      {isMobile && user && (
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Typography variant="h6">
+            <AccountCircleIcon /> User Info
+          </Typography>
+          <Typography>Name: {user.name}</Typography>
+          <Typography>Email: {user.email}</Typography>
+          <Typography>Mobile: {user.mobile}</Typography>
+        </Paper>
       )}
 
-      {status === "APPROVED" && (
-        <Button sx={{ mb: 2 }} onClick={() => setOpenTestDialog(true)}>
-          Select Test Date
-        </Button>
-      )}
-
-      {status === "TEST_SCHEDULED" && (
-        <Typography color="green" sx={{ mb: 2 }}>
-          🧪 Test Scheduled – Countdown running
-        </Typography>
-      )}
+      {/* ===== STATUS TIMELINE ===== */}
+      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
+        {steps.map((label) => (
+          <Step key={label}>
+            <StepLabel>{label}</StepLabel>
+          </Step>
+        ))}
+      </Stepper>
 
       <Grid container spacing={3}>
         {/* LEFT */}
@@ -184,24 +192,6 @@ export default function JoinPage() {
           <Card>
             <CardContent>
               <Typography variant="h5">Course Registration</Typography>
-
-              <RadioGroup
-                row
-                sx={{ mt: 2 }}
-                value={paymentType}
-                onChange={(e) => setPaymentType(e.target.value)}
-              >
-                <FormControlLabel
-                  value="paid"
-                  control={<Radio />}
-                  label="Paid Course (₹2000)"
-                />
-                <FormControlLabel
-                  value="unpaid"
-                  control={<Radio />}
-                  label="Unpaid Course (₹200 Registration + Test)"
-                />
-              </RadioGroup>
 
               <FormControlLabel
                 sx={{ mt: 2 }}
@@ -218,39 +208,74 @@ export default function JoinPage() {
                 <Button
                   variant="contained"
                   sx={{ mt: 3 }}
-                  onClick={handleEnroll}
+                  onClick={() =>
+                    agree
+                      ? setOpenPay200(true)
+                      : toast.warning("Accept terms")
+                  }
                 >
-                  Proceed
+                  Pay ₹200 Registration Fee
                 </Button>
+              )}
+
+              {status === "WAITING" && (
+                <Typography sx={{ mt: 3 }} color="orange">
+                  ⏳ Waiting for admin approval
+                </Typography>
+              )}
+
+              {status === "APPROVED_WAITING_PAYMENT" && (
+                <Button
+                  variant="contained"
+                  color="success"
+                  sx={{ mt: 3 }}
+                  onClick={() => setOpenPay2000(true)}
+                >
+                  Pay ₹2000 Course Fee
+                </Button>
+              )}
+
+              {status === "SEAT_CONFIRMED" && (
+                <>
+                  <Typography color="green" sx={{ mt: 3 }}>
+                    🎉 Seat Confirmed
+                  </Typography>
+                  <Typography color="red">
+                    Registration fee is non-refundable
+                  </Typography>
+                  <Button sx={{ mt: 2 }} onClick={downloadReceipt}>
+                    Download Receipt (PDF)
+                  </Button>
+                </>
               )}
             </CardContent>
           </Card>
         </Grid>
 
-        {/* RIGHT */}
-        <Grid item xs={12} md={4}>
-          <Paper sx={{ p: 3 }}>
-            <Typography variant="h6">
-              <AccountCircleIcon /> User Info
-            </Typography>
-            {user ? (
-              <>
-                <Typography>Name: {user.name}</Typography>
-                <Typography>Email: {user.email}</Typography>
-                <Typography>Mobile: {user.mobile}</Typography>
-              </>
-            ) : (
-              <Typography>Please login</Typography>
-            )}
-          </Paper>
-        </Grid>
+        {/* RIGHT (DESKTOP USER INFO) */}
+        {!isMobile && (
+          <Grid item xs={12} md={4}>
+            <Paper sx={{ p: 3 }}>
+              <Typography variant="h6">
+                <AccountCircleIcon /> User Info
+              </Typography>
+              {user && (
+                <>
+                  <Typography>Name: {user.name}</Typography>
+                  <Typography>Email: {user.email}</Typography>
+                  <Typography>Mobile: {user.mobile}</Typography>
+                </>
+              )}
+            </Paper>
+          </Grid>
+        )}
       </Grid>
 
-      {/* ===== PAID QR ₹2000 ===== */}
-      <Dialog open={openPaidQR} onClose={() => setOpenPaidQR(false)}>
-        <DialogTitle>Pay ₹2000</DialogTitle>
+      {/* ===== PAY ₹200 ===== */}
+      <Dialog open={openPay200} onClose={() => setOpenPay200(false)}>
+        <DialogTitle>Pay ₹200 Registration Fee</DialogTitle>
         <DialogContent>
-          <img src={qrImg} alt="QR" width="220" />
+          <img src={qrImg} width="220" alt="qr" />
           <TextField
             fullWidth
             sx={{ mt: 2 }}
@@ -260,18 +285,18 @@ export default function JoinPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenPaidQR(false)}>Cancel</Button>
-          <Button onClick={handlePaidRegister}>
+          <Button onClick={() => setOpenPay200(false)}>Cancel</Button>
+          <Button onClick={payRegistrationFee}>
             {submitting ? "Submitting..." : "Submit"}
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* ===== UNPAID QR ₹200 ===== */}
-      <Dialog open={openUnpaidQR} onClose={() => setOpenUnpaidQR(false)}>
-        <DialogTitle>Pay ₹200 (Registration)</DialogTitle>
+      {/* ===== PAY ₹2000 ===== */}
+      <Dialog open={openPay2000} onClose={() => setOpenPay2000(false)}>
+        <DialogTitle>Pay ₹2000 Course Fee</DialogTitle>
         <DialogContent>
-          <img src={qrImg} alt="QR" width="220" />
+          <img src={qrImg} width="220" alt="qr" />
           <TextField
             fullWidth
             sx={{ mt: 2 }}
@@ -281,25 +306,10 @@ export default function JoinPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenUnpaidQR(false)}>Cancel</Button>
-          <Button onClick={handleUnpaidRegister}>
+          <Button onClick={() => setOpenPay2000(false)}>Cancel</Button>
+          <Button onClick={payCourseFee}>
             {submitting ? "Submitting..." : "Submit"}
           </Button>
-        </DialogActions>
-      </Dialog>
-
-      {/* ===== TEST DATE ===== */}
-      <Dialog open={openTestDialog} onClose={() => setOpenTestDialog(false)}>
-        <DialogTitle>Select Test Date</DialogTitle>
-        <DialogContent>
-          <TextField
-            fullWidth
-            type="datetime-local"
-            onChange={(e) => setTestDate(e.target.value)}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={submitTestDate}>Submit</Button>
         </DialogActions>
       </Dialog>
     </Container>
