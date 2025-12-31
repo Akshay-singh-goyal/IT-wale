@@ -25,7 +25,6 @@ const API_URL = "https://sm-backend-8me3.onrender.com/api/auth/login";
 
 export default function Login() {
   const navigate = useNavigate();
-
   const [loginType, setLoginType] = useState(0);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -57,19 +56,17 @@ export default function Login() {
     try {
       setLoading(true);
 
-      const payload =
-        loginType === 0 ? { email, password } : { mobile, password };
-
+      const payload = loginType === 0 ? { email, password } : { mobile, password };
       const res = await axios.post(API_URL, payload);
 
-      // Save tokens and user
+      // ✅ Store tokens and user securely
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       toast.success("Login successful!");
 
-      // Role-based redirect without reload
+      // ✅ Role-based redirect WITHOUT reloading page
       if (res.data.user.role === "admin") {
         navigate("/admin-dashboard");
       } else {
@@ -118,12 +115,7 @@ export default function Login() {
           </Typography>
         </Box>
 
-        <Tabs
-          value={loginType}
-          onChange={(e, val) => setLoginType(val)}
-          centered
-          sx={{ mb: 2 }}
-        >
+        <Tabs value={loginType} onChange={(e, val) => setLoginType(val)} centered sx={{ mb: 2 }}>
           <Tab label="Email Login" />
           <Tab label="Mobile Login" />
         </Tabs>
@@ -206,11 +198,7 @@ export default function Login() {
             fontWeight: 600,
           }}
         >
-          {loading ? (
-            <CircularProgress size={24} sx={{ color: "white" }} />
-          ) : (
-            "Sign In →"
-          )}
+          {loading ? <CircularProgress size={24} sx={{ color: "white" }} /> : "Sign In →"}
         </Button>
 
         <Typography textAlign="center" mt={2} fontSize={14}>
