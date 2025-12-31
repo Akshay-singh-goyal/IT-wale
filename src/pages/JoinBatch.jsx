@@ -29,7 +29,7 @@ import qrImg from "../Images/Qr.jpeg";
 import bannerImg from "../Images/banner.jpeg"; // Landing image
 
 const api = axios.create({
-  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000",
+  baseURL: "https://sm-backend-8me3.onrender.com",
 });
 
 api.interceptors.request.use((config) => {
