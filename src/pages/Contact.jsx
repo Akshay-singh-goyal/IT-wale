@@ -10,8 +10,8 @@ import {
   MenuItem,
 } from "@mui/material";
 import { FaComments, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
-// import ChatWidget from "../components/ChatWidget";
-// import API from "../api";
+import { Helmet } from "react-helmet"; // For SEO
+import API from "../api"; // Your API file
 
 const categories = ["Payments", "Orders", "Account", "Travel", "Events", "Other"];
 const priorities = ["Low", "Medium", "High"];
@@ -43,9 +43,10 @@ export default function SupportPage({ dark }) {
 
     try {
       setLoading(true);
-    //   await API.post("/contact", form);
-      setStatus("Message sent successfully 🎉 Our team will contact you.");
 
+      await API.post("/contact", form);
+
+      setStatus("Message sent successfully 🎉 The IT Wallah team will contact you.");
       setForm({
         name: "",
         email: "",
@@ -55,7 +56,7 @@ export default function SupportPage({ dark }) {
         message: "",
       });
 
-      setTimeout(() => setStatus(""), 3000);
+      setTimeout(() => setStatus(""), 4000);
     } catch (err) {
       setStatus("Something went wrong. Please try again.");
     } finally {
@@ -64,26 +65,50 @@ export default function SupportPage({ dark }) {
   };
 
   return (
-    <Box sx={{ background: dark ? "#071124" : "#f3f6fb", minHeight: "100vh", pb: 8 }}>
+    <Box
+      sx={{
+        backgroundColor: dark ? "#071124" : "#f3f6fb",
+        minHeight: "100vh",
+        pb: 8,
+      }}
+    >
+      {/* SEO */}
+      <Helmet>
+        <title>The IT Wallah Support | Contact Us</title>
+        <meta
+          name="description"
+          content="Reach out to The IT Wallah support team. Ask questions about payments, orders, accounts, or any other issue. Available 24/7."
+        />
+        <meta name="keywords" content="The IT Wallah, support, contact, help, payments, queries" />
+      </Helmet>
+
       {/* Header */}
-      <Box sx={{ background: "#0A1F44", color: "#fff", py: 6, textAlign: "center" }}>
+      <Box
+        sx={{
+          backgroundColor: "#0A1F44",
+          color: "#fff",
+          py: 8,
+          textAlign: "center",
+          mb: 6,
+        }}
+      >
         <Container maxWidth="md">
           <Typography variant="h3" sx={{ fontWeight: 800 }}>
-            IncredibleFest Support
+            The IT Wallah Support
           </Typography>
-          <Typography sx={{ mt: 1 }}>
-            Ask anything — we are here 24/7.
+          <Typography sx={{ mt: 1, fontSize: "1.2rem" }}>
+            Have a question? We’re here 24/7 to assist you.
           </Typography>
         </Container>
       </Box>
 
-      {/* Content */}
-      <Container maxWidth="md" sx={{ mt: -6 }}>
-        <Grid container spacing={3}>
+      {/* Main Content */}
+      <Container maxWidth="md">
+        <Grid container spacing={4}>
           {/* Contact Form */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 4, borderRadius: 2 }}>
-              <Typography variant="h6" sx={{ mb: 2 }}>
+            <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
+              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
                 Contact Us
               </Typography>
 
@@ -93,28 +118,29 @@ export default function SupportPage({ dark }) {
                 sx={{ display: "flex", flexDirection: "column", gap: 2 }}
               >
                 <TextField
-                  name="name"
                   label="Name"
+                  name="name"
                   value={form.name}
                   onChange={handleChange}
                   required
+                  fullWidth
                 />
-
                 <TextField
-                  name="email"
                   label="Email"
+                  name="email"
                   type="email"
                   value={form.email}
                   onChange={handleChange}
                   required
+                  fullWidth
                 />
-
                 <TextField
+                  label="Category"
                   name="category"
                   select
-                  label="Category"
                   value={form.category}
                   onChange={handleChange}
+                  fullWidth
                 >
                   {categories.map((cat) => (
                     <MenuItem key={cat} value={cat}>
@@ -122,13 +148,13 @@ export default function SupportPage({ dark }) {
                     </MenuItem>
                   ))}
                 </TextField>
-
                 <TextField
+                  label="Priority"
                   name="priority"
                   select
-                  label="Priority"
                   value={form.priority}
                   onChange={handleChange}
+                  fullWidth
                 >
                   {priorities.map((p) => (
                     <MenuItem key={p} value={p}>
@@ -136,27 +162,32 @@ export default function SupportPage({ dark }) {
                     </MenuItem>
                   ))}
                 </TextField>
-
                 <TextField
-                  name="subject"
                   label="Subject"
+                  name="subject"
                   value={form.subject}
                   onChange={handleChange}
                   required
+                  fullWidth
                 />
-
                 <TextField
-                  name="message"
                   label="Message"
+                  name="message"
                   multiline
                   rows={4}
                   value={form.message}
                   onChange={handleChange}
+                  fullWidth
                 />
 
-                <Box sx={{ display: "flex", gap: 2 }}>
-                  <Button variant="contained" type="submit" disabled={loading}>
-                    {loading ? "Sending..." : "Send"}
+                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 1 }}>
+                  <Button
+                    type="submit"
+                    variant="contained"
+                    color="primary"
+                    disabled={loading}
+                  >
+                    {loading ? "Sending..." : "Send Message"}
                   </Button>
 
                   <Button
@@ -169,7 +200,7 @@ export default function SupportPage({ dark }) {
                 </Box>
 
                 {status && (
-                  <Typography color="success.main" sx={{ mt: 1 }}>
+                  <Typography color="success.main" sx={{ mt: 1, fontWeight: 500 }}>
                     {status}
                   </Typography>
                 )}
@@ -179,23 +210,27 @@ export default function SupportPage({ dark }) {
 
           {/* Quick Support */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 4, borderRadius: 2 }}>
-              <Typography variant="h6">Quick Support</Typography>
-              <Typography sx={{ mt: 1 }}>
+            <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
+              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>
+                Quick Support
+              </Typography>
+              <Typography sx={{ mb: 3 }}>
                 Call us or reach via WhatsApp for urgent queries
               </Typography>
 
-              <Box sx={{ display: "flex", gap: 2, mt: 2 }}>
-                <Button startIcon={<FaPhoneAlt />} variant="contained">
+              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
+                <Button
+                  startIcon={<FaPhoneAlt />}
+                  variant="contained"
+                  color="secondary"
+                >
                   Call
                 </Button>
-
                 <Button
                   startIcon={<FaWhatsapp />}
                   variant="outlined"
-                  onClick={() =>
-                    window.open("https://wa.me/6263615262", "_blank")
-                  }
+                  color="success"
+                  onClick={() => window.open("https://wa.me/6263615262", "_blank")}
                 >
                   WhatsApp
                 </Button>
@@ -205,7 +240,7 @@ export default function SupportPage({ dark }) {
         </Grid>
       </Container>
 
-      {/* Chat Widget */}
+      {/* Optional Chat Widget */}
       {/* <ChatWidget open={widgetOpen} onClose={() => setWidgetOpen(false)} /> */}
     </Box>
   );
