@@ -5,7 +5,7 @@ import InstagramIcon from "@mui/icons-material/Instagram";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import EmailIcon from "@mui/icons-material/Email";
-import API from "../api"; // your api.js
+import API from "../api"; // Make sure api.js has baseURL
 
 export default function Footer() {
   const [email, setEmail] = useState("");
@@ -18,12 +18,12 @@ export default function Footer() {
     }
 
     try {
-      const response = await API.post("/newsletter", { email });
+      const response = await API.post("/newsletter", { email }); // Match backend
       if (response.data.success) {
         setStatus("Subscribed successfully 🎉");
         setEmail("");
       } else {
-        setStatus("Subscription failed. Try again.");
+        setStatus(response.data.message || "Subscription failed. Try again.");
       }
     } catch (err) {
       setStatus("Server error. Try again later.");
@@ -33,14 +33,7 @@ export default function Footer() {
   };
 
   return (
-    <Box
-      sx={{
-        background: "#111827",
-        color: "#fff",
-        padding: "50px 20px",
-        marginTop: "50px",
-      }}
-    >
+    <Box sx={{ background: "#111827", color: "#fff", padding: "50px 20px", marginTop: "50px" }}>
       <Box
         sx={{
           maxWidth: "1300px",
@@ -54,9 +47,8 @@ export default function Footer() {
         <Box>
           <Typography sx={{ fontSize: "26px", fontWeight: 700 }}>The IT Wallah</Typography>
           <Typography sx={{ color: "#ccc", marginTop: "10px" }}>
-            Learn • Build • Succeed  
-            <br /> Your one-stop solution for IT courses, MERN stack learning,
-            and interview preparation.
+            Learn • Build • Succeed
+            <br /> Your one-stop solution for IT courses, MERN stack learning, and interview preparation.
           </Typography>
           <Box sx={{ display: "flex", gap: 1, marginTop: 2 }}>
             <IconButton sx={{ color: "#fff" }}><FacebookIcon /></IconButton>
@@ -68,38 +60,24 @@ export default function Footer() {
 
         {/* Quick Links */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>
-            Quick Links
-          </Typography>
-          {["Home", "Courses", "About Us", "Contact", "The IT Wallah AI Tools"].map(
-            (item) => (
-              <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>
-                {item}
-              </Typography>
-            )
-          )}
+          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>Quick Links</Typography>
+          {["Home", "Courses", "About Us", "Contact", "The IT Wallah AI Tools"].map((item) => (
+            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>{item}</Typography>
+          ))}
         </Box>
 
         {/* Support */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>
-            Support
-          </Typography>
-          {["Help Center", "Privacy Policy", "Terms & Conditions", "Refund Policy", "Feedback"].map(
-            (item) => (
-              <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>
-                {item}
-              </Typography>
-            )
-          )}
+          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>Support</Typography>
+          {["Help Center", "Privacy Policy", "Terms & Conditions", "Refund Policy", "Feedback"].map((item) => (
+            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>{item}</Typography>
+          ))}
         </Box>
 
         {/* Newsletter */}
         <Box>
           <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>Newsletter</Typography>
-          <Typography sx={{ color: "#ccc", marginTop: 1 }}>
-            Subscribe for updates and new IT courses.
-          </Typography>
+          <Typography sx={{ color: "#ccc", marginTop: 1 }}>Subscribe for updates and new IT courses.</Typography>
 
           <Box sx={{ marginTop: 2 }}>
             <TextField
@@ -108,11 +86,8 @@ export default function Footer() {
               label="Enter your email"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              InputProps={{
-                style: { background: "#fff", borderRadius: "6px" },
-              }}
+              InputProps={{ style: { background: "#fff", borderRadius: "6px" } }}
             />
-
             <Button
               fullWidth
               onClick={handleSubscribe}
@@ -127,25 +102,14 @@ export default function Footer() {
             >
               Subscribe <EmailIcon sx={{ marginLeft: 1 }} />
             </Button>
-
             {status && (
-              <Typography sx={{ mt: 1, color: "success.main", fontWeight: 500 }}>
-                {status}
-              </Typography>
+              <Typography sx={{ mt: 1, color: "success.main", fontWeight: 500 }}>{status}</Typography>
             )}
           </Box>
         </Box>
       </Box>
 
-      <Typography
-        sx={{
-          marginTop: 5,
-          textAlign: "center",
-          color: "#bbb",
-          borderTop: "1px solid #333",
-          paddingTop: 3,
-        }}
-      >
+      <Typography sx={{ marginTop: 5, textAlign: "center", color: "#bbb", borderTop: "1px solid #333", paddingTop: 3 }}>
         © {new Date().getFullYear()} The IT Wallah. All Rights Reserved.
       </Typography>
     </Box>
