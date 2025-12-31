@@ -1,3 +1,15 @@
-# https://www.robotstxt.org/robotstxt.html
+# SEO Friendly Robots.txt
+# Author: Akshay Goyal
+# Website: https://your-website-url.com
+
 User-agent: *
-Disallow:
+Allow: /
+
+# Block unnecessary files (optional but recommended)
+Disallow: /node_modules/
+Disallow: /build/
+Disallow: /private/
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://your-website-url.com/sitemap.xml
