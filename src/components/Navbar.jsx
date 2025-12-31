@@ -111,7 +111,7 @@ export default function Navbar() {
             <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
               Home
             </Typography>
-            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/courses")}>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/book")}>
               Courses
             </Typography>
             <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/books")}>
