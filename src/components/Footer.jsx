@@ -18,7 +18,7 @@ export default function Footer() {
     }
 
     try {
-      const response = await API.post("/subscribe", { email });
+      const response = await API.post("/newsletter", { email });
       if (response.data.success) {
         setStatus("Subscribed successfully 🎉");
         setEmail("");
