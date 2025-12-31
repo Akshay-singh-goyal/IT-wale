@@ -1,0 +1,30 @@
+{
+  "short_name": "IT Wallah",
+  "name": "The IT Wallah | Learn MERN Stack & Full Stack Development",
+  "description": "The IT Wallah by Akshay Goyal helps you learn MERN Stack, React, Node.js, MongoDB, and Full Stack Web Development with practical projects and tutorials.",
+  "icons": [
+    {
+      "src": "favicon.ico",
+      "sizes": "16x16 32x32 48x48 64x64",
+      "type": "image/x-icon"
+    },
+    {
+      "src": "logo192.png",
+      "type": "image/png",
+      "sizes": "192x192",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "logo512.png",
+      "type": "image/png",
+      "sizes": "512x512",
+      "purpose": "any maskable"
+    }
+  ],
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "theme_color": "#0d6efd",
+  "background_color": "#ffffff"
+}
