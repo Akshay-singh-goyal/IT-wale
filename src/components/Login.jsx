@@ -26,7 +26,7 @@ const API_URL = "https://sm-backend-8me3.onrender.com/api/auth/login";
 export default function Login() {
   const navigate = useNavigate();
 
-  const [loginType, setLoginType] = useState(0); // 0=email, 1=mobile
+  const [loginType, setLoginType] = useState(0);
   const [showPass, setShowPass] = useState(false);
   const [loading, setLoading] = useState(false);
 
@@ -36,9 +36,6 @@ export default function Login() {
     password: "",
   });
 
-  // ======================
-  // LOGIN HANDLER
-  // ======================
   const handleLogin = async () => {
     const email = form.email.trim();
     const mobile = form.mobile.trim();
@@ -48,12 +45,10 @@ export default function Login() {
       toast.error("Email is required");
       return;
     }
-
     if (loginType === 1 && !mobile) {
       toast.error("Mobile number is required");
       return;
     }
-
     if (!password) {
       toast.error("Password is required");
       return;
@@ -63,37 +58,26 @@ export default function Login() {
       setLoading(true);
 
       const payload =
-        loginType === 0
-          ? { email, password }
-          : { mobile, password };
+        loginType === 0 ? { email, password } : { mobile, password };
 
       const res = await axios.post(API_URL, payload);
 
-      // ======================
-      // SAVE AUTH DATA
-      // ======================
+      // Save tokens and user
       localStorage.setItem("accessToken", res.data.accessToken);
       localStorage.setItem("refreshToken", res.data.refreshToken);
       localStorage.setItem("user", JSON.stringify(res.data.user));
 
       toast.success("Login successful!");
 
-      // ======================
-      // ROLE BASED REDIRECT
-      // ======================
-      setTimeout(() => {
-        if (res.data.user.role === "admin") {
-          navigate("/admin-dashboard");
-        } else {
-          navigate("/");
-        }
-        window.location.reload();
-      }, 1200);
+      // Role-based redirect without reload
+      if (res.data.user.role === "admin") {
+        navigate("/admin-dashboard");
+      } else {
+        navigate("/");
+      }
 
     } catch (err) {
-      toast.error(
-        err.response?.data?.message || "Invalid credentials"
-      );
+      toast.error(err.response?.data?.message || "Invalid credentials");
     } finally {
       setLoading(false);
     }
@@ -120,7 +104,6 @@ export default function Login() {
           background: "rgba(255,255,255,0.95)",
         }}
       >
-        {/* LOGO */}
         <Box textAlign="center" mb={3}>
           <img
             src="https://cdn-icons-png.flaticon.com/512/619/619153.png"
@@ -135,7 +118,6 @@ export default function Login() {
           </Typography>
         </Box>
 
-        {/* LOGIN TYPE */}
         <Tabs
           value={loginType}
           onChange={(e, val) => setLoginType(val)}
@@ -146,15 +128,12 @@ export default function Login() {
           <Tab label="Mobile Login" />
         </Tabs>
 
-        {/* EMAIL / MOBILE */}
         {loginType === 0 ? (
           <TextField
             fullWidth
             placeholder="email@example.com"
             value={form.email}
-            onChange={(e) =>
-              setForm({ ...form, email: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, email: e.target.value })}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -169,9 +148,7 @@ export default function Login() {
             fullWidth
             placeholder="9876543210"
             value={form.mobile}
-            onChange={(e) =>
-              setForm({ ...form, mobile: e.target.value })
-            }
+            onChange={(e) => setForm({ ...form, mobile: e.target.value })}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -183,15 +160,12 @@ export default function Login() {
           />
         )}
 
-        {/* PASSWORD */}
         <TextField
           fullWidth
           type={showPass ? "text" : "password"}
           placeholder="••••••••"
           value={form.password}
-          onChange={(e) =>
-            setForm({ ...form, password: e.target.value })
-          }
+          onChange={(e) => setForm({ ...form, password: e.target.value })}
           InputProps={{
             startAdornment: (
               <InputAdornment position="start">
@@ -219,7 +193,6 @@ export default function Login() {
           Forgot password?
         </Typography>
 
-        {/* LOGIN BUTTON */}
         <Button
           fullWidth
           onClick={handleLogin}
@@ -240,7 +213,6 @@ export default function Login() {
           )}
         </Button>
 
-        {/* REGISTER LINK */}
         <Typography textAlign="center" mt={2} fontSize={14}>
           Don’t have an account?{" "}
           <span
