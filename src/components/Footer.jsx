@@ -1,12 +1,36 @@
-import React from "react";
+import React, { useState } from "react";
 import { Box, Typography, TextField, Button, IconButton } from "@mui/material";
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import EmailIcon from "@mui/icons-material/Email";
+import API from "../api";
 
 export default function Footer() {
+  const [email, setEmail] = useState("");
+  const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
+
+  const subscribe = async () => {
+    if (!email) {
+      setStatus("Please enter your email");
+      return;
+    }
+
+    try {
+      setLoading(true);
+      const res = await API.post("/subscribe", { email });
+      setStatus(res.data.message);
+      setEmail("");
+      setTimeout(() => setStatus(""), 4000);
+    } catch (err) {
+      setStatus(err.response?.data?.message || "Something went wrong");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   return (
     <Box
       sx={{
@@ -27,9 +51,7 @@ export default function Footer() {
       >
         {/* Brand Info */}
         <Box>
-          <Typography sx={{ fontSize: "26px", fontWeight: 700 }}>
-          The IT Wallah
-          </Typography>
+          <Typography sx={{ fontSize: "26px", fontWeight: 700 }}>The IT Wallah</Typography>
           <Typography sx={{ color: "#ccc", marginTop: "10px" }}>
             Learn • Build • Succeed  
             <br /> Your one-stop solution for IT courses, MERN stack learning,
@@ -46,55 +68,33 @@ export default function Footer() {
 
         {/* Quick Links */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>
-            Quick Links
-          </Typography>
-
-          {["Home", "Courses", "About Us", "Contact", "The IT Wallah AI Tools"].map(
-            (item) => (
-              <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>
-                {item}
-              </Typography>
-            )
-          )}
+          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>Quick Links</Typography>
+          {["Home", "Courses", "About Us", "Contact", "The IT Wallah AI Tools"].map((item) => (
+            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>{item}</Typography>
+          ))}
         </Box>
 
         {/* Support */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>
-            Support
-          </Typography>
-
-          {[
-            "Help Center",
-            "Privacy Policy",
-            "Terms & Conditions",
-            "Refund Policy",
-            "Feedback",
-          ].map((item) => (
-            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>
-              {item}
-            </Typography>
+          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>Support</Typography>
+          {["Help Center", "Privacy Policy", "Terms & Conditions", "Refund Policy", "Feedback"].map((item) => (
+            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>{item}</Typography>
           ))}
         </Box>
 
         {/* Newsletter */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>
-            Newsletter
-          </Typography>
-          <Typography sx={{ color: "#ccc", marginTop: 1 }}>
-            Subscribe for updates and new IT courses.
-          </Typography>
+          <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>Newsletter</Typography>
+          <Typography sx={{ color: "#ccc", marginTop: 1 }}>Subscribe for updates and new IT courses.</Typography>
 
           <Box sx={{ marginTop: 2 }}>
             <TextField
               variant="filled"
               fullWidth
               label="Enter your email"
-              InputProps={{
-                style: { background: "#fff", borderRadius: "6px" },
-              }}
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              InputProps={{ style: { background: "#fff", borderRadius: "6px" } }}
             />
 
             <Button
@@ -107,9 +107,15 @@ export default function Footer() {
                 borderRadius: "8px",
                 fontWeight: 600,
               }}
+              onClick={subscribe}
+              disabled={loading}
             >
-              Subscribe <EmailIcon sx={{ marginLeft: 1 }} />
+              {loading ? "Subscribing..." : "Subscribe"} <EmailIcon sx={{ marginLeft: 1 }} />
             </Button>
+
+            {status && (
+              <Typography sx={{ color: "success.main", mt: 1 }}>{status}</Typography>
+            )}
           </Box>
         </Box>
       </Box>
