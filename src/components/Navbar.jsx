@@ -124,7 +124,7 @@ export default function Navbar() {
               About
             </Typography>
             <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/join-batch")}>
-              Join Batch
+             Batch
             </Typography>
           </Box>
         )}
@@ -167,6 +167,7 @@ export default function Navbar() {
                 <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
                 <MenuItem onClick={() => navigate("/courses")}>Courses</MenuItem>
                 <MenuItem onClick={() => navigate("/books")}>Books</MenuItem>
+                <MenuItem onClick={() => navigate("/join-batch")}>Batch</MenuItem>
                 <MenuItem onClick={() => navigate("/contact-us")}>Contact</MenuItem>
                 <MenuItem onClick={() => navigate("/about")}>About</MenuItem>
                 <Divider />
