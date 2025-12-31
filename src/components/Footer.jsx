@@ -50,7 +50,7 @@ export default function Footer() {
             Quick Links
           </Typography>
 
-          {["Home", "Courses", "About Us", "Contact", "ITWale AI Tools"].map(
+          {["Home", "Courses", "About Us", "Contact", "The IT Wallah AI Tools"].map(
             (item) => (
               <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>
                 {item}
@@ -123,7 +123,7 @@ export default function Footer() {
           paddingTop: 3,
         }}
       >
-        © {new Date().getFullYear()} ITWale. All Rights Reserved.
+        © {new Date().getFullYear()} The IT Wallah. All Rights Reserved.
       </Typography>
     </Box>
   );
