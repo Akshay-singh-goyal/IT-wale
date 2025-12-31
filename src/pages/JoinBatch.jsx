@@ -1,43 +1,35 @@
-import React, { useEffect, useState } from "react";
-import "./roadmap.css";
+import React, { useEffect, useState, useRef } from "react";
 import {
-  Box,
   Container,
   Typography,
+  Button,
   Card,
   CardContent,
-  Button,
+  Checkbox,
+  FormControlLabel,
   Dialog,
   DialogTitle,
   DialogContent,
   DialogActions,
   TextField,
-  FormControlLabel,
   Grid,
-  Paper,
-  Radio,
-  RadioGroup,
-  Checkbox,
   Stepper,
   Step,
   StepLabel,
-  useMediaQuery,
+  Paper,
+  Avatar,
+  Box,
 } from "@mui/material";
+import axios from "axios";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import axios from "axios";
-import { useNavigate } from "react-router-dom";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import jsPDF from "jspdf";
-
+import { useNavigate } from "react-router-dom";
 import qrImg from "../Images/Qr.jpeg";
-import courseImg from "../Images/banner1.jpeg";
+import bannerImg from "../Images/banner.jpeg"; // Landing image
 
-/* ================= API ================= */
 const api = axios.create({
-  baseURL:
-    process.env.REACT_APP_API_URL ||
-    "https://sm-backend-8me3.onrender.com",
+  baseURL: process.env.REACT_APP_API_URL || "http://localhost:5000",
 });
 
 api.interceptors.request.use((config) => {
@@ -46,236 +38,332 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ================= TIMELINE STEPS ================= */
-const steps = [
-  "Registration Fee Paid (₹200)",
-  "Admin Approval",
-  "Course Fee Paid (₹2000)",
-  "Seat Confirmed",
-];
-
-export default function JoinPage() {
+export default function JoinBatch() {
   const navigate = useNavigate();
-  const isMobile = useMediaQuery("(max-width:900px)");
 
-  /* ================= STATES ================= */
-  const [user, setUser] = useState(null);
+  // STATES
   const [agree, setAgree] = useState(false);
-
+  const [mode, setMode] = useState(""); // PAID | UNPAID
   const [status, setStatus] = useState("NOT_REGISTERED");
-  const [openPay200, setOpenPay200] = useState(false);
-  const [openPay2000, setOpenPay2000] = useState(false);
-
+  const [adminApproved, setAdminApproved] = useState(false);
   const [txnId, setTxnId] = useState("");
-  const [submitting, setSubmitting] = useState(false);
+  const [openRegPay, setOpenRegPay] = useState(false);
+  const [openCoursePay, setOpenCoursePay] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
-  /* ================= LOAD USER ================= */
+  const [testDate, setTestDate] = useState("");
+  const [testTime, setTestTime] = useState("");
+  const [profile, setProfile] = useState({ name: "", email: "", mobile: "" });
+  const [timer, setTimer] = useState(0);
+  const timerRef = useRef();
+
+  const steps = [
+    "NOT_REGISTERED",
+    "MODE_SELECTED",
+    "WAITING_ADMIN",
+    "ADMIN_APPROVED",
+    "SEAT_CONFIRMED",
+  ];
+
+  // AUTH CHECK
   useEffect(() => {
-    const u = localStorage.getItem("user");
-    const t = localStorage.getItem("accessToken");
-    if (!t) navigate("/login");
-    if (u) setUser(JSON.parse(u));
-  }, [navigate]);
+    const token = localStorage.getItem("accessToken");
+    if (!token) {
+      toast.error("Please login");
+      navigate("/login");
+    } else {
+      fetchStatus();
+    }
+  }, []);
 
-  /* ================= CHECK STATUS ================= */
+  // FETCH STATUS
   const fetchStatus = async () => {
     try {
-      const res = await api.get("/api/register/status/default123");
-      setStatus(res.data.status);
+      const res = await api.get("/api/register/status");
+      const data = res.data;
+      setStatus(data.status);
+      setMode(data.mode || "");
+      setAdminApproved(data.adminApproved || false);
+      setProfile({ name: data.name, email: data.email, mobile: data.mobile });
+
+      // If test slot booked, calculate countdown
+      if (data.testSlot?.date && data.testSlot?.time) {
+        const testDateTime = new Date(`${data.testSlot.date}T${data.testSlot.time}`);
+        const diff = Math.floor((testDateTime - new Date()) / 1000);
+        if (diff > 0) setTimer(diff);
+      }
     } catch (err) {
       console.error(err);
     }
   };
 
+  // TIMER EFFECT
   useEffect(() => {
-    fetchStatus();
-  }, []);
+    if (timer > 0) {
+      timerRef.current = setInterval(() => {
+        setTimer((prev) => {
+          if (prev <= 1) {
+            clearInterval(timerRef.current);
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+    }
+    return () => clearInterval(timerRef.current);
+  }, [timer]);
 
-  /* ================= PAY ₹200 ================= */
-  const payRegistrationFee = async () => {
-    if (!txnId.trim()) return toast.error("Enter transaction ID");
+  const formatTime = (seconds) => {
+    const h = Math.floor(seconds / 3600);
+    const m = Math.floor((seconds % 3600) / 60);
+    const s = seconds % 60;
+    return `${h.toString().padStart(2, "0")}:${m
+      .toString()
+      .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
+  };
 
-    setSubmitting(true);
+  // SELECT MODE
+  const selectMode = async (m) => {
+    if (!agree) return toast.error("Accept Terms & Conditions");
     try {
-      const res = await api.post("/api/register/unpaid", {
+      await api.post("/api/register/select-mode", {
         batchId: "default123",
-        transactionId: txnId,
+        mode: m,
+        termsAccepted: true,
       });
-      toast.success(res.data.message);
-      setOpenPay200(false);
-      setTxnId("");
-      fetchStatus();
+      setMode(m);
+      setStatus("MODE_SELECTED");
+      setOpenRegPay(true);
+      setShowForm(true);
+      toast.success(`${m} course selected`);
     } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed");
-    } finally {
-      setSubmitting(false);
+      toast.error(err.response?.data?.message || "Failed to select mode");
     }
   };
 
-  /* ================= PAY ₹2000 ================= */
+  // REGISTRATION PAYMENT
+  const payRegistration = async () => {
+    if (!txnId) return toast.error("Transaction ID required");
+    try {
+      await api.post("/api/register/registration-pay", {
+        batchId: "default123",
+        transactionId: txnId,
+        mode,
+        amount: mode === "PAID" ? 200 : 1200,
+      });
+      toast.success("Payment submitted. Waiting for admin approval");
+      setTxnId("");
+      setOpenRegPay(false);
+      fetchStatus();
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Payment failed");
+    }
+  };
+
+  // TEST SLOT BOOKING
+  const submitTestSlot = async () => {
+    if (!testDate || !testTime)
+      return toast.error("Select date & time");
+
+    try {
+      await api.post("/api/register/test-slot", {
+        batchId: "default123",
+        date: testDate,
+        time: testTime,
+      });
+      toast.success("Test slot booked successfully");
+      fetchStatus();
+    } catch (err) {
+      toast.error("Failed to book test slot");
+    }
+  };
+
+  // COURSE PAYMENT
   const payCourseFee = async () => {
-    if (!txnId.trim()) return toast.error("Enter transaction ID");
-
-    setSubmitting(true);
+    if (!txnId) return toast.error("Transaction ID required");
     try {
-      const res = await api.post("/api/register", {
+      await api.post("/api/register/course-pay", {
         batchId: "default123",
         transactionId: txnId,
+        amount: 2000,
       });
-      toast.success(res.data.message);
-      setOpenPay2000(false);
+      toast.success("🎉 Seat confirmed");
       setTxnId("");
+      setOpenCoursePay(false);
       fetchStatus();
     } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed");
-    } finally {
-      setSubmitting(false);
+      toast.error("Payment failed");
     }
   };
 
-  /* ================= RECEIPT PDF ================= */
+  // PDF RECEIPT
   const downloadReceipt = () => {
     const pdf = new jsPDF();
-    pdf.text("Payment Receipt", 20, 20);
-    pdf.text(`Name: ${user.name}`, 20, 40);
-    pdf.text(`Email: ${user.email}`, 20, 50);
-    pdf.text(`Batch: default123`, 20, 60);
-    pdf.text(`Status: Seat Confirmed`, 20, 70);
-    pdf.text(`Note: Registration fee is non-refundable`, 20, 90);
-    pdf.save("payment-receipt.pdf");
+    pdf.text("Seat Confirmation", 20, 20);
+    pdf.text(`Course Type: ${mode}`, 20, 40);
+    pdf.text(`Status: ${status}`, 20, 60);
+    pdf.save("seat-confirmation.pdf");
   };
-
-  const activeStep =
-    status === "NOT_REGISTERED"
-      ? 0
-      : status === "WAITING"
-      ? 1
-      : status === "APPROVED_WAITING_PAYMENT"
-      ? 2
-      : status === "SEAT_CONFIRMED"
-      ? 3
-      : 0;
 
   return (
     <Container sx={{ py: 5 }}>
       <ToastContainer position="bottom-center" />
 
-      {/* ===== COURSE IMAGE ===== */}
-      <Box textAlign="center" mb={3}>
-        <img src={courseImg} width="100" height="100" alt="course" />
+      {/* USER PROFILE TOP RIGHT */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <Avatar sx={{ mr: 1 }}>{profile.name[0]}</Avatar>
+        <Box>
+          <Typography>{profile.name}</Typography>
+          <Typography variant="caption">{profile.email}</Typography>
+        </Box>
       </Box>
 
-      {/* ===== USER INFO (TOP ON MOBILE) ===== */}
-      {isMobile && user && (
-        <Paper sx={{ p: 2, mb: 3 }}>
-          <Typography variant="h6">
-            <AccountCircleIcon /> User Info
-          </Typography>
-          <Typography>Name: {user.name}</Typography>
-          <Typography>Email: {user.email}</Typography>
-          <Typography>Mobile: {user.mobile}</Typography>
-        </Paper>
+      {/* BANNER IMAGE + ENROLL BUTTON */}
+      {!showForm && (
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <img src={bannerImg} alt="Banner" style={{ width: "100%", maxHeight: 300 }} />
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={() => setShowForm(true)}
+          >
+            Enroll Now
+          </Button>
+        </Box>
       )}
 
-      {/* ===== STATUS TIMELINE ===== */}
-      <Stepper activeStep={activeStep} alternativeLabel sx={{ mb: 4 }}>
-        {steps.map((label) => (
-          <Step key={label}>
-            <StepLabel>{label}</StepLabel>
-          </Step>
-        ))}
-      </Stepper>
+      {/* FORM & STEPPER */}
+      {showForm && (
+        <>
+          <Stepper activeStep={steps.indexOf(status)} alternativeLabel sx={{ mb: 4 }}>
+            {steps.map((s) => (
+              <Step key={s}>
+                <StepLabel>{s.replaceAll("_", " ")}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
-      <Grid container spacing={3}>
-        {/* LEFT */}
-        <Grid item xs={12} md={8}>
-          <Card>
-            <CardContent>
-              <Typography variant="h5">Course Registration</Typography>
+          <Grid container spacing={3}>
+            <Grid item xs={12} md={8}>
+              <Card>
+                <CardContent>
+                  <Typography variant="h5" sx={{ mb: 2 }}>
+                    Join Batch
+                  </Typography>
 
-              <FormControlLabel
-                sx={{ mt: 2 }}
-                control={
-                  <Checkbox
-                    checked={agree}
-                    onChange={(e) => setAgree(e.target.checked)}
+                  <FormControlLabel
+                    control={
+                      <Checkbox
+                        checked={agree}
+                        onChange={(e) => setAgree(e.target.checked)}
+                      />
+                    }
+                    label="I agree to Terms & Conditions"
                   />
-                }
-                label="I agree to Terms & Conditions"
-              />
 
-              {status === "NOT_REGISTERED" && (
-                <Button
-                  variant="contained"
-                  sx={{ mt: 3 }}
-                  onClick={() =>
-                    agree
-                      ? setOpenPay200(true)
-                      : toast.warning("Accept terms")
-                  }
-                >
-                  Pay ₹200 Registration Fee
-                </Button>
-              )}
+                  {!mode && (
+                    <Grid container spacing={2} sx={{ mt: 2 }}>
+                      <Grid item>
+                        <Button variant="contained" onClick={() => selectMode("PAID")}>
+                          Paid Course
+                        </Button>
+                      </Grid>
+                      <Grid item>
+                        <Button variant="outlined" onClick={() => selectMode("UNPAID")}>
+                          Unpaid Course
+                        </Button>
+                      </Grid>
+                    </Grid>
+                  )}
 
-              {status === "WAITING" && (
-                <Typography sx={{ mt: 3 }} color="orange">
-                  ⏳ Waiting for admin approval
-                </Typography>
-              )}
+                  {/* WAITING FOR ADMIN */}
+                 {status === "ADMIN_APPROVED" && adminApproved && mode === "UNPAID" && (
+  <Box sx={{ mt: 3 }}>
+    <Typography>Select Test Slot</Typography>
+    <TextField
+      type="date"
+      fullWidth
+      sx={{ mt: 1 }}
+      value={testDate}
+      onChange={(e) => setTestDate(e.target.value)}
+    />
+    <TextField
+      type="time"
+      fullWidth
+      sx={{ mt: 2 }}
+      value={testTime}
+      onChange={(e) => setTestTime(e.target.value)}
+    />
+    <Button sx={{ mt: 2 }} variant="contained" onClick={submitTestSlot}>
+      Submit Test Slot
+    </Button>
 
-              {status === "APPROVED_WAITING_PAYMENT" && (
-                <Button
-                  variant="contained"
-                  color="success"
-                  sx={{ mt: 3 }}
-                  onClick={() => setOpenPay2000(true)}
-                >
-                  Pay ₹2000 Course Fee
-                </Button>
-              )}
+    {timer > 0 && (
+      <Typography sx={{ mt: 2, fontWeight: "bold" }}>
+        ⏱ Test starts in: {formatTime(timer)}
+      </Typography>
+    )}
 
-              {status === "SEAT_CONFIRMED" && (
-                <>
-                  <Typography color="green" sx={{ mt: 3 }}>
-                    🎉 Seat Confirmed
-                  </Typography>
-                  <Typography color="red">
-                    Registration fee is non-refundable
-                  </Typography>
-                  <Button sx={{ mt: 2 }} onClick={downloadReceipt}>
-                    Download Receipt (PDF)
-                  </Button>
-                </>
-              )}
-            </CardContent>
-          </Card>
-        </Grid>
+    {timer === 0 && (
+      <Button
+        variant="contained"
+        color="success"
+        sx={{ mt: 2 }}
+        onClick={() => navigate("/test-page")} // replace with actual test route
+      >
+        Go to Test
+      </Button>
+    )}
+  </Box>
+)}
 
-        {/* RIGHT (DESKTOP USER INFO) */}
-        {!isMobile && (
-          <Grid item xs={12} md={4}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6">
-                <AccountCircleIcon /> User Info
-              </Typography>
-              {user && (
-                <>
-                  <Typography>Name: {user.name}</Typography>
-                  <Typography>Email: {user.email}</Typography>
-                  <Typography>Mobile: {user.mobile}</Typography>
-                </>
-              )}
-            </Paper>
+
+                  {/* PAID COURSE PAYMENT */}
+                  {status === "ADMIN_APPROVED" && mode === "PAID" && adminApproved && (
+                    <Button
+                      sx={{ mt: 3 }}
+                      variant="contained"
+                      onClick={() => setOpenCoursePay(true)}
+                    >
+                      Pay ₹2000 Course Fee
+                    </Button>
+                  )}
+
+                  {/* SEAT CONFIRMED */}
+                  {status === "SEAT_CONFIRMED" && (
+                    <Box sx={{ mt: 3 }}>
+                      <Typography sx={{ color: "green" }}>
+                        🎉 Seat Confirmed
+                      </Typography>
+                      <Button sx={{ mt: 2 }} onClick={downloadReceipt}>
+                        Download Receipt
+                      </Button>
+                    </Box>
+                  )}
+                </CardContent>
+              </Card>
+            </Grid>
+
+            {/* STATUS PANEL */}
+            <Grid item xs={12} md={4}>
+              <Paper sx={{ p: 3 }}>
+                <Typography variant="h6">Current Status</Typography>
+                <Typography>Status: {status}</Typography>
+                <Typography>Mode: {mode}</Typography>
+                <Typography>Admin Approved: {adminApproved ? "Yes" : "No"}</Typography>
+              </Paper>
+            </Grid>
           </Grid>
-        )}
-      </Grid>
+        </>
+      )}
 
-      {/* ===== PAY ₹200 ===== */}
-      <Dialog open={openPay200} onClose={() => setOpenPay200(false)}>
-        <DialogTitle>Pay ₹200 Registration Fee</DialogTitle>
-        <DialogContent>
-          <img src={qrImg} width="220" alt="qr" />
+      {/* REGISTRATION PAYMENT */}
+      <Dialog open={openRegPay} onClose={() => setOpenRegPay(false)}>
+        <DialogTitle>
+          Pay Registration Fee ₹{mode === "PAID" ? 200 : 1200}
+        </DialogTitle>
+        <DialogContent sx={{ textAlign: "center" }}>
+          <img src={qrImg} alt="QR" style={{ width: 220 }} />
           <TextField
             fullWidth
             sx={{ mt: 2 }}
@@ -285,18 +373,18 @@ export default function JoinPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenPay200(false)}>Cancel</Button>
-          <Button onClick={payRegistrationFee}>
-            {submitting ? "Submitting..." : "Submit"}
+          <Button onClick={() => setOpenRegPay(false)}>Cancel</Button>
+          <Button variant="contained" onClick={payRegistration}>
+            Submit
           </Button>
         </DialogActions>
       </Dialog>
 
-      {/* ===== PAY ₹2000 ===== */}
-      <Dialog open={openPay2000} onClose={() => setOpenPay2000(false)}>
-        <DialogTitle>Pay ₹2000 Course Fee</DialogTitle>
-        <DialogContent>
-          <img src={qrImg} width="220" alt="qr" />
+      {/* COURSE PAYMENT */}
+      <Dialog open={openCoursePay} onClose={() => setOpenCoursePay(false)}>
+        <DialogTitle>Pay Course Fee ₹2000</DialogTitle>
+        <DialogContent sx={{ textAlign: "center" }}>
+          <img src={qrImg} alt="QR" style={{ width: 220 }} />
           <TextField
             fullWidth
             sx={{ mt: 2 }}
@@ -306,9 +394,9 @@ export default function JoinPage() {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={() => setOpenPay2000(false)}>Cancel</Button>
-          <Button onClick={payCourseFee}>
-            {submitting ? "Submitting..." : "Submit"}
+          <Button onClick={() => setOpenCoursePay(false)}>Cancel</Button>
+          <Button variant="contained" onClick={payCourseFee}>
+            Submit
           </Button>
         </DialogActions>
       </Dialog>
