@@ -26,7 +26,7 @@ import "react-toastify/dist/ReactToastify.css";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
 import qrImg from "../Images/Qr.jpeg";
-import bannerImg from "../Images/banner.jpeg"; // Landing image
+import bannerImg from "../Images/banner.jpeg";
 
 const api = axios.create({
   baseURL: "https://sm-backend-8me3.onrender.com",
@@ -41,9 +41,8 @@ api.interceptors.request.use((config) => {
 export default function JoinBatch() {
   const navigate = useNavigate();
 
-  // STATES
   const [agree, setAgree] = useState(false);
-  const [mode, setMode] = useState(""); // PAID | UNPAID
+  const [mode, setMode] = useState("");
   const [status, setStatus] = useState("NOT_REGISTERED");
   const [adminApproved, setAdminApproved] = useState(false);
   const [txnId, setTxnId] = useState("");
@@ -54,8 +53,9 @@ export default function JoinBatch() {
   const [testDate, setTestDate] = useState("");
   const [testTime, setTestTime] = useState("");
   const [profile, setProfile] = useState({ name: "", email: "", mobile: "" });
+
   const [timer, setTimer] = useState(0);
-  const timerRef = useRef();
+  const timerRef = useRef(null);
 
   const steps = [
     "NOT_REGISTERED",
@@ -65,7 +65,6 @@ export default function JoinBatch() {
     "SEAT_CONFIRMED",
   ];
 
-  // AUTH CHECK
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -76,19 +75,24 @@ export default function JoinBatch() {
     }
   }, []);
 
-  // FETCH STATUS
   const fetchStatus = async () => {
     try {
       const res = await api.get("/api/register/status");
-      const data = res.data;
-      setStatus(data.status);
-      setMode(data.mode || "");
-      setAdminApproved(data.adminApproved || false);
-      setProfile({ name: data.name, email: data.email, mobile: data.mobile });
+      const data = res.data || {};
 
-      // If test slot booked, calculate countdown
+      setStatus(data.status || "NOT_REGISTERED");
+      setMode(data.mode || "");
+      setAdminApproved(Boolean(data.adminApproved));
+      setProfile({
+        name: data.name || "",
+        email: data.email || "",
+        mobile: data.mobile || "",
+      });
+
       if (data.testSlot?.date && data.testSlot?.time) {
-        const testDateTime = new Date(`${data.testSlot.date}T${data.testSlot.time}`);
+        const testDateTime = new Date(
+          `${data.testSlot.date}T${data.testSlot.time}`
+        );
         const diff = Math.floor((testDateTime - new Date()) / 1000);
         if (diff > 0) setTimer(diff);
       }
@@ -97,7 +101,6 @@ export default function JoinBatch() {
     }
   };
 
-  // TIMER EFFECT
   useEffect(() => {
     if (timer > 0) {
       timerRef.current = setInterval(() => {
@@ -122,7 +125,6 @@ export default function JoinBatch() {
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  // SELECT MODE
   const selectMode = async (m) => {
     if (!agree) return toast.error("Accept Terms & Conditions");
     try {
@@ -141,7 +143,6 @@ export default function JoinBatch() {
     }
   };
 
-  // REGISTRATION PAYMENT
   const payRegistration = async () => {
     if (!txnId) return toast.error("Transaction ID required");
     try {
@@ -151,34 +152,30 @@ export default function JoinBatch() {
         mode,
         amount: mode === "PAID" ? 200 : 1200,
       });
-      toast.success("Payment submitted. Waiting for admin approval");
+      toast.success("Payment submitted");
       setTxnId("");
       setOpenRegPay(false);
       fetchStatus();
-    } catch (err) {
-      toast.error(err.response?.data?.message || "Payment failed");
+    } catch {
+      toast.error("Payment failed");
     }
   };
 
-  // TEST SLOT BOOKING
   const submitTestSlot = async () => {
-    if (!testDate || !testTime)
-      return toast.error("Select date & time");
-
+    if (!testDate || !testTime) return toast.error("Select date & time");
     try {
       await api.post("/api/register/test-slot", {
         batchId: "default123",
         date: testDate,
         time: testTime,
       });
-      toast.success("Test slot booked successfully");
+      toast.success("Test slot booked");
       fetchStatus();
-    } catch (err) {
+    } catch {
       toast.error("Failed to book test slot");
     }
   };
 
-  // COURSE PAYMENT
   const payCourseFee = async () => {
     if (!txnId) return toast.error("Transaction ID required");
     try {
@@ -187,16 +184,15 @@ export default function JoinBatch() {
         transactionId: txnId,
         amount: 2000,
       });
-      toast.success("🎉 Seat confirmed");
+      toast.success("Seat confirmed");
       setTxnId("");
       setOpenCoursePay(false);
       fetchStatus();
-    } catch (err) {
+    } catch {
       toast.error("Payment failed");
     }
   };
 
-  // PDF RECEIPT
   const downloadReceipt = () => {
     const pdf = new jsPDF();
     pdf.text("Seat Confirmation", 20, 20);
@@ -209,33 +205,33 @@ export default function JoinBatch() {
     <Container sx={{ py: 5 }}>
       <ToastContainer position="bottom-center" />
 
-      {/* USER PROFILE TOP RIGHT */}
+      {/* PROFILE */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-        <Avatar sx={{ mr: 1 }}>{profile.name[0]}</Avatar>
+        <Avatar sx={{ mr: 1 }}>
+          {profile?.name?.[0]?.toUpperCase() || "U"}
+        </Avatar>
         <Box>
-          <Typography>{profile.name}</Typography>
+          <Typography>{profile.name || "User"}</Typography>
           <Typography variant="caption">{profile.email}</Typography>
         </Box>
       </Box>
 
-      {/* BANNER IMAGE + ENROLL BUTTON */}
       {!showForm && (
         <Box sx={{ textAlign: "center", mb: 4 }}>
-          <img src={bannerImg} alt="Banner" style={{ width: "100%", maxHeight: 300 }} />
-          <Button
-            variant="contained"
-            sx={{ mt: 2 }}
-            onClick={() => setShowForm(true)}
-          >
+          <img src={bannerImg} alt="Banner" style={{ width: "100%" }} />
+          <Button variant="contained" sx={{ mt: 2 }} onClick={() => setShowForm(true)}>
             Enroll Now
           </Button>
         </Box>
       )}
 
-      {/* FORM & STEPPER */}
       {showForm && (
         <>
-          <Stepper activeStep={steps.indexOf(status)} alternativeLabel sx={{ mb: 4 }}>
+          <Stepper
+            activeStep={Math.max(steps.indexOf(status), 0)}
+            alternativeLabel
+            sx={{ mb: 4 }}
+          >
             {steps.map((s) => (
               <Step key={s}>
                 <StepLabel>{s.replaceAll("_", " ")}</StepLabel>
