@@ -128,7 +128,7 @@ export default function Login() {
             alt="logo"
           />
           <Typography fontSize="26px" fontWeight={700} mt={1}>
-            ITWale ✨
+            The IT Wallah ✨
           </Typography>
           <Typography fontSize="14px" color="gray">
             Login to your account
