@@ -122,7 +122,7 @@ export default function Register() {
             alt="logo"
           />
           <Typography fontSize={26} fontWeight={700} mt={1}>
-            ITWale ✨
+            The IT Wallah ✨
           </Typography>
           <Typography variant="body2" sx={{ opacity: 0.8 }}>
             Create your learning account
