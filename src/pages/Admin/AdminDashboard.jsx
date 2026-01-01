@@ -13,10 +13,17 @@ import {
   Divider,
   CircularProgress,
 } from "@mui/material";
-import { AdminPanelSettings, Dashboard as DashboardIcon, Logout } from "@mui/icons-material";
-import axios from "axios";
+import {
+  AdminPanelSettings,
+  Dashboard as DashboardIcon,
+  People,
+  MailOutline,
+  ContactMail,
+  Logout,
+} from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 import { Bar } from "react-chartjs-2";
+import axios from "axios";
 import {
   Chart as ChartJS,
   CategoryScale,
@@ -35,6 +42,7 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({ users: 0, registrations: 0, subscribers: 0, admins: 0 });
+  const [activeSection, setActiveSection] = useState("dashboard"); // Which section is active
 
   /* ============ AUTH CHECK ============ */
   useEffect(() => {
@@ -103,6 +111,48 @@ const AdminDashboard = () => {
     );
   }
 
+  /* ============ MAIN CONTENT COMPONENTS ============ */
+  const renderSection = () => {
+    switch (activeSection) {
+      case "dashboard":
+        return (
+          <>
+            <Typography variant="h4" fontWeight="bold" mb={3}>
+              Admin Dashboard Overview
+            </Typography>
+            <Grid container spacing={3}>
+              {["Users", "Registrations", "Subscribers", "Admins"].map((title, idx) => (
+                <Grid item xs={12} md={3} key={idx}>
+                  <Paper sx={{ p: 3, textAlign: "center", bgcolor: "#fff" }}>
+                    <Typography variant="h6">{title}</Typography>
+                    <Typography variant="h4" fontWeight="bold" mt={1}>
+                      {Object.values(stats)[idx]}
+                    </Typography>
+                  </Paper>
+                </Grid>
+              ))}
+              <Grid item xs={12}>
+                <Paper sx={{ p: 3 }}>
+                  <Typography variant="h6" mb={2}>
+                    Activity Graph
+                  </Typography>
+                  <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+                </Paper>
+              </Grid>
+            </Grid>
+          </>
+        );
+      case "users":
+        return <Typography variant="h5">Users Management Page (Will load user data here)</Typography>;
+      case "newsletter":
+        return <Typography variant="h5">Newsletter Page (Will load newsletter data here)</Typography>;
+      case "contact":
+        return <Typography variant="h5">Contact / Messages Page (Will load messages here)</Typography>;
+      default:
+        return <Typography variant="h5">Section Coming Soon</Typography>;
+    }
+  };
+
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f4f6f8" }}>
       {/* SIDEBAR */}
@@ -120,11 +170,29 @@ const AdminDashboard = () => {
         </Box>
         <Divider />
         <List>
-          <ListItemButton selected onClick={() => {}}>
+          <ListItemButton selected={activeSection === "dashboard"} onClick={() => setActiveSection("dashboard")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <DashboardIcon />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
+          </ListItemButton>
+          <ListItemButton selected={activeSection === "users"} onClick={() => setActiveSection("users")}>
+            <ListItemIcon sx={{ color: "#fff" }}>
+              <People />
+            </ListItemIcon>
+            <ListItemText primary="Users" />
+          </ListItemButton>
+          <ListItemButton selected={activeSection === "newsletter"} onClick={() => setActiveSection("newsletter")}>
+            <ListItemIcon sx={{ color: "#fff" }}>
+              <MailOutline />
+            </ListItemIcon>
+            <ListItemText primary="Newsletter" />
+          </ListItemButton>
+          <ListItemButton selected={activeSection === "contact"} onClick={() => setActiveSection("contact")}>
+            <ListItemIcon sx={{ color: "#fff" }}>
+              <ContactMail />
+            </ListItemIcon>
+            <ListItemText primary="Contact" />
           </ListItemButton>
           <ListItemButton onClick={logout}>
             <ListItemIcon sx={{ color: "#fff" }}>
@@ -136,31 +204,7 @@ const AdminDashboard = () => {
       </Drawer>
 
       {/* MAIN CONTENT */}
-      <Box sx={{ flexGrow: 1, p: 4 }}>
-        <Typography variant="h4" fontWeight="bold" mb={3}>
-          Admin Dashboard Overview
-        </Typography>
-        <Grid container spacing={3}>
-          {["Users", "Registrations", "Subscribers", "Admins"].map((title, idx) => (
-            <Grid item xs={12} md={3} key={idx}>
-              <Paper sx={{ p: 3, textAlign: "center", bgcolor: "#fff" }}>
-                <Typography variant="h6">{title}</Typography>
-                <Typography variant="h4" fontWeight="bold" mt={1}>
-                  {Object.values(stats)[idx]}
-                </Typography>
-              </Paper>
-            </Grid>
-          ))}
-          <Grid item xs={12}>
-            <Paper sx={{ p: 3 }}>
-              <Typography variant="h6" mb={2}>
-                Activity Graph
-              </Typography>
-              <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
+      <Box sx={{ flexGrow: 1, p: 4 }}>{renderSection()}</Box>
     </Box>
   );
 };
