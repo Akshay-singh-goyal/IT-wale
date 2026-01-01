@@ -69,7 +69,7 @@ export default function Login() {
 
       // ✅ Role-based redirect
       if (res.data.user.role === "admin") {
-        navigate("/admin/dashboard"); // Corrected path
+        navigate("/admin/admin-dashboard"); // Corrected path
       } else {
         navigate("/");
       }
