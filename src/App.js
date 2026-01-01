@@ -39,7 +39,7 @@ export default function App() {
           <Route path="/register" element={<Register />} />
 
           {/* ===== ADMIN ROUTES ===== */}
-          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/admin-dashboard" element={<AdminDashboard />} />
           <Route path="/admin/registrations" element={<AdminRegistrations />} />
 
           {/* ===== CATCH ALL ROUTE ===== */}
