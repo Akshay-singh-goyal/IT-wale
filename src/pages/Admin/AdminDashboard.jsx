@@ -19,6 +19,7 @@ import {
   People,
   MailOutline,
   HowToReg,
+  Dashboard as DashboardIcon,
   Logout,
 } from "@mui/icons-material";
 import axios from "axios";
@@ -49,13 +50,13 @@ const AdminDashboard = () => {
     admins: 0,
   });
 
-  /* ================= AUTH CHECK ================= */
+  /* ============ AUTH CHECK ============ */
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
     if (!user || user.role !== "admin") navigate("/login");
   }, [navigate]);
 
-  /* ================= FETCH STATS ================= */
+  /* ============ FETCH STATS ============ */
   const fetchStats = async () => {
     try {
       setLoading(true);
@@ -96,7 +97,7 @@ const AdminDashboard = () => {
     navigate("/login");
   };
 
-  /* ================= CHART DATA ================= */
+  /* ============ CHART DATA ============ */
   const chartData = {
     labels: ["Users", "Registrations", "Subscribers", "Admins"],
     datasets: [
@@ -118,7 +119,7 @@ const AdminDashboard = () => {
 
   return (
     <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f4f6f8" }}>
-      {/* ================= SIDEBAR ================= */}
+      {/* SIDEBAR */}
       <Drawer
         variant="permanent"
         sx={{
@@ -131,52 +132,34 @@ const AdminDashboard = () => {
         }}
       >
         <Box sx={{ p: 2 }}>
-          <Typography
-            variant="h6"
-            fontWeight="bold"
-            display="flex"
-            alignItems="center"
-            gap={1}
-          >
+          <Typography variant="h6" fontWeight="bold" display="flex" alignItems="center" gap={1}>
             <AdminPanelSettings /> Admin Panel
           </Typography>
         </Box>
         <Divider />
         <List>
-          <ListItemButton
-            selected={view === "dashboard"}
-            onClick={() => setView("dashboard")}
-          >
+          <ListItemButton selected={view === "dashboard"} onClick={() => setView("dashboard")}>
             <ListItemIcon sx={{ color: "#fff" }}>
-              <People />
+              <DashboardIcon />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
 
-          <ListItemButton
-            selected={view === "users"}
-            onClick={() => setView("users")}
-          >
+          <ListItemButton selected={view === "users"} onClick={() => setView("users")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <People />
             </ListItemIcon>
             <ListItemText primary="Users" />
           </ListItemButton>
 
-          <ListItemButton
-            selected={view === "newsletter"}
-            onClick={() => setView("newsletter")}
-          >
+          <ListItemButton selected={view === "newsletter"} onClick={() => setView("newsletter")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <MailOutline />
             </ListItemIcon>
             <ListItemText primary="Newsletter" />
           </ListItemButton>
 
-          <ListItemButton
-            selected={view === "subscribers"}
-            onClick={() => setView("subscribers")}
-          >
+          <ListItemButton selected={view === "subscribers"} onClick={() => setView("subscribers")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <HowToReg />
             </ListItemIcon>
@@ -192,7 +175,7 @@ const AdminDashboard = () => {
         </List>
       </Drawer>
 
-      {/* ================= MAIN CONTENT ================= */}
+      {/* MAIN CONTENT */}
       <Box sx={{ flexGrow: 1, p: 4 }}>
         {view === "dashboard" && (
           <>
@@ -205,13 +188,7 @@ const AdminDashboard = () => {
                   <Typography variant="h6" mb={2}>
                     Users & Activity Graph
                   </Typography>
-                  <Bar
-                    data={chartData}
-                    options={{
-                      responsive: true,
-                      plugins: { legend: { display: false } },
-                    }}
-                  />
+                  <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
                 </Paper>
               </Grid>
               <Grid item xs={12} md={6}>
