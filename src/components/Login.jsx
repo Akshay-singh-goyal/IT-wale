@@ -1,3 +1,4 @@
+// src/components/Login.jsx
 import React, { useState } from "react";
 import {
   Box,
@@ -66,13 +67,12 @@ export default function Login() {
 
       toast.success("Login successful!");
 
-      // ✅ Role-based redirect WITHOUT reloading page
+      // ✅ Role-based redirect
       if (res.data.user.role === "admin") {
-        navigate("/admin-dashboard");
+        navigate("/admin/dashboard"); // Corrected path
       } else {
         navigate("/");
       }
-
     } catch (err) {
       toast.error(err.response?.data?.message || "Invalid credentials");
     } finally {
