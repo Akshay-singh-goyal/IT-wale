@@ -2,7 +2,7 @@
 import axios from "axios";
 
 const API = axios.create({
-  baseURL: "http://localhost:5000/admin",
+  baseURL: "https://sm-backend-8me3.onrender.com/admin",
 });
 
 export const getRegistrations = () => API.get("/registrations");
