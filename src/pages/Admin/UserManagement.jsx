@@ -4,7 +4,6 @@ import {
   Box,
   Typography,
   Paper,
-  Grid,
   CircularProgress,
   Table,
   TableBody,
@@ -16,11 +15,15 @@ import {
   Tooltip,
   Collapse,
   Stack,
-  Button,
+  FormControl,
   Select,
   MenuItem,
-  FormControl,
   TablePagination,
+  Button,
+  Dialog,
+  DialogTitle,
+  DialogContent,
+  Grid,
 } from "@mui/material";
 import {
   Block,
@@ -28,6 +31,7 @@ import {
   Delete,
   ExpandMore,
   ExpandLess,
+  Visibility,
 } from "@mui/icons-material";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -40,6 +44,7 @@ const UserManagement = () => {
   const [loading, setLoading] = useState(true);
   const [actionLoading, setActionLoading] = useState(false);
   const [expandedRows, setExpandedRows] = useState([]);
+  const [selectedUser, setSelectedUser] = useState(null);
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(10);
 
@@ -132,10 +137,13 @@ const UserManagement = () => {
     );
   };
 
-  /* ===== Pagination ===== */
-  const handleChangePage = (event, newPage) => {
-    setPage(newPage);
+  const openDetailModal = (user) => {
+    setSelectedUser(user);
   };
+  const closeDetailModal = () => setSelectedUser(null);
+
+  /* ===== Pagination ===== */
+  const handleChangePage = (event, newPage) => setPage(newPage);
   const handleChangeRowsPerPage = (event) => {
     setRowsPerPage(+event.target.value);
     setPage(0);
@@ -150,9 +158,17 @@ const UserManagement = () => {
 
   return (
     <Box sx={{ p: 3 }}>
-      <Typography variant="h4" mb={3}>
+      {/* Top Stats */}
+      <Typography variant="h4" mb={2}>
         User Management
       </Typography>
+      <Paper sx={{ p: 2, mb: 3, bgcolor: "#e3f2fd" }}>
+        <Typography variant="h6">
+          Total Users: {users.length}
+        </Typography>
+      </Paper>
+
+      {/* Users Table */}
       <Paper>
         <TableContainer>
           <Table>
@@ -218,10 +234,15 @@ const UserManagement = () => {
                             <Delete />
                           </IconButton>
                         </Tooltip>
+                        <Tooltip title="View Details">
+                          <IconButton onClick={() => openDetailModal(user)}>
+                            <Visibility />
+                          </IconButton>
+                        </Tooltip>
                       </TableCell>
                     </TableRow>
 
-                    {/* Expanded Row for Full Details */}
+                    {/* Expanded Row for quick info */}
                     <TableRow>
                       <TableCell colSpan={7} sx={{ p: 0, borderBottom: "1px solid #eee" }}>
                         <Collapse
@@ -230,69 +251,17 @@ const UserManagement = () => {
                           unmountOnExit
                         >
                           <Box sx={{ p: 2, bgcolor: "#f9f9f9" }}>
-                            <Grid container spacing={2}>
-                              <Grid item xs={12} md={4}>
-                                <Stack spacing={1}>
-                                  <Typography variant="subtitle2">Avatar:</Typography>
-                                  <img
-                                    src={user.avatar}
-                                    alt="avatar"
-                                    width={100}
-                                    style={{ borderRadius: "50%" }}
-                                  />
-                                </Stack>
-                              </Grid>
-                              <Grid item xs={12} md={4}>
-                                <Stack spacing={1}>
-                                  <Typography variant="subtitle2">Completed Courses:</Typography>
-                                  <Typography>{user.completedCourses.length}</Typography>
-
-                                  <Typography variant="subtitle2">Purchased Books:</Typography>
-                                  <Typography>{user.purchasedBooks.length}</Typography>
-
-                                  <Typography variant="subtitle2">Payment History:</Typography>
-                                  <Typography>{user.paymentHistory.length}</Typography>
-                                </Stack>
-                              </Grid>
-                              <Grid item xs={12} md={4}>
-                                <Stack spacing={1}>
-                                  <Typography variant="subtitle2">Download History:</Typography>
-                                  {user.downloadHistory.map((d, idx) => (
-                                    <Typography key={idx}>
-                                      {d.title} ({new Date(d.date).toLocaleDateString()})
-                                    </Typography>
-                                  ))}
-
-                                  <Typography variant="subtitle2">Saved Notes:</Typography>
-                                  {user.savedNotes.map((note, idx) => (
-                                    <Typography key={idx}>
-                                      {note.title} - <a href={note.url}>Link</a>
-                                    </Typography>
-                                  ))}
-
-                                  <Typography variant="subtitle2">Wishlist:</Typography>
-                                  <Typography>{user.wishlist.length} items</Typography>
-                                </Stack>
-                              </Grid>
-                              <Grid item xs={12}>
-                                <Stack spacing={1}>
-                                  <Typography variant="subtitle2">Settings:</Typography>
-                                  <Typography>
-                                    Notifications: {user.settings.notifications ? "On" : "Off"}, Dark
-                                    Mode: {user.settings.darkMode ? "On" : "Off"}
-                                  </Typography>
-
-                                  <Typography variant="subtitle2">
-                                    Last Login:
-                                  </Typography>
-                                  <Typography>
-                                    {user.lastLogin
-                                      ? new Date(user.lastLogin).toLocaleString()
-                                      : "-"}
-                                  </Typography>
-                                </Stack>
-                              </Grid>
-                            </Grid>
+                            <Typography variant="subtitle2">Quick Info:</Typography>
+                            <Stack spacing={1}>
+                              <Typography>Email: {user.email}</Typography>
+                              <Typography>Mobile: {user.mobile || "-"}</Typography>
+                              <Typography>
+                                Completed Courses: {user.completedCourses.length}
+                              </Typography>
+                              <Typography>
+                                Purchased Books: {user.purchasedBooks.length}
+                              </Typography>
+                            </Stack>
                           </Box>
                         </Collapse>
                       </TableCell>
@@ -312,6 +281,60 @@ const UserManagement = () => {
           rowsPerPageOptions={[5, 10, 20]}
         />
       </Paper>
+
+      {/* Modal for full user details */}
+      <Dialog
+        open={Boolean(selectedUser)}
+        onClose={closeDetailModal}
+        maxWidth="md"
+        fullWidth
+      >
+        <DialogTitle>User Details</DialogTitle>
+        <DialogContent dividers>
+          {selectedUser && (
+            <Grid container spacing={2}>
+              <Grid item xs={12} md={4}>
+                <img
+                  src={selectedUser.avatar}
+                  alt="avatar"
+                  width={120}
+                  style={{ borderRadius: "50%" }}
+                />
+              </Grid>
+              <Grid item xs={12} md={8}>
+                <Stack spacing={1}>
+                  <Typography><b>Name:</b> {selectedUser.name}</Typography>
+                  <Typography><b>Email:</b> {selectedUser.email}</Typography>
+                  <Typography><b>Mobile:</b> {selectedUser.mobile || "-"}</Typography>
+                  <Typography><b>Role:</b> {selectedUser.role}</Typography>
+                  <Typography><b>Status:</b> {selectedUser.isBlocked ? "Blocked" : "Active"}</Typography>
+                  <Typography><b>Completed Courses:</b> {selectedUser.completedCourses.length}</Typography>
+                  <Typography><b>Purchased Books:</b> {selectedUser.purchasedBooks.length}</Typography>
+                  <Typography><b>Payment History:</b> {selectedUser.paymentHistory.length}</Typography>
+                  <Typography><b>Download History:</b></Typography>
+                  {selectedUser.downloadHistory.map((d, idx) => (
+                    <Typography key={idx}>
+                      {d.title} ({new Date(d.date).toLocaleDateString()})
+                    </Typography>
+                  ))}
+                  <Typography><b>Saved Notes:</b></Typography>
+                  {selectedUser.savedNotes.map((note, idx) => (
+                    <Typography key={idx}>
+                      {note.title} - <a href={note.url}>Link</a>
+                    </Typography>
+                  ))}
+                  <Typography><b>Wishlist:</b> {selectedUser.wishlist.length} items</Typography>
+                  <Typography><b>Settings:</b> Notifications: {selectedUser.settings.notifications ? "On" : "Off"}, Dark Mode: {selectedUser.settings.darkMode ? "On" : "Off"}</Typography>
+                  <Typography><b>Last Login:</b> {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "-"}</Typography>
+                </Stack>
+              </Grid>
+            </Grid>
+          )}
+        </DialogContent>
+        <Box sx={{ display: "flex", justifyContent: "flex-end", p: 2 }}>
+          <Button onClick={closeDetailModal} variant="contained">Close</Button>
+        </Box>
+      </Dialog>
     </Box>
   );
 };
