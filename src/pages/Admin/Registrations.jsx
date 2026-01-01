@@ -1,56 +1,69 @@
-// src/pages/Admin/Registrations.jsx
-import { useEffect, useState } from "react";
-import axios from "axios";
+// pages/AdminRegistrations.jsx
+import React, { useEffect, useState } from "react";
 import {
-  Table, TableBody, TableCell, TableHead, TableRow, Button
-} from "@mui/material";
+  getRegistrations,
+  approveRegistration,
+  confirmSeat,
+} from "../services/adminApi";
 
-const API = "https://sm-backend-8me3.onrender.com/api";
-
-export default function RegistrationsAdmin() {
+const AdminRegistrations = () => {
   const [data, setData] = useState([]);
-  const token = localStorage.getItem("accessToken");
 
-  const load = async () => {
-    const res = await axios.get(`${API}/admin/registrations`, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    setData(res.data.registrations);
+  const fetchData = async () => {
+    const res = await getRegistrations();
+    setData(res.data);
   };
 
-  useEffect(() => { load(); }, []);
-
-  const approve = async (id) => {
-    await axios.put(`${API}/admin/registrations/approve/${id}`, {}, {
-      headers: { Authorization: `Bearer ${token}` },
-    });
-    load();
-  };
+  useEffect(() => {
+    fetchData();
+  }, []);
 
   return (
-    <Table>
-      <TableHead>
-        <TableRow>
-          <TableCell>Name</TableCell>
-          <TableCell>Status</TableCell>
-          <TableCell>Approved</TableCell>
-          <TableCell>Action</TableCell>
-        </TableRow>
-      </TableHead>
-      <TableBody>
-        {data.map(r => (
-          <TableRow key={r._id}>
-            <TableCell>{r.name}</TableCell>
-            <TableCell>{r.status}</TableCell>
-            <TableCell>{r.adminApproved ? "Yes" : "No"}</TableCell>
-            <TableCell>
-              {!r.adminApproved && (
-                <Button onClick={() => approve(r._id)}>Approve</Button>
-              )}
-            </TableCell>
-          </TableRow>
-        ))}
-      </TableBody>
-    </Table>
+    <div style={{ padding: "20px" }}>
+      <h2>Admin Registration Panel</h2>
+
+      <table border="1" width="100%" cellPadding="10">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Email</th>
+            <th>Mobile</th>
+            <th>Mode</th>
+            <th>Status</th>
+            <th>Batch</th>
+            <th>Admin Action</th>
+          </tr>
+        </thead>
+
+        <tbody>
+          {data.map((reg) => (
+            <tr key={reg._id}>
+              <td>{reg.name}</td>
+              <td>{reg.email}</td>
+              <td>{reg.mobile}</td>
+              <td>{reg.mode}</td>
+              <td>{reg.status}</td>
+              <td>{reg.batchId}</td>
+
+              <td>
+                {!reg.adminApproved && (
+                  <button onClick={() => approveRegistration(reg._id)}>
+                    Approve
+                  </button>
+                )}
+
+                {reg.status === "ADMIN_APPROVED" && (
+                  <button onClick={() => confirmSeat(reg._id)}>
+                    Confirm Seat
+                  </button>
+                )}
+              </td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
   );
-}
+};
+
+export default AdminRegistrations;
