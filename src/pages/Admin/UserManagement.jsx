@@ -87,7 +87,7 @@ const UserManagement = () => {
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" fontWeight={700} gutterBottom color="primary.dark">
-        User Management
+        User Details
       </Typography>
 
       <Paper
