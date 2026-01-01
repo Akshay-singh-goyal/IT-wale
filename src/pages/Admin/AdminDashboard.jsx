@@ -22,6 +22,8 @@ import { useNavigate } from "react-router-dom";
 
 /* ===== Dashboard Section ===== */
 import DashboardHome from "./DashboardHome";
+import UserManagement from "./UserManagement";
+import UserManagement from "./Registration";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -47,10 +49,10 @@ const AdminDashboard = () => {
         return <DashboardHome />;
 
       case "users":
-        return <Typography variant="h5">Users Management (Coming Soon)</Typography>;
+        return <Typography variant="h5">  <UsersManagement/></Typography>;
 
       case "newsletter":
-        return <Typography variant="h5">Newsletter Management (Coming Soon)</Typography>;
+        return <Typography variant="h5"><Registrations/></Typography>;
 
       case "contact":
         return <Typography variant="h5">Contact Messages (Coming Soon)</Typography>;
