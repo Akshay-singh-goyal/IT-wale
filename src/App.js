@@ -1,5 +1,6 @@
+// src/App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 
 /* ===== LAYOUT COMPONENTS ===== */
@@ -12,11 +13,27 @@ import About from "./pages/About";
 import Contact from "./pages/Contact";
 import JoinBatch from "./pages/JoinBatch";
 import CourseDetail from "./pages/CourseDetail";
-import AdminDashboard from "./pages/AdminDashboard";
+
+/* ===== ADMIN PAGES ===== */
+import AdminDashboard from "./pages/Admin/AdminDashboard";
+import AdminRegistrations from "./pages/Admin/AdminRegistrations";
 
 /* ===== AUTH COMPONENTS ===== */
 import Login from "./components/Login";
 import Register from "./components/Register";
+
+/* ===== ADMIN ROUTE PROTECTION ===== */
+const AdminRoute = ({ children }) => {
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    if (!user || user.role !== "admin") {
+      return <Navigate to="/login" replace />;
+    }
+    return children;
+  } catch (err) {
+    return <Navigate to="/login" replace />;
+  }
+};
 
 export default function App() {
   return (
@@ -35,7 +52,25 @@ export default function App() {
           <Route path="/register" element={<Register />} />
 
           {/* ===== ADMIN ROUTES ===== */}
-          <Route path="/admin-dashboard" element={<AdminDashboard />} />
+          <Route
+            path="/admin/dashboard"
+            element={
+              <AdminRoute>
+                <AdminDashboard />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/registrations"
+            element={
+              <AdminRoute>
+                <AdminRegistrations />
+              </AdminRoute>
+            }
+          />
+
+          {/* ===== CATCH ALL ===== */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
 
         <Footer />
