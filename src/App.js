@@ -39,18 +39,13 @@ export default function App() {
           <Route path="/register" element={<Register />} />
 
           {/* ===== ADMIN ROUTES ===== */}
-          <Route
-            path="/admin/dashboard"
-            element={  <AdminDashboard />
-            }
-          />
-          <Route
-            path="/admin/registrations"
-            element={
- <AdminRegistrations />
-            }
-          />
-              </Route>
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin/registrations" element={<AdminRegistrations />} />
+
+          {/* ===== CATCH ALL ROUTE ===== */}
+          <Route path="*" element={<Navigate to="/" replace />} />
+        </Routes>
+
         <Footer />
       </Router>
     </HelmetProvider>
