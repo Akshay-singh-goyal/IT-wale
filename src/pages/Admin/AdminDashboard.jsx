@@ -22,60 +22,73 @@ import {
   Logout,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
-import { Bar } from "react-chartjs-2";
 import axios from "axios";
+import { Bar } from "react-chartjs-2";
 import {
   Chart as ChartJS,
   CategoryScale,
   LinearScale,
   BarElement,
-  Title,
-  Tooltip as ChartTooltip,
+  Tooltip,
   Legend,
 } from "chart.js";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, ChartTooltip, Legend);
+ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const API_BASE = "https://sm-backend-8me3.onrender.com/api";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
-  const [stats, setStats] = useState({ users: 0, registrations: 0, subscribers: 0, admins: 0 });
-  const [activeSection, setActiveSection] = useState("dashboard"); // Which section is active
 
-  /* ============ AUTH CHECK ============ */
+  const [loading, setLoading] = useState(true);
+  const [activeSection, setActiveSection] = useState("dashboard");
+
+  const [stats, setStats] = useState({
+    users: 0,
+    registrations: 0,
+    subscribers: 0,
+    admins: 0,
+  });
+
+  /* ================= AUTH CHECK ================= */
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || user.role !== "admin") navigate("/login");
+    if (!user || user.role !== "admin") {
+      navigate("/login");
+    }
   }, [navigate]);
 
-  /* ============ FETCH STATS ============ */
+  /* ================= FETCH DASHBOARD STATS ================= */
   const fetchStats = async () => {
     try {
       setLoading(true);
       const token = localStorage.getItem("accessToken");
 
+      const headers = {
+        Authorization: `Bearer ${token}`,
+      };
+
       const [usersRes, regRes, newsletterRes, adminRes] = await Promise.all([
-        axios.get(`${API_BASE}/admin/users`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_BASE}/admin/registrations`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_BASE}/admin/newsletter`, { headers: { Authorization: `Bearer ${token}` } }),
-        axios.get(`${API_BASE}/admin/admins`, { headers: { Authorization: `Bearer ${token}` } }),
+        axios.get(`${API_BASE}/admin/users`, { headers }),
+        axios.get(`${API_BASE}/admin/registrations`, { headers }),
+        axios.get(`${API_BASE}/admin/newsletter`, { headers }),
+        axios.get(`${API_BASE}/admin/admins`, { headers }),
       ]);
 
       setStats({
-        users: usersRes.data.length,
-        registrations: regRes.data.length,
-        subscribers: newsletterRes.data.length,
-        admins: adminRes.data.length,
+        users: usersRes.data?.users?.length || 0,
+        registrations: regRes.data?.registrations?.length || 0,
+        subscribers: newsletterRes.data?.subscribers?.length || 0,
+        admins: adminRes.data?.admins?.length || 0,
       });
-    } catch (err) {
-      console.error(err);
-      if (err.response?.status === 401 || err.response?.status === 403) {
+    } catch (error) {
+      console.error("Dashboard Error:", error);
+
+      if (error.response?.status === 401 || error.response?.status === 403) {
         localStorage.clear();
         navigate("/login");
       } else {
-        alert("Server error while fetching stats");
+        alert("Server error while loading dashboard data");
       }
     } finally {
       setLoading(false);
@@ -91,14 +104,18 @@ const AdminDashboard = () => {
     navigate("/login");
   };
 
-  /* ============ CHART DATA ============ */
+  /* ================= CHART DATA ================= */
   const chartData = {
     labels: ["Users", "Registrations", "Subscribers", "Admins"],
     datasets: [
       {
-        label: "Count",
-        data: [stats.users, stats.registrations, stats.subscribers, stats.admins],
-        backgroundColor: ["#1976d2", "#0d47a1", "#42a5f5", "#1e88e5"],
+        data: [
+          stats.users,
+          stats.registrations,
+          stats.subscribers,
+          stats.admins,
+        ],
+        backgroundColor: ["#1976d2", "#0288d1", "#26c6da", "#2e7d32"],
       },
     ],
   };
@@ -111,45 +128,56 @@ const AdminDashboard = () => {
     );
   }
 
-  /* ============ MAIN CONTENT COMPONENTS ============ */
+  /* ================= MAIN CONTENT ================= */
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
         return (
           <>
             <Typography variant="h4" fontWeight="bold" mb={3}>
-              Admin Dashboard Overview
+              Admin Dashboard
             </Typography>
+
             <Grid container spacing={3}>
-              {["Users", "Registrations", "Subscribers", "Admins"].map((title, idx) => (
-                <Grid item xs={12} md={3} key={idx}>
-                  <Paper sx={{ p: 3, textAlign: "center", bgcolor: "#fff" }}>
-                    <Typography variant="h6">{title}</Typography>
-                    <Typography variant="h4" fontWeight="bold" mt={1}>
-                      {Object.values(stats)[idx]}
+              {Object.entries(stats).map(([key, value]) => (
+                <Grid item xs={12} md={3} key={key}>
+                  <Paper sx={{ p: 3, textAlign: "center" }}>
+                    <Typography variant="subtitle1" sx={{ textTransform: "capitalize" }}>
+                      {key}
+                    </Typography>
+                    <Typography variant="h4" fontWeight="bold">
+                      {value}
                     </Typography>
                   </Paper>
                 </Grid>
               ))}
+
               <Grid item xs={12}>
                 <Paper sx={{ p: 3 }}>
                   <Typography variant="h6" mb={2}>
-                    Activity Graph
+                    Platform Overview
                   </Typography>
-                  <Bar data={chartData} options={{ responsive: true, plugins: { legend: { display: false } } }} />
+                  <Bar
+                    data={chartData}
+                    options={{ responsive: true, plugins: { legend: { display: false } } }}
+                  />
                 </Paper>
               </Grid>
             </Grid>
           </>
         );
+
       case "users":
-        return <Typography variant="h5">Users Management Page (Will load user data here)</Typography>;
+        return <Typography variant="h5">Users Management Page</Typography>;
+
       case "newsletter":
-        return <Typography variant="h5">Newsletter Page (Will load newsletter data here)</Typography>;
+        return <Typography variant="h5">Newsletter Management Page</Typography>;
+
       case "contact":
-        return <Typography variant="h5">Contact / Messages Page (Will load messages here)</Typography>;
+        return <Typography variant="h5">Contact Messages Page</Typography>;
+
       default:
-        return <Typography variant="h5">Section Coming Soon</Typography>;
+        return null;
     }
   };
 
@@ -160,40 +188,50 @@ const AdminDashboard = () => {
         variant="permanent"
         sx={{
           width: 240,
-          "& .MuiDrawer-paper": { width: 240, bgcolor: "#0d47a1", color: "#fff" },
+          "& .MuiDrawer-paper": {
+            width: 240,
+            bgcolor: "#0d47a1",
+            color: "#fff",
+          },
         }}
       >
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6" fontWeight="bold" display="flex" alignItems="center" gap={1}>
+          <Typography variant="h6" fontWeight="bold">
             <AdminPanelSettings /> Admin Panel
           </Typography>
         </Box>
+
         <Divider />
+
         <List>
-          <ListItemButton selected={activeSection === "dashboard"} onClick={() => setActiveSection("dashboard")}>
+          <ListItemButton onClick={() => setActiveSection("dashboard")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <DashboardIcon />
             </ListItemIcon>
             <ListItemText primary="Dashboard" />
           </ListItemButton>
-          <ListItemButton selected={activeSection === "users"} onClick={() => setActiveSection("users")}>
+
+          <ListItemButton onClick={() => setActiveSection("users")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <People />
             </ListItemIcon>
             <ListItemText primary="Users" />
           </ListItemButton>
-          <ListItemButton selected={activeSection === "newsletter"} onClick={() => setActiveSection("newsletter")}>
+
+          <ListItemButton onClick={() => setActiveSection("newsletter")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <MailOutline />
             </ListItemIcon>
             <ListItemText primary="Newsletter" />
           </ListItemButton>
-          <ListItemButton selected={activeSection === "contact"} onClick={() => setActiveSection("contact")}>
+
+          <ListItemButton onClick={() => setActiveSection("contact")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <ContactMail />
             </ListItemIcon>
             <ListItemText primary="Contact" />
           </ListItemButton>
+
           <ListItemButton onClick={logout}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <Logout />
@@ -203,7 +241,7 @@ const AdminDashboard = () => {
         </List>
       </Drawer>
 
-      {/* MAIN CONTENT */}
+      {/* CONTENT */}
       <Box sx={{ flexGrow: 1, p: 4 }}>{renderSection()}</Box>
     </Box>
   );
