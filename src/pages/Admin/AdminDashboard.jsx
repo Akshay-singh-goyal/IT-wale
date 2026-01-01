@@ -21,7 +21,7 @@ import {
 import { useNavigate } from "react-router-dom";
 
 /* ===== Dashboard Section ===== */
-import DashboardHome from "./sections/DashboardHome";
+import DashboardHome from "./DashboardHome";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
