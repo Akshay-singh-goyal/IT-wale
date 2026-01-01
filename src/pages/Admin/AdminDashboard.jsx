@@ -20,10 +20,10 @@ import {
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
-/* ===== Dashboard Section ===== */
+/* ===== PAGES ===== */
 import DashboardHome from "./DashboardHome";
 import UserManagement from "./UserManagement";
-import UserManagement from "./Registration";
+import RegistrationManagement from "./RegistrationManagement";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -49,13 +49,17 @@ const AdminDashboard = () => {
         return <DashboardHome />;
 
       case "users":
-        return <Typography variant="h5">  <UsersManagement/></Typography>;
+        return <UserManagement />;
 
-      case "newsletter":
-        return <Typography variant="h5"><Registrations/></Typography>;
+      case "registrations":
+        return <RegistrationManagement />;
 
       case "contact":
-        return <Typography variant="h5">Contact Messages (Coming Soon)</Typography>;
+        return (
+          <Typography variant="h5">
+            Contact Messages (Coming Soon)
+          </Typography>
+        );
 
       default:
         return null;
@@ -100,11 +104,11 @@ const AdminDashboard = () => {
             <ListItemText primary="Users" />
           </ListItemButton>
 
-          <ListItemButton onClick={() => setActiveSection("newsletter")}>
+          <ListItemButton onClick={() => setActiveSection("registrations")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <MailOutline />
             </ListItemIcon>
-            <ListItemText primary="Newsletter" />
+            <ListItemText primary="Registrations" />
           </ListItemButton>
 
           <ListItemButton onClick={() => setActiveSection("contact")}>
@@ -124,7 +128,9 @@ const AdminDashboard = () => {
       </Drawer>
 
       {/* ===== CONTENT ===== */}
-      <Box sx={{ flexGrow: 1, p: 4 }}>{renderSection()}</Box>
+      <Box sx={{ flexGrow: 1, p: 4 }}>
+        {renderSection()}
+      </Box>
     </Box>
   );
 };
