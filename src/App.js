@@ -22,19 +22,6 @@ import AdminRegistrations from "./pages/Admin/AdminRegistrations";
 import Login from "./components/Login";
 import Register from "./components/Register";
 
-/* ===== ADMIN ROUTE PROTECTION ===== */
-const AdminRoute = ({ children }) => {
-  try {
-    const user = JSON.parse(localStorage.getItem("user"));
-    if (!user || user.role !== "admin") {
-      return <Navigate to="/login" replace />;
-    }
-    return children;
-  } catch (err) {
-    return <Navigate to="/login" replace />;
-  }
-};
-
 export default function App() {
   return (
     <HelmetProvider>
