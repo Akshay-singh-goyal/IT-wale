@@ -137,9 +137,7 @@ const UserManagement = () => {
     );
   };
 
-  const openDetailModal = (user) => {
-    setSelectedUser(user);
-  };
+  const openDetailModal = (user) => setSelectedUser(user);
   const closeDetailModal = () => setSelectedUser(null);
 
   /* ===== Pagination ===== */
@@ -177,7 +175,6 @@ const UserManagement = () => {
                 <TableCell />
                 <TableCell>Name</TableCell>
                 <TableCell>Email</TableCell>
-                <TableCell>Mobile</TableCell>
                 <TableCell>Role</TableCell>
                 <TableCell>Status</TableCell>
                 <TableCell align="center">Actions</TableCell>
@@ -191,16 +188,11 @@ const UserManagement = () => {
                     <TableRow>
                       <TableCell>
                         <IconButton onClick={() => toggleExpandRow(user._id)}>
-                          {expandedRows.includes(user._id) ? (
-                            <ExpandLess />
-                          ) : (
-                            <ExpandMore />
-                          )}
+                          {expandedRows.includes(user._id) ? <ExpandLess /> : <ExpandMore />}
                         </IconButton>
                       </TableCell>
                       <TableCell>{user.name}</TableCell>
                       <TableCell>{user.email}</TableCell>
-                      <TableCell>{user.mobile || "-"}</TableCell>
                       <TableCell>
                         <FormControl fullWidth size="small">
                           <Select
@@ -242,25 +234,15 @@ const UserManagement = () => {
                       </TableCell>
                     </TableRow>
 
-                    {/* Expanded Row for quick info */}
+                    {/* Quick Info Collapse */}
                     <TableRow>
-                      <TableCell colSpan={7} sx={{ p: 0, borderBottom: "1px solid #eee" }}>
-                        <Collapse
-                          in={expandedRows.includes(user._id)}
-                          timeout="auto"
-                          unmountOnExit
-                        >
+                      <TableCell colSpan={6} sx={{ p: 0, borderBottom: "1px solid #eee" }}>
+                        <Collapse in={expandedRows.includes(user._id)} timeout="auto" unmountOnExit>
                           <Box sx={{ p: 2, bgcolor: "#f9f9f9" }}>
-                            <Typography variant="subtitle2">Quick Info:</Typography>
                             <Stack spacing={1}>
-                              <Typography>Email: {user.email}</Typography>
-                              <Typography>Mobile: {user.mobile || "-"}</Typography>
-                              <Typography>
-                                Completed Courses: {user.completedCourses.length}
-                              </Typography>
-                              <Typography>
-                                Purchased Books: {user.purchasedBooks.length}
-                              </Typography>
+                              <Typography><b>Mobile:</b> {user.mobile || "-"}</Typography>
+                              <Typography><b>Completed Courses:</b> {user.completedCourses.length}</Typography>
+                              <Typography><b>Purchased Books:</b> {user.purchasedBooks.length}</Typography>
                             </Stack>
                           </Box>
                         </Collapse>
@@ -271,6 +253,7 @@ const UserManagement = () => {
             </TableBody>
           </Table>
         </TableContainer>
+
         <TablePagination
           component="div"
           count={users.length}
@@ -278,19 +261,14 @@ const UserManagement = () => {
           onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
           onRowsPerPageChange={handleChangeRowsPerPage}
-          rowsPerPageOptions={[5, 10, 20]}
+          rowsPerPageOptions={[5, 10, 20, 50]}
         />
       </Paper>
 
       {/* Modal for full user details */}
-      <Dialog
-        open={Boolean(selectedUser)}
-        onClose={closeDetailModal}
-        maxWidth="md"
-        fullWidth
-      >
+      <Dialog open={Boolean(selectedUser)} onClose={closeDetailModal} maxWidth="md" fullWidth>
         <DialogTitle>User Details</DialogTitle>
-        <DialogContent dividers>
+        <DialogContent dividers style={{ maxHeight: "70vh", overflowY: "auto" }}>
           {selectedUser && (
             <Grid container spacing={2}>
               <Grid item xs={12} md={4}>
@@ -311,20 +289,33 @@ const UserManagement = () => {
                   <Typography><b>Completed Courses:</b> {selectedUser.completedCourses.length}</Typography>
                   <Typography><b>Purchased Books:</b> {selectedUser.purchasedBooks.length}</Typography>
                   <Typography><b>Payment History:</b> {selectedUser.paymentHistory.length}</Typography>
+
                   <Typography><b>Download History:</b></Typography>
-                  {selectedUser.downloadHistory.map((d, idx) => (
-                    <Typography key={idx}>
-                      {d.title} ({new Date(d.date).toLocaleDateString()})
-                    </Typography>
-                  ))}
+                  {selectedUser.downloadHistory.length === 0 ? (
+                    <Typography>No downloads</Typography>
+                  ) : (
+                    selectedUser.downloadHistory.map((d, idx) => (
+                      <Typography key={idx}>
+                        {d.title} ({new Date(d.date).toLocaleDateString()})
+                      </Typography>
+                    ))
+                  )}
+
                   <Typography><b>Saved Notes:</b></Typography>
-                  {selectedUser.savedNotes.map((note, idx) => (
-                    <Typography key={idx}>
-                      {note.title} - <a href={note.url}>Link</a>
-                    </Typography>
-                  ))}
+                  {selectedUser.savedNotes.length === 0 ? (
+                    <Typography>No saved notes</Typography>
+                  ) : (
+                    selectedUser.savedNotes.map((note, idx) => (
+                      <Typography key={idx}>
+                        {note.title} - <a href={note.url}>Link</a>
+                      </Typography>
+                    ))
+                  )}
+
                   <Typography><b>Wishlist:</b> {selectedUser.wishlist.length} items</Typography>
-                  <Typography><b>Settings:</b> Notifications: {selectedUser.settings.notifications ? "On" : "Off"}, Dark Mode: {selectedUser.settings.darkMode ? "On" : "Off"}</Typography>
+                  <Typography>
+                    <b>Settings:</b> Notifications: {selectedUser.settings.notifications ? "On" : "Off"}, Dark Mode: {selectedUser.settings.darkMode ? "On" : "Off"}
+                  </Typography>
                   <Typography><b>Last Login:</b> {selectedUser.lastLogin ? new Date(selectedUser.lastLogin).toLocaleString() : "-"}</Typography>
                 </Stack>
               </Grid>
