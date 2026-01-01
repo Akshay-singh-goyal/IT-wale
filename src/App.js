@@ -50,7 +50,7 @@ export default function App() {
  <AdminRegistrations />
             }
           />
-
+              </Route>
         <Footer />
       </Router>
     </HelmetProvider>
