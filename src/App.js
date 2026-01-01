@@ -41,24 +41,15 @@ export default function App() {
           {/* ===== ADMIN ROUTES ===== */}
           <Route
             path="/admin/dashboard"
-            element={
-           
-                <AdminDashboard />
-         
+            element={  <AdminDashboard />
             }
           />
           <Route
             path="/admin/registrations"
             element={
-              
-                <AdminRegistrations />
-             
+ <AdminRegistrations />
             }
           />
-
-          {/* ===== CATCH ALL ===== */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
 
         <Footer />
       </Router>
