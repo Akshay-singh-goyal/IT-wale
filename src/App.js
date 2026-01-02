@@ -16,7 +16,7 @@ import CourseDetail from "./pages/CourseDetail";
 
 /* ===== ADMIN PAGES ===== */
 import AdminDashboard from "./pages/Admin/AdminDashboard";
-import AdminRegistrations from "./pages/Admin/AdminRegistrations";
+
 
 /* ===== AUTH COMPONENTS ===== */
 import Login from "./components/Login";
@@ -40,7 +40,7 @@ export default function App() {
 
           {/* ===== ADMIN ROUTES ===== */}
           <Route path="/admin/admin-dashboard" element={<AdminDashboard />} />
-          <Route path="/admin/registrations" element={<AdminRegistrations />} />
+          
 
           {/* ===== CATCH ALL ROUTE ===== */}
           <Route path="*" element={<Navigate to="/" replace />} />
