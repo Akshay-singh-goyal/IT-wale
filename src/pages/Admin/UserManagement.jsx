@@ -39,7 +39,7 @@ import {
   AccessTime as LastLoginIcon,
 } from "@mui/icons-material";
 
-const API_BASE = "https://https://sm-backend-8me3.onrender.com/api/admin";
+const API_BASE = "https://sm-backend-8me3.onrender.com/api/admin";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
