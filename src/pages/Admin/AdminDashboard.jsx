@@ -23,7 +23,7 @@ import { useNavigate } from "react-router-dom";
 /* ===== PAGES ===== */
 import DashboardHome from "./DashboardHome";
 import UserManagement from "./UserManagement";
-// import RegistrationManagement from "./RegistrationManagement";
+
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
