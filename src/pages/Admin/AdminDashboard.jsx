@@ -51,8 +51,8 @@ const AdminDashboard = () => {
       case "users":
         return <UserManagement />;
 
-      case "registrations":
-        return <RegistrationManagement />;
+      // case "registrations":
+      //   return <RegistrationManagement />;
 
       case "contact":
         return (
