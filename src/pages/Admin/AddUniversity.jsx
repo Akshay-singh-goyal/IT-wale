@@ -20,7 +20,7 @@ const AddUniversity = () => {
   /* ===== FETCH UNIVERSITIES ===== */
   const fetchUniversities = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/university');
+      const res = await axios.get('https://sm-backend-8me3.onrender.com/api/university');
       setUniversities(res.data);
     } catch (err) {
       console.error(err);
@@ -52,11 +52,11 @@ const AddUniversity = () => {
     try {
       if (editingId) {
         // Update
-        await axios.put(`http://localhost:5000/api/university/${editingId}`, university);
+        await axios.put(`https://sm-backend-8me3.onrender.com/api/university/${editingId}`, university);
         alert('University updated successfully');
       } else {
         // Create
-        await axios.post('http://localhost:5000/api/university', university);
+        await axios.post('https://sm-backend-8me3.onrender.com/api/university', university);
         alert('University added successfully');
       }
       setUniversity({
@@ -80,7 +80,7 @@ const AddUniversity = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this university?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/university/${id}`);
+        await axios.delete(`https://sm-backend-8me3.onrender.com/api/university/${id}`);
         fetchUniversities();
       } catch (err) {
         console.error(err);
