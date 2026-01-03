@@ -17,13 +17,16 @@ import {
   MailOutline,
   ContactMail,
   Logout,
+  School,
+  NoteAdd, // NEW: Icon for Create Notes
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
 /* ===== PAGES ===== */
 import DashboardHome from "./DashboardHome";
 import UserManagement from "./UserManagement";
-
+import AddUniversity from "./AddUniversity";
+import CreateNotes from "./CreateNotes"; // NEW: Import CreateNotes page
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -51,8 +54,11 @@ const AdminDashboard = () => {
       case "users":
         return <UserManagement />;
 
-      // case "registrations":
-      //   return <RegistrationManagement />;
+      case "addUniversity":
+        return <AddUniversity />;
+
+      case "createNotes": // NEW SECTION
+        return <CreateNotes />;
 
       case "contact":
         return (
@@ -102,6 +108,21 @@ const AdminDashboard = () => {
               <People />
             </ListItemIcon>
             <ListItemText primary="Users" />
+          </ListItemButton>
+
+          <ListItemButton onClick={() => setActiveSection("addUniversity")}>
+            <ListItemIcon sx={{ color: "#fff" }}>
+              <School />
+            </ListItemIcon>
+            <ListItemText primary="Add University" />
+          </ListItemButton>
+
+          {/* NEW: Create Notes Button */}
+          <ListItemButton onClick={() => setActiveSection("createNotes")}>
+            <ListItemIcon sx={{ color: "#fff" }}>
+              <NoteAdd />
+            </ListItemIcon>
+            <ListItemText primary="Create Notes" />
           </ListItemButton>
 
           <ListItemButton onClick={() => setActiveSection("registrations")}>

@@ -117,15 +117,18 @@ export default function Navbar() {
             <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/books")}>
               Books
             </Typography>
+            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/notes")}>
+             Notes
+            </Typography><Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/join-batch")}>
+             Batch
+            </Typography>
             <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/contact-us")}>
               Contact
             </Typography>
             <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/about")}>
               About
             </Typography>
-            <Typography sx={{ cursor: "pointer" }} onClick={() => navigate("/join-batch")}>
-             Batch
-            </Typography>
+            
           </Box>
         )}
 
@@ -167,6 +170,8 @@ export default function Navbar() {
                 <MenuItem onClick={() => navigate("/")}>Home</MenuItem>
                 <MenuItem onClick={() => navigate("/courses")}>Courses</MenuItem>
                 <MenuItem onClick={() => navigate("/books")}>Books</MenuItem>
+                <MenuItem onClick={() => navigate("/join-batch")}>Batch</MenuItem>
+                <MenuItem onClick={() => navigate("/notes")}>Notes</MenuItem>
                 <MenuItem onClick={() => navigate("/join-batch")}>Batch</MenuItem>
                 <MenuItem onClick={() => navigate("/contact-us")}>Contact</MenuItem>
                 <MenuItem onClick={() => navigate("/about")}>About</MenuItem>

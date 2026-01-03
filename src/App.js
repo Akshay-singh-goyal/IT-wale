@@ -21,6 +21,7 @@ import AdminDashboard from "./pages/Admin/AdminDashboard";
 /* ===== AUTH COMPONENTS ===== */
 import Login from "./components/Login";
 import Register from "./components/Register";
+import UserNotes from "./components/UserNotes";
 
 export default function App() {
   return (
@@ -37,6 +38,8 @@ export default function App() {
           <Route path="/books" element={<CourseDetail />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/notes" element={<UserNotes />} />
+
 
           {/* ===== ADMIN ROUTES ===== */}
           <Route path="/admin/admin-dashboard" element={<AdminDashboard />} />
