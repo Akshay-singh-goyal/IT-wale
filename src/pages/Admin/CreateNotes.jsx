@@ -40,7 +40,7 @@ const CreateNotes = () => {
   // ===== FETCH UNIVERSITIES =====
   const fetchUniversities = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/notes/universities');
+      const res = await axios.get('https://sm-backend-8me3.onrender.com/api/notes/universities');
       setUniversities(res.data);
     } catch (err) {
       console.error('Error fetching universities:', err);
@@ -50,7 +50,7 @@ const CreateNotes = () => {
   // ===== FETCH NOTES =====
   const fetchNotes = async () => {
     try {
-      const res = await axios.get('http://localhost:5000/api/notes');
+      const res = await axios.get('https://sm-backend-8me3.onrender.com/api/notes');
       setNotes(res.data);
     } catch (err) {
       console.error('Error fetching notes:', err);
@@ -80,10 +80,10 @@ const CreateNotes = () => {
       const payload = { ...formData, university: formData.university._id };
 
       if (editingId) {
-        await axios.put(`http://localhost:5000/api/notes/${editingId}`, payload);
+        await axios.put(`https://sm-backend-8me3.onrender.com/api/notes/${editingId}`, payload);
         alert('Note updated successfully');
       } else {
-        await axios.post('http://localhost:5000/api/notes', payload);
+        await axios.post('https://sm-backend-8me3.onrender.com/api/notes', payload);
         alert('Note added successfully');
       }
 
@@ -130,7 +130,7 @@ const CreateNotes = () => {
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       try {
-        await axios.delete(`http://localhost:5000/api/notes/${id}`);
+        await axios.delete(`https://sm-backend-8me3.onrender.com/api/notes/${id}`);
         fetchNotes();
       } catch (err) {
         console.error('Error deleting note:', err);
