@@ -48,7 +48,7 @@ const UserManagement = () => {
 
   /* ================= ROLE MAPPING ================= */
   const dbToUiRole = (role) => (role === "student" ? "user" : role);
-  const uiRoles = ["user", "teacher", "admin"]; // Full role options
+  const uiRoles = ["student", "teacher", "admin"]; // Full role options
 
   /* ================= FETCH USERS ================= */
   const fetchUsers = async () => {
