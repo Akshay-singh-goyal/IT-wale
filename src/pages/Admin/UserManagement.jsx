@@ -48,7 +48,7 @@ const UserManagement = () => {
 
   /* ================= ROLE MAPPING ================= */
   const dbToUiRole = (role) => (role === "student" ? "user" : role);
-  const uiRoles = ["user", "admin"];
+  const uiRoles = ["user", "teacher", "admin"]; // Full role options
 
   /* ================= FETCH USERS ================= */
   const fetchUsers = async () => {
@@ -95,15 +95,22 @@ const UserManagement = () => {
     try {
       await axios.put(
         `${API_BASE}/users/${id}/role`,
-        { role }, // backend mapping already fixed
+        { role }, // backend handles mapping
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchUsers();
-      setSelectedUser(null);
+      setSelectedUser((prev) => (prev ? { ...prev, role } : null));
     } catch (err) {
       console.error(err);
       alert("Failed to change role");
     }
+  };
+
+  /* ================= PAGINATION HANDLERS ================= */
+  const handleChangePage = (_, newPage) => setPage(newPage);
+  const handleChangeRowsPerPage = (e) => {
+    setRowsPerPage(parseInt(e.target.value, 10));
+    setPage(0);
   };
 
   if (loading) {
@@ -131,7 +138,7 @@ const UserManagement = () => {
         <Typography variant="h6">Total Users: {total}</Typography>
       </Paper>
 
-      {/* ================= TABLE ================= */}
+      {/* ================= USERS TABLE ================= */}
       <Paper>
         <TableContainer sx={{ maxHeight: 540 }}>
           <Table stickyHeader>
@@ -206,12 +213,9 @@ const UserManagement = () => {
           component="div"
           count={total}
           page={page}
-          onPageChange={(_, p) => setPage(p)}
+          onPageChange={handleChangePage}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={(e) => {
-            setRowsPerPage(parseInt(e.target.value, 10));
-            setPage(0);
-          }}
+          onRowsPerPageChange={handleChangeRowsPerPage}
         />
       </Paper>
 
@@ -228,7 +232,9 @@ const UserManagement = () => {
             <Stack spacing={2}>
               <Typography><b>Name:</b> {selectedUser.name}</Typography>
               <Typography><b>Email:</b> {selectedUser.email}</Typography>
+              <Typography><b>Mobile:</b> {selectedUser.mobile || "-"}</Typography>
 
+              {/* Role Selector */}
               <Stack direction="row" spacing={2} alignItems="center">
                 <Typography><b>Role:</b></Typography>
                 <Select
@@ -247,8 +253,7 @@ const UserManagement = () => {
               </Stack>
 
               <Typography>
-                <b>Status:</b>{" "}
-                {selectedUser.isBlocked ? "Blocked" : "Active"}
+                <b>Status:</b> {selectedUser.isBlocked ? "Blocked" : "Active"}
               </Typography>
 
               <Typography>
@@ -271,6 +276,7 @@ const UserManagement = () => {
 
               <Divider />
 
+              {/* Extra Info */}
               <Typography>
                 <b>Completed Courses:</b>{" "}
                 {selectedUser.completedCourses?.length || 0}
@@ -280,12 +286,20 @@ const UserManagement = () => {
                 {selectedUser.purchasedBooks?.length || 0}
               </Typography>
               <Typography>
-                <b>Payment History:</b>{" "}
-                {selectedUser.paymentHistory?.length || 0}
+                <b>Download History:</b>{" "}
+                {selectedUser.downloadHistory?.length || 0}
+              </Typography>
+              <Typography>
+                <b>Saved Notes:</b>{" "}
+                {selectedUser.savedNotes?.length || 0}
               </Typography>
               <Typography>
                 <b>Wishlist:</b>{" "}
                 {selectedUser.wishlist?.length || 0}
+              </Typography>
+              <Typography>
+                <b>Payment History:</b>{" "}
+                {selectedUser.paymentHistory?.length || 0}
               </Typography>
             </Stack>
           )}
