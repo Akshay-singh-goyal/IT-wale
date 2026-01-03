@@ -31,11 +31,6 @@ import {
   AccountCircle as NameIcon,
   CheckCircle as ActiveIcon,
   Block as BlockedIcon,
-  AdminPanelSettings as AdminIcon,
-  Book as BookIcon,
-  History as HistoryIcon,
-  Star as WishlistIcon,
-  Settings as SettingsIcon,
   AccessTime as LastLoginIcon,
 } from "@mui/icons-material";
 
@@ -43,6 +38,7 @@ const API_BASE = "https://sm-backend-8me3.onrender.com/api/admin";
 
 const UserManagement = () => {
   const [users, setUsers] = useState([]);
+  const [total, setTotal] = useState(0);
   const [loading, setLoading] = useState(true);
   const [selectedUser, setSelectedUser] = useState(null);
   const [page, setPage] = useState(0);
@@ -50,18 +46,22 @@ const UserManagement = () => {
 
   const token = localStorage.getItem("accessToken");
 
+  /* ================= ROLE MAPPING ================= */
+  const dbToUiRole = (role) => (role === "student" ? "user" : role);
+  const uiRoles = ["user", "admin"];
+
   /* ================= FETCH USERS ================= */
   const fetchUsers = async () => {
     try {
       setLoading(true);
-      if (!token) return alert("No token found. Please login again.");
 
-      const res = await axios.get(`${API_BASE}/users`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+      const res = await axios.get(
+        `${API_BASE}/users?page=${page + 1}&limit=${rowsPerPage}`,
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
 
-      // Merge safe: backend may return array or { users: [] }
-      setUsers(res.data?.users || res.data || []);
+      setUsers(res.data.users || []);
+      setTotal(res.data.total || 0);
     } catch (err) {
       console.error("Fetch users error:", err);
       alert("Failed to fetch users");
@@ -72,13 +72,13 @@ const UserManagement = () => {
 
   useEffect(() => {
     fetchUsers();
-  }, []);
+  }, [page, rowsPerPage]);
 
   /* ================= BLOCK / UNBLOCK ================= */
-  const toggleBlockUser = async (userId) => {
+  const toggleBlockUser = async (id) => {
     try {
       await axios.put(
-        `${API_BASE}/users/${userId}/block-toggle`,
+        `${API_BASE}/users/${id}/block-toggle`,
         {},
         { headers: { Authorization: `Bearer ${token}` } }
       );
@@ -91,27 +91,19 @@ const UserManagement = () => {
   };
 
   /* ================= ROLE CHANGE ================= */
-  const changeRole = async (userId, role) => {
+  const changeRole = async (id, role) => {
     try {
       await axios.put(
-        `${API_BASE}/users/${userId}/role`,
-        { role },
+        `${API_BASE}/users/${id}/role`,
+        { role }, // backend mapping already fixed
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchUsers();
-      setSelectedUser((prev) => ({ ...prev, role }));
+      setSelectedUser(null);
     } catch (err) {
       console.error(err);
       alert("Failed to change role");
     }
-  };
-
-  /* ================= PAGINATION HANDLERS ================= */
-  const handleChangePage = (_, newPage) => setPage(newPage);
-
-  const handleChangeRowsPerPage = (event) => {
-    setRowsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
   };
 
   if (loading) {
@@ -136,7 +128,7 @@ const UserManagement = () => {
       </Typography>
 
       <Paper sx={{ mb: 3, p: 2 }}>
-        <Typography variant="h6">Total Users: {users.length}</Typography>
+        <Typography variant="h6">Total Users: {total}</Typography>
       </Paper>
 
       {/* ================= TABLE ================= */}
@@ -155,80 +147,71 @@ const UserManagement = () => {
             </TableHead>
 
             <TableBody>
-              {users
-                .slice(page * rowsPerPage, page * rowsPerPage + rowsPerPage)
-                .map((user) => (
-                  <TableRow
-                    key={user._id}
-                    hover
-                    sx={{ cursor: "pointer" }}
-                    onClick={() => setSelectedUser(user)}
-                  >
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <NameIcon color="primary" />
-                        {user.name}
+              {users.map((user) => (
+                <TableRow key={user._id} hover>
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <NameIcon color="primary" />
+                      {user.name}
+                    </Stack>
+                  </TableCell>
+
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <EmailIcon fontSize="small" />
+                      {user.email}
+                    </Stack>
+                  </TableCell>
+
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <PhoneIcon fontSize="small" />
+                      {user.mobile || "-"}
+                    </Stack>
+                  </TableCell>
+
+                  <TableCell>
+                    <Stack direction="row" spacing={1} alignItems="center">
+                      <RoleIcon fontSize="small" />
+                      {dbToUiRole(user.role)}
+                    </Stack>
+                  </TableCell>
+
+                  <TableCell>
+                    {user.isBlocked ? (
+                      <Stack direction="row" spacing={0.5} color="error.main">
+                        <BlockedIcon fontSize="small" /> Blocked
                       </Stack>
-                    </TableCell>
-
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <EmailIcon fontSize="small" />
-                        {user.email}
+                    ) : (
+                      <Stack direction="row" spacing={0.5} color="success.main">
+                        <ActiveIcon fontSize="small" /> Active
                       </Stack>
-                    </TableCell>
+                    )}
+                  </TableCell>
 
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <PhoneIcon fontSize="small" />
-                        {user.mobile || "-"}
-                      </Stack>
-                    </TableCell>
-
-                    <TableCell>
-                      <Stack direction="row" spacing={1} alignItems="center">
-                        <RoleIcon fontSize="small" />
-                        {user.role}
-                      </Stack>
-                    </TableCell>
-
-                    <TableCell>
-                      {user.isBlocked ? (
-                        <Stack direction="row" spacing={0.5} color="error.main">
-                          <BlockedIcon fontSize="small" /> Blocked
-                        </Stack>
-                      ) : (
-                        <Stack direction="row" spacing={0.5} color="success.main">
-                          <ActiveIcon fontSize="small" /> Active
-                        </Stack>
-                      )}
-                    </TableCell>
-
-                    <TableCell align="center">
-                      <Tooltip title="View Details">
-                        <IconButton
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setSelectedUser(user);
-                          }}
-                        >
-                          <VisibilityIcon />
-                        </IconButton>
-                      </Tooltip>
-                    </TableCell>
-                  </TableRow>
-                ))}
+                  <TableCell align="center">
+                    <Tooltip title="View Details">
+                      <IconButton onClick={() => setSelectedUser(user)}>
+                        <VisibilityIcon />
+                      </IconButton>
+                    </Tooltip>
+                  </TableCell>
+                </TableRow>
+              ))}
             </TableBody>
           </Table>
         </TableContainer>
 
         <TablePagination
           component="div"
-          count={users.length}
+          count={total}
           page={page}
-          onPageChange={handleChangePage}
+          onPageChange={(_, p) => setPage(p)}
           rowsPerPage={rowsPerPage}
-          onRowsPerPageChange={handleChangeRowsPerPage}
+          onRowsPerPageChange={(e) => {
+            setRowsPerPage(parseInt(e.target.value, 10));
+            setPage(0);
+          }}
         />
       </Paper>
 
@@ -243,65 +226,66 @@ const UserManagement = () => {
         <DialogContent dividers>
           {selectedUser && (
             <Stack spacing={2}>
-              <Typography>
-                <b>Name:</b> {selectedUser.name}
-              </Typography>
-              <Typography>
-                <b>Email:</b> {selectedUser.email}
-              </Typography>
+              <Typography><b>Name:</b> {selectedUser.name}</Typography>
+              <Typography><b>Email:</b> {selectedUser.email}</Typography>
 
-              {/* ROLE CHANGE */}
               <Stack direction="row" spacing={2} alignItems="center">
-                <Typography>
-                  <b>Role:</b>
-                </Typography>
+                <Typography><b>Role:</b></Typography>
                 <Select
                   size="small"
-                  value={selectedUser.role}
-                  onChange={(e) => changeRole(selectedUser._id, e.target.value)}
+                  value={dbToUiRole(selectedUser.role)}
+                  onChange={(e) =>
+                    changeRole(selectedUser._id, e.target.value)
+                  }
                 >
-                  <MenuItem value="user">User</MenuItem>
-                  <MenuItem value="admin">Admin</MenuItem>
+                  {uiRoles.map((r) => (
+                    <MenuItem key={r} value={r}>
+                      {r.toUpperCase()}
+                    </MenuItem>
+                  ))}
                 </Select>
               </Stack>
 
               <Typography>
-                <b>Status:</b> {selectedUser.isBlocked ? "Blocked" : "Active"}
+                <b>Status:</b>{" "}
+                {selectedUser.isBlocked ? "Blocked" : "Active"}
+              </Typography>
+
+              <Typography>
+                <LastLoginIcon fontSize="small" />{" "}
+                <b>Last Login:</b>{" "}
+                {selectedUser.lastLogin
+                  ? new Date(selectedUser.lastLogin).toLocaleString()
+                  : "-"}
               </Typography>
 
               <Divider />
 
-              <Stack direction="row" spacing={2}>
-                <Button
-                  variant="contained"
-                  color={selectedUser.isBlocked ? "success" : "error"}
-                  onClick={() => toggleBlockUser(selectedUser._id)}
-                >
-                  {selectedUser.isBlocked ? "Unblock User" : "Block User"}
-                </Button>
-              </Stack>
+              <Button
+                variant="contained"
+                color={selectedUser.isBlocked ? "success" : "error"}
+                onClick={() => toggleBlockUser(selectedUser._id)}
+              >
+                {selectedUser.isBlocked ? "Unblock User" : "Block User"}
+              </Button>
 
               <Divider />
 
-              {/* Extra User Info */}
               <Typography>
                 <b>Completed Courses:</b>{" "}
                 {selectedUser.completedCourses?.length || 0}
               </Typography>
               <Typography>
-                <b>Purchased Books:</b> {selectedUser.purchasedBooks?.length || 0}
+                <b>Purchased Books:</b>{" "}
+                {selectedUser.purchasedBooks?.length || 0}
               </Typography>
               <Typography>
-                <b>Payment History:</b> {selectedUser.paymentHistory?.length || 0}
+                <b>Payment History:</b>{" "}
+                {selectedUser.paymentHistory?.length || 0}
               </Typography>
               <Typography>
-                <b>Wishlist:</b> {selectedUser.wishlist?.length || 0}
-              </Typography>
-              <Typography>
-                <b>Last Login:</b>{" "}
-                {selectedUser.lastLogin
-                  ? new Date(selectedUser.lastLogin).toLocaleString()
-                  : "-"}
+                <b>Wishlist:</b>{" "}
+                {selectedUser.wishlist?.length || 0}
               </Typography>
             </Stack>
           )}
