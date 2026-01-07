@@ -18,7 +18,7 @@ import {
   ContactMail,
   Logout,
   School,
-  NoteAdd, // NEW: Icon for Create Notes
+  NoteAdd,
 } from "@mui/icons-material";
 import { useNavigate } from "react-router-dom";
 
@@ -26,7 +26,8 @@ import { useNavigate } from "react-router-dom";
 import DashboardHome from "./DashboardHome";
 import UserManagement from "./UserManagement";
 import AddUniversity from "./AddUniversity";
-import CreateNotes from "./CreateNotes"; // NEW: Import CreateNotes page
+import CreateNotes from "./CreateNotes";
+import AdminRegistrations from "./AdminRegistrations";
 
 const AdminDashboard = () => {
   const navigate = useNavigate();
@@ -40,12 +41,13 @@ const AdminDashboard = () => {
     }
   }, [navigate]);
 
+  /* ===== LOGOUT FUNCTION ===== */
   const logout = () => {
     localStorage.clear();
     navigate("/login");
   };
 
-  /* ===== RENDER CONTENT ===== */
+  /* ===== RENDER CONTENT BASED ON ACTIVE SECTION ===== */
   const renderSection = () => {
     switch (activeSection) {
       case "dashboard":
@@ -57,8 +59,11 @@ const AdminDashboard = () => {
       case "addUniversity":
         return <AddUniversity />;
 
-      case "createNotes": // NEW SECTION
+      case "createNotes":
         return <CreateNotes />;
+
+      case "adminregistrations":
+        return <AdminRegistrations />;
 
       case "contact":
         return (
@@ -87,7 +92,7 @@ const AdminDashboard = () => {
         }}
       >
         <Box sx={{ p: 2 }}>
-          <Typography variant="h6" fontWeight="bold">
+          <Typography variant="h6" fontWeight="bold" display="flex" alignItems="center">
             <AdminPanelSettings sx={{ mr: 1 }} />
             Admin Panel
           </Typography>
@@ -117,7 +122,6 @@ const AdminDashboard = () => {
             <ListItemText primary="Add University" />
           </ListItemButton>
 
-          {/* NEW: Create Notes Button */}
           <ListItemButton onClick={() => setActiveSection("createNotes")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <NoteAdd />
@@ -125,11 +129,11 @@ const AdminDashboard = () => {
             <ListItemText primary="Create Notes" />
           </ListItemButton>
 
-          <ListItemButton onClick={() => setActiveSection("registrations")}>
+          <ListItemButton onClick={() => setActiveSection("adminregistrations")}>
             <ListItemIcon sx={{ color: "#fff" }}>
               <MailOutline />
             </ListItemIcon>
-            <ListItemText primary="Registrations" />
+            <ListItemText primary="Admin Registrations" />
           </ListItemButton>
 
           <ListItemButton onClick={() => setActiveSection("contact")}>
@@ -148,7 +152,7 @@ const AdminDashboard = () => {
         </List>
       </Drawer>
 
-      {/* ===== CONTENT ===== */}
+      {/* ===== CONTENT AREA ===== */}
       <Box sx={{ flexGrow: 1, p: 4 }}>
         {renderSection()}
       </Box>
