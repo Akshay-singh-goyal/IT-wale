@@ -1,6 +1,6 @@
 // src/App.jsx
 import React from "react";
-import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { HelmetProvider } from "react-helmet-async";
 
 /* ===== LAYOUT COMPONENTS ===== */
@@ -17,39 +17,50 @@ import CourseDetail from "./pages/CourseDetail";
 /* ===== ADMIN PAGES ===== */
 import AdminDashboard from "./pages/Admin/AdminDashboard";
 
-
 /* ===== AUTH COMPONENTS ===== */
 import Login from "./components/Login";
 import Register from "./components/Register";
 import UserNotes from "./components/UserNotes";
 
+/* ===== WRAPPER TO CONTROL HEADER/FOOTER ===== */
+const Layout = ({ children }) => {
+  const location = useLocation();
+
+  // Check if current path includes "/admin" → hide Navbar & Footer
+  const hideLayout = location.pathname.startsWith("/admin");
+
+  return (
+    <>
+      {!hideLayout && <Navbar />}
+      {children}
+      {!hideLayout && <Footer />}
+    </>
+  );
+};
+
 export default function App() {
   return (
     <HelmetProvider>
       <Router>
-        <Navbar />
+        <Layout>
+          <Routes>
+            {/* ===== PUBLIC ROUTES ===== */}
+            <Route path="/" element={<Home />} />
+            <Route path="/about" element={<About />} />
+            <Route path="/contact-us" element={<Contact />} />
+            <Route path="/join-batch" element={<JoinBatch />} />
+            <Route path="/books" element={<CourseDetail />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/notes" element={<UserNotes />} />
 
-        <Routes>
-          {/* ===== PUBLIC ROUTES ===== */}
-          <Route path="/" element={<Home />} />
-          <Route path="/about" element={<About />} />
-          <Route path="/contact-us" element={<Contact />} />
-          <Route path="/join-batch" element={<JoinBatch />} />
-          <Route path="/books" element={<CourseDetail />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/notes" element={<UserNotes />} />
+            {/* ===== ADMIN ROUTES ===== */}
+            <Route path="/admin/admin-dashboard" element={<AdminDashboard />} />
 
-
-          {/* ===== ADMIN ROUTES ===== */}
-          <Route path="/admin/admin-dashboard" element={<AdminDashboard />} />
-          
-
-          {/* ===== CATCH ALL ROUTE ===== */}
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
-
-        <Footer />
+            {/* ===== CATCH ALL ROUTE ===== */}
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
       </Router>
     </HelmetProvider>
   );

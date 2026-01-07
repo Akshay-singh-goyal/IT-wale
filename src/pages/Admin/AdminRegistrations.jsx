@@ -14,6 +14,7 @@ import {
   MenuItem,
 } from "@mui/material";
 
+// Status options
 const statusOptions = [
   "NOT_REGISTERED",
   "MODE_SELECTED",
@@ -22,23 +23,30 @@ const statusOptions = [
   "SEAT_CONFIRMED",
 ];
 
+// Backend URL
 const backendURL = "https://sm-backend-8me3.onrender.com";
 
 const AdminRegistrations = () => {
   const [registrations, setRegistrations] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
-  const token = localStorage.getItem("token"); // ✅ get JWT token
+  // Get token from localStorage
+  const token = localStorage.getItem("accessToken");
 
+  // Fetch all registrations
   const fetchRegistrations = async () => {
+    setLoading(true);
     try {
       const res = await axios.get(`${backendURL}/api/admin/registrations`, {
-        headers: { Authorization: `Bearer ${token}` }, // ✅ send token
+        headers: { Authorization: `Bearer ${token}` },
       });
       setRegistrations(res.data.registrations || res.data);
-      setLoading(false);
     } catch (err) {
       console.error("Error fetching registrations:", err);
+      setError(err.response?.data?.message || err.message);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -46,12 +54,13 @@ const AdminRegistrations = () => {
     fetchRegistrations();
   }, []);
 
+  // Update registration status
   const handleStatusChange = async (id, newStatus) => {
     try {
       await axios.put(
         `${backendURL}/api/admin/registration/${id}/status`,
         { status: newStatus },
-        { headers: { Authorization: `Bearer ${token}` } } // ✅ send token
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchRegistrations();
     } catch (err) {
@@ -59,12 +68,13 @@ const AdminRegistrations = () => {
     }
   };
 
+  // Admin approve/unapprove
   const handleAdminApprove = async (id, approved) => {
     try {
       await axios.put(
         `${backendURL}/api/admin/registration/${id}/status`,
         { adminApproved: approved },
-        { headers: { Authorization: `Bearer ${token}` } } // ✅ send token
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchRegistrations();
     } catch (err) {
@@ -72,12 +82,13 @@ const AdminRegistrations = () => {
     }
   };
 
+  // Update payment mode
   const handleModeUpdate = async (id, mode) => {
     try {
       await axios.put(
         `${backendURL}/api/admin/registration/${id}/mode`,
         { mode },
-        { headers: { Authorization: `Bearer ${token}` } } // ✅ send token
+        { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchRegistrations();
     } catch (err) {
@@ -86,6 +97,7 @@ const AdminRegistrations = () => {
   };
 
   if (loading) return <Typography>Loading...</Typography>;
+  if (error) return <Typography color="error">{error}</Typography>;
 
   return (
     <Container sx={{ py: 5 }}>
@@ -112,6 +124,8 @@ const AdminRegistrations = () => {
               <TableCell>{reg.name}</TableCell>
               <TableCell>{reg.email}</TableCell>
               <TableCell>{reg.mobile}</TableCell>
+
+              {/* Mode */}
               <TableCell>
                 <Select
                   value={reg.mode || "UNPAID"}
@@ -121,6 +135,8 @@ const AdminRegistrations = () => {
                   <MenuItem value="UNPAID">UNPAID</MenuItem>
                 </Select>
               </TableCell>
+
+              {/* Status */}
               <TableCell>
                 <Select
                   value={reg.status}
@@ -133,15 +149,21 @@ const AdminRegistrations = () => {
                   ))}
                 </Select>
               </TableCell>
+
+              {/* Admin Approved */}
               <TableCell>
                 <Button
                   variant={reg.adminApproved ? "contained" : "outlined"}
                   color="success"
-                  onClick={() => handleAdminApprove(reg._id, !reg.adminApproved)}
+                  onClick={() =>
+                    handleAdminApprove(reg._id, !reg.adminApproved)
+                  }
                 >
                   {reg.adminApproved ? "Approved" : "Approve"}
                 </Button>
               </TableCell>
+
+              {/* Extra Actions */}
               <TableCell>
                 <Button
                   variant="outlined"
