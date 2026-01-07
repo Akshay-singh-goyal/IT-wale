@@ -79,7 +79,39 @@ const teachers = [
     photo: teacher3,
   },
 ];
-
+/* ================= TEACHER CARD ================= */
+const TeacherCard = ({ t }) => (
+  <Card
+    sx={{
+      textAlign: "center",
+      px: 3,
+      py: 4,
+      borderRadius: 5,
+      background: "linear-gradient(180deg,#ffffff,#f6f7ff)",
+      boxShadow: "0 12px 30px rgba(0,0,0,0.1)",
+      scrollSnapAlign: "center",
+    }}
+  >
+    <Avatar
+      src={t.photo}
+      alt={t.name}
+      sx={{
+        width: 110,
+        height: 110,
+        mx: "auto",
+        mb: 2,
+        border: "4px solid #1a73e8",
+      }}
+    />
+    <Typography fontWeight={700}>{t.name}</Typography>
+    <Typography color="text.secondary" mb={1}>
+      {t.subject}
+    </Typography>
+    <Typography sx={{ color: "#1a73e8", fontWeight: 600 }}>
+      ⭐ Top Rated Instructor
+    </Typography>
+  </Card>
+);
 /* ================= COMPONENT ================= */
 function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
@@ -108,6 +140,19 @@ function HomePage() {
     const timer = setInterval(handleNext, 4000);
     return () => clearInterval(timer);
   }, []);
+
+   /* TEACHER AUTO SLIDER */
+  useEffect(() => {
+    controls.start({
+      x: ["0%", "-50%"],
+      transition: {
+        repeat: Infinity,
+        duration: 25,
+        ease: "linear",
+      },
+    });
+  }, [controls]);
+
 
   return (
     <Box sx={{ bgcolor: "#f5f7fb" }}>
