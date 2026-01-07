@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -8,6 +8,8 @@ import {
   Button,
   TextField,
   MenuItem,
+  CircularProgress,
+  Alert,
 } from "@mui/material";
 import { FaComments, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 import { Helmet } from "react-helmet";
@@ -28,9 +30,36 @@ export default function SupportPage({ dark }) {
 
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(false);
-  const [widgetOpen, setWidgetOpen] = useState(false);
 
-  const handleChange = (e) => setForm({ ...form, [e.target.name]: e.target.value });
+  const [tickets, setTickets] = useState([]);
+  const [ticketsLoading, setTicketsLoading] = useState(false);
+  const [ticketsError, setTicketsError] = useState("");
+
+  /* ================= FETCH USER TICKETS ================= */
+  const fetchTickets = async () => {
+    if (!form.email) return;
+
+    setTicketsLoading(true);
+    setTicketsError("");
+    try {
+      const res = await API.get(
+        `/contact/user-tickets?email=${form.email}`
+      );
+      setTickets(res.data.tickets || []);
+    } catch (err) {
+      setTicketsError("Failed to fetch tickets");
+    } finally {
+      setTicketsLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchTickets();
+  }, [form.email]);
+
+  /* ================= FORM HANDLERS ================= */
+  const handleChange = (e) =>
+    setForm({ ...form, [e.target.name]: e.target.value });
 
   const submit = async (e) => {
     e.preventDefault();
@@ -44,81 +73,207 @@ export default function SupportPage({ dark }) {
       setLoading(true);
       await API.post("/contact", form);
 
-      setStatus("Message sent successfully 🎉 The IT Wallah team will contact you.");
-      setForm({ name: "", email: "", category: "Other", priority: "Medium", subject: "", message: "" });
+      setStatus("Ticket submitted successfully 🎉");
+      setForm({
+        ...form,
+        name: "",
+        subject: "",
+        message: "",
+      });
+
+      fetchTickets();
       setTimeout(() => setStatus(""), 4000);
-    } catch (err) {
-      setStatus("Something went wrong. Please try again.");
+    } catch {
+      setStatus("Something went wrong");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <Box sx={{ backgroundColor: dark ? "#071124" : "#f3f6fb", minHeight: "100vh", pb: 8 }}>
+    <Box
+      sx={{
+        backgroundColor: dark ? "#071124" : "#f3f6fb",
+        minHeight: "100vh",
+        pb: 8,
+      }}
+    >
       <Helmet>
-        <title>The IT Wallah Support | Contact Us</title>
-        <meta
-          name="description"
-          content="Reach out to The IT Wallah support team. Ask questions about payments, orders, accounts, or any other issue. Available 24/7."
-        />
-        <meta name="keywords" content="The IT Wallah, support, contact, help, payments, queries" />
+        <title>The IT Wallah Support</title>
       </Helmet>
 
-      <Box sx={{ backgroundColor: "#0A1F44", color: "#fff", py: 8, textAlign: "center", mb: 6 }}>
-        <Container maxWidth="md">
-          <Typography variant="h3" sx={{ fontWeight: 800 }}>
-            The IT Wallah Support
-          </Typography>
-          <Typography sx={{ mt: 1, fontSize: "1.2rem" }}>
-            Have a question? We’re here 24/7 to assist you.
-          </Typography>
-        </Container>
+      {/* ================= HEADER ================= */}
+      <Box
+        sx={{
+          backgroundColor: "#0A1F44",
+          color: "#fff",
+          py: 7,
+          textAlign: "center",
+          mb: 6,
+        }}
+      >
+        <Typography variant="h3" fontWeight={800}>
+          The IT Wallah Support
+        </Typography>
+        <Typography mt={1}>
+          Have a question? We’re here 24/7 to assist you.
+        </Typography>
       </Box>
 
       <Container maxWidth="md">
         <Grid container spacing={4}>
+          {/* ================= CONTACT FORM ================= */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
-              <Typography variant="h6" sx={{ mb: 3, fontWeight: 600 }}>
+            <Paper sx={{ p: 4 }}>
+              <Typography variant="h6" mb={3}>
                 Contact Us
               </Typography>
 
-              <Box component="form" onSubmit={submit} sx={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                <TextField label="Name" name="name" value={form.name} onChange={handleChange} required fullWidth />
-                <TextField label="Email" name="email" type="email" value={form.email} onChange={handleChange} required fullWidth />
-                <TextField label="Category" name="category" select value={form.category} onChange={handleChange} fullWidth>
-                  {categories.map((cat) => <MenuItem key={cat} value={cat}>{cat}</MenuItem>)}
+              <Box
+                component="form"
+                onSubmit={submit}
+                display="flex"
+                flexDirection="column"
+                gap={2}
+              >
+                <TextField
+                  label="Name"
+                  name="name"
+                  value={form.name}
+                  onChange={handleChange}
+                  required
+                />
+                <TextField
+                  label="Email"
+                  name="email"
+                  value={form.email}
+                  onChange={handleChange}
+                  required
+                />
+                <TextField
+                  select
+                  label="Category"
+                  name="category"
+                  value={form.category}
+                  onChange={handleChange}
+                >
+                  {categories.map((c) => (
+                    <MenuItem key={c} value={c}>
+                      {c}
+                    </MenuItem>
+                  ))}
                 </TextField>
-                <TextField label="Priority" name="priority" select value={form.priority} onChange={handleChange} fullWidth>
-                  {priorities.map((p) => <MenuItem key={p} value={p}>{p}</MenuItem>)}
+                <TextField
+                  select
+                  label="Priority"
+                  name="priority"
+                  value={form.priority}
+                  onChange={handleChange}
+                >
+                  {priorities.map((p) => (
+                    <MenuItem key={p} value={p}>
+                      {p}
+                    </MenuItem>
+                  ))}
                 </TextField>
-                <TextField label="Subject" name="subject" value={form.subject} onChange={handleChange} required fullWidth />
-                <TextField label="Message" name="message" multiline rows={4} value={form.message} onChange={handleChange} fullWidth />
+                <TextField
+                  label="Subject"
+                  name="subject"
+                  value={form.subject}
+                  onChange={handleChange}
+                  required
+                />
+                <TextField
+                  label="Message"
+                  name="message"
+                  value={form.message}
+                  onChange={handleChange}
+                  multiline
+                  rows={3}
+                />
 
-                <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap", mt: 1 }}>
-                  <Button type="submit" variant="contained" color="primary" disabled={loading}>
-                    {loading ? "Sending..." : "Send Message"}
-                  </Button>
-                  <Button variant="outlined" startIcon={<FaComments />} onClick={() => setWidgetOpen(true)}>
-                    Open Chat
-                  </Button>
-                </Box>
+                <Button
+                  type="submit"
+                  variant="contained"
+                  disabled={loading}
+                >
+                  {loading ? "Sending..." : "Send Message"}
+                </Button>
 
-                {status && <Typography color="success.main" sx={{ mt: 1, fontWeight: 500 }}>{status}</Typography>}
+                {status && <Alert severity="success">{status}</Alert>}
               </Box>
             </Paper>
           </Grid>
 
+          {/* ================= QUICK SUPPORT + STATUS ================= */}
           <Grid item xs={12} md={6}>
-            <Paper sx={{ p: 4, borderRadius: 2, boxShadow: 3 }}>
-              <Typography variant="h6" sx={{ mb: 2, fontWeight: 600 }}>Quick Support</Typography>
-              <Typography sx={{ mb: 3 }}>Call us or reach via WhatsApp for urgent queries</Typography>
-
-              <Box sx={{ display: "flex", gap: 2, flexWrap: "wrap" }}>
-                <Button startIcon={<FaPhoneAlt />} variant="contained" color="secondary">Call</Button>
-                <Button startIcon={<FaWhatsapp />} variant="outlined" color="success" onClick={() => window.open("https://wa.me/6263615262", "_blank")}>WhatsApp</Button>
+            {/* QUICK SUPPORT */}
+            <Paper sx={{ p: 4, mb: 4 }}>
+              <Typography variant="h6" mb={2}>
+                Quick Support
+              </Typography>
+              <Box display="flex" gap={2}>
+                <Button startIcon={<FaPhoneAlt />} variant="contained">
+                  Call
+                </Button>
+                <Button
+                  startIcon={<FaWhatsapp />}
+                  variant="outlined"
+                  color="success"
+                  onClick={() =>
+                    window.open("https://wa.me/6263615262", "_blank")
+                  }
+                >
+                  WhatsApp
+                </Button>
               </Box>
+            </Paper>
+
+            {/* SUPPORT STATUS */}
+            <Paper sx={{ p: 4 }}>
+              <Typography variant="h6" mb={3}>
+                Your Support Status
+              </Typography>
+
+              {ticketsLoading ? (
+                <CircularProgress />
+              ) : ticketsError ? (
+                <Alert severity="error">{ticketsError}</Alert>
+              ) : tickets.length === 0 ? (
+                <Typography>No tickets found</Typography>
+              ) : (
+                tickets.map((ticket) => (
+                  <Paper
+                    key={ticket._id}
+                    sx={{
+                      p: 2,
+                      mb: 2,
+                      borderLeft: `5px solid ${
+                        ticket.resolved ? "green" : "orange"
+                      }`,
+                    }}
+                  >
+                    <Typography
+                      fontWeight={600}
+                      color={ticket.resolved ? "green" : "orange"}
+                    >
+                      Status:{" "}
+                      {ticket.resolved
+                        ? "Resolved ✅"
+                        : "Pending ⏳"}
+                    </Typography>
+
+                    <Box mt={1}>
+                      <Typography fontWeight={600}>
+                        Admin Reply:
+                      </Typography>
+                      <Typography>
+                        {ticket.reply || "No reply from admin yet"}
+                      </Typography>
+                    </Box>
+                  </Paper>
+                ))
+              )}
             </Paper>
           </Grid>
         </Grid>

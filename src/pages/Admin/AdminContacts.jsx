@@ -10,10 +10,9 @@ import {
   TableRow,
   Button,
   TextField,
-  Select,
-  MenuItem,
   Box,
   CircularProgress,
+  Alert,
 } from "@mui/material";
 
 const backendURL = "https://sm-backend-8me3.onrender.com";
@@ -29,6 +28,7 @@ const AdminContacts = () => {
   // Fetch all contact tickets
   const fetchTickets = async () => {
     setLoading(true);
+    setError(null);
     try {
       const res = await axios.get(`${backendURL}/api/admin/contacts`, {
         headers: { Authorization: `Bearer ${token}` },
@@ -36,7 +36,10 @@ const AdminContacts = () => {
       setTickets(res.data.tickets || res.data);
     } catch (err) {
       console.error("Error fetching tickets:", err);
-      setError(err.response?.data?.message || err.message);
+      setError(
+        err.response?.data?.message ||
+          "Failed to fetch tickets. Please check backend or token."
+      );
     } finally {
       setLoading(false);
     }
@@ -44,11 +47,13 @@ const AdminContacts = () => {
 
   useEffect(() => {
     fetchTickets();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   // Send reply to a user
   const handleReply = async (ticketId) => {
-    if (!reply[ticketId]) return alert("Enter a reply first");
+    if (!reply[ticketId] || reply[ticketId].trim() === "")
+      return alert("Enter a reply first");
     try {
       await axios.put(
         `${backendURL}/api/admin/contact/${ticketId}/reply`,
@@ -60,7 +65,9 @@ const AdminContacts = () => {
       alert("Reply sent successfully!");
     } catch (err) {
       console.error("Error sending reply:", err);
-      alert("Failed to send reply.");
+      alert(
+        err.response?.data?.message || "Failed to send reply. Try again later."
+      );
     }
   };
 
@@ -73,9 +80,12 @@ const AdminContacts = () => {
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchTickets();
+      alert("Ticket marked as resolved!");
     } catch (err) {
       console.error("Error resolving ticket:", err);
-      alert("Failed to resolve ticket.");
+      alert(
+        err.response?.data?.message || "Failed to resolve ticket. Try again later."
+      );
     }
   };
 
@@ -88,9 +98,9 @@ const AdminContacts = () => {
 
   if (error)
     return (
-      <Typography color="error" py={5} textAlign="center">
-        {error}
-      </Typography>
+      <Container sx={{ py: 5 }}>
+        <Alert severity="error">{error}</Alert>
+      </Container>
     );
 
   return (
@@ -99,73 +109,75 @@ const AdminContacts = () => {
         Admin Panel - User Contacts / Complaints
       </Typography>
 
-      <Table>
-        <TableHead>
-          <TableRow>
-            <TableCell>Name</TableCell>
-            <TableCell>Email</TableCell>
-            <TableCell>Category</TableCell>
-            <TableCell>Priority</TableCell>
-            <TableCell>Subject</TableCell>
-            <TableCell>Message</TableCell>
-            <TableCell>Reply</TableCell>
-            <TableCell>Status</TableCell>
-            <TableCell>Actions</TableCell>
-          </TableRow>
-        </TableHead>
-
-        <TableBody>
-          {tickets.map((ticket) => (
-            <TableRow key={ticket._id}>
-              <TableCell>{ticket.name}</TableCell>
-              <TableCell>{ticket.email}</TableCell>
-              <TableCell>{ticket.category}</TableCell>
-              <TableCell>{ticket.priority}</TableCell>
-              <TableCell>{ticket.subject}</TableCell>
-              <TableCell>{ticket.message}</TableCell>
-
-              {/* Reply input */}
-              <TableCell>
-                <TextField
-                  size="small"
-                  fullWidth
-                  value={reply[ticket._id] || ticket.reply || ""}
-                  onChange={(e) =>
-                    setReply((prev) => ({ ...prev, [ticket._id]: e.target.value }))
-                  }
-                  placeholder="Type your reply..."
-                />
-                <Button
-                  size="small"
-                  sx={{ mt: 1 }}
-                  variant="contained"
-                  onClick={() => handleReply(ticket._id)}
-                >
-                  Send
-                </Button>
-              </TableCell>
-
-              {/* Status */}
-              <TableCell>
-                {ticket.resolved ? "Resolved" : "Pending"}
-              </TableCell>
-
-              {/* Actions */}
-              <TableCell>
-                {!ticket.resolved && (
-                  <Button
-                    variant="outlined"
-                    color="success"
-                    onClick={() => handleResolve(ticket._id)}
-                  >
-                    Mark Resolved
-                  </Button>
-                )}
-              </TableCell>
+      {tickets.length === 0 ? (
+        <Typography>No tickets found.</Typography>
+      ) : (
+        <Table>
+          <TableHead>
+            <TableRow>
+              <TableCell>Name</TableCell>
+              <TableCell>Email</TableCell>
+              <TableCell>Category</TableCell>
+              <TableCell>Priority</TableCell>
+              <TableCell>Subject</TableCell>
+              <TableCell>Message</TableCell>
+              <TableCell>Reply</TableCell>
+              <TableCell>Status</TableCell>
+              <TableCell>Actions</TableCell>
             </TableRow>
-          ))}
-        </TableBody>
-      </Table>
+          </TableHead>
+
+          <TableBody>
+            {tickets.map((ticket) => (
+              <TableRow key={ticket._id}>
+                <TableCell>{ticket.name}</TableCell>
+                <TableCell>{ticket.email}</TableCell>
+                <TableCell>{ticket.category}</TableCell>
+                <TableCell>{ticket.priority}</TableCell>
+                <TableCell>{ticket.subject}</TableCell>
+                <TableCell>{ticket.message}</TableCell>
+
+                {/* Reply input */}
+                <TableCell>
+                  <TextField
+                    size="small"
+                    fullWidth
+                    value={reply[ticket._id] ?? ticket.reply ?? ""}
+                    onChange={(e) =>
+                      setReply((prev) => ({ ...prev, [ticket._id]: e.target.value }))
+                    }
+                    placeholder="Type your reply..."
+                  />
+                  <Button
+                    size="small"
+                    sx={{ mt: 1 }}
+                    variant="contained"
+                    onClick={() => handleReply(ticket._id)}
+                  >
+                    Send
+                  </Button>
+                </TableCell>
+
+                {/* Status */}
+                <TableCell>{ticket.resolved ? "Resolved" : "Pending"}</TableCell>
+
+                {/* Actions */}
+                <TableCell>
+                  {!ticket.resolved && (
+                    <Button
+                      variant="outlined"
+                      color="success"
+                      onClick={() => handleResolve(ticket._id)}
+                    >
+                      Mark Resolved
+                    </Button>
+                  )}
+                </TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      )}
     </Container>
   );
 };
