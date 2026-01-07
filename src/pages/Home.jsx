@@ -23,8 +23,11 @@ import SchoolIcon from "@mui/icons-material/School";
 import LiveTvIcon from "@mui/icons-material/LiveTv";
 import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import SearchIcon from "@mui/icons-material/Search";
+import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 
 import { motion } from "framer-motion";
+import banner1 from "../Images/banner1.png";
+
 import img1 from "../Images/banner.jpeg";
 
 /* ================= SEO (React 19 SAFE) ================= */
@@ -48,6 +51,8 @@ const categories = [
   "Technology",
 ];
 
+const images = [banner1]; // fixed image imports
+
 const popularCourses = [
   { title: "Full Stack MERN Bootcamp", teacher: "Rahul Sharma", rating: 4.7 },
   { title: "Business Fundamentals", teacher: "Anil Mehta", rating: 4.6 },
@@ -65,6 +70,7 @@ function HomePage() {
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [openHelp, setOpenHelp] = useState(false);
   const [openBanner, setOpenBanner] = useState(true);
+  const [index, setIndex] = useState(0);
 
   /* 🔐 AUTH + SEO */
   useEffect(() => {
@@ -74,8 +80,79 @@ function HomePage() {
     if (!token) setOpenHelp(true);
   }, []);
 
+  /* ================= SLIDER HANDLERS ================= */
+  const handleNext = () => {
+    setIndex((prev) => (prev + 1) % images.length);
+  };
+
+  const handlePrev = () => {
+    setIndex((prev) => (prev - 1 + images.length) % images.length);
+  };
+
+  useEffect(() => {
+    const timer = setInterval(handleNext, 4000);
+    return () => clearInterval(timer);
+  }, []);
+
   return (
     <Box sx={{ bgcolor: "#f5f7fb" }}>
+      {/* ================= IMAGE SLIDER ================= */}
+      <Box sx={{ position: "relative", overflow: "hidden" }}>
+        <Box
+          sx={{
+            display: "flex",
+            transition: "transform 0.6s ease",
+            transform: `translateX(-${index * 100}%)`,
+          }}
+        >
+          {images.map((img, i) => (
+            <Box
+              key={i}
+              component="img"
+              src={img}
+              alt={`slide-${i}`}
+              sx={{
+                width: "100%",
+                height: { xs: 180, sm: 280, md: 380 }, // smaller height
+                objectFit: "cover",
+                flexShrink: 0,
+              }}
+            />
+          ))}
+        </Box>
+
+        {/* Left Arrow */}
+        <IconButton
+          onClick={handlePrev}
+          sx={{
+            position: "absolute",
+            top: "50%",
+            left: 10,
+            transform: "translateY(-50%)",
+            bgcolor: "rgba(0,0,0,0.5)",
+            color: "#fff",
+            "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
+          }}
+        >
+          <ArrowBackIos />
+        </IconButton>
+
+        {/* Right Arrow */}
+        <IconButton
+          onClick={handleNext}
+          sx={{
+            position: "absolute",
+            top: "50%",
+            right: 10,
+            transform: "translateY(-50%)",
+            bgcolor: "rgba(0,0,0,0.5)",
+            color: "#fff",
+            "&:hover": { bgcolor: "rgba(0,0,0,0.7)" },
+          }}
+        >
+          <ArrowForwardIos />
+        </IconButton>
+      </Box>
 
       {/* ================= HERO ================= */}
       <Box
@@ -131,7 +208,7 @@ function HomePage() {
                 src="https://cdn-icons-png.flaticon.com/512/3135/3135715.png"
                 alt="Online Learning"
                 loading="lazy"
-                style={{ width: "100%", maxWidth: 380, margin: "auto" }}
+                style={{ width: "100%", maxWidth: 320, margin: "auto" }}
                 initial={{ opacity: 0, y: 40 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ duration: 0.6 }}
@@ -154,8 +231,10 @@ function HomePage() {
         </Card>
       </Container>
 
-       {/* ⭐ PERFECT CONTINUOUS MARQUEE */}
-      <Box sx={{ width: "100%", background: "#6C63FF", py: 2, overflow: "hidden" }}>
+      {/* ================= MARQUEE ================= */}
+      <Box
+        sx={{ width: "100%", background: "#6C63FF", py: 2, overflow: "hidden" }}
+      >
         <motion.div
           animate={{ x: ["0%", "-100%"] }}
           transition={{ repeat: Infinity, duration: 12, ease: "linear" }}
@@ -177,7 +256,6 @@ function HomePage() {
         <Typography variant="h5" fontWeight={700} mb={3}>
           Popular Categories
         </Typography>
-
         <Grid container spacing={3}>
           {categories.map((cat) => (
             <Grid item xs={6} sm={4} md={2} key={cat}>
@@ -206,7 +284,6 @@ function HomePage() {
         <Typography variant="h5" fontWeight={700} mb={3}>
           Popular Courses
         </Typography>
-
         <Grid container spacing={3}>
           {popularCourses.map((c) => (
             <Grid item xs={12} sm={6} md={4} key={c.title}>
@@ -229,7 +306,6 @@ function HomePage() {
         <Typography variant="h5" fontWeight={700} mb={3}>
           Top Teachers
         </Typography>
-
         <Grid container spacing={3}>
           {teachers.map((t) => (
             <Grid item xs={12} sm={4} key={t.name}>
