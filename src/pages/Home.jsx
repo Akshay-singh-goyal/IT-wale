@@ -362,88 +362,55 @@ function HomePage() {
       </Container>
 
       {/* ================= TEACHERS ================= */}
-    <Container sx={{ py: { xs: 8, md: 10 } }}>
-  <Typography
-    variant="h4"
-    fontWeight={800}
-    mb={1}
-    textAlign="center"
-  >
-    Meet Our Expert Teachers
-  </Typography>
+     <Container sx={{ py: { xs: 8, md: 10 } }}>
+        <Typography variant="h4" fontWeight={800} textAlign="center">
+          Meet Our Expert Teachers
+        </Typography>
+        <Typography textAlign="center" color="text.secondary" mb={6}>
+          Learn from industry experts with years of teaching experience
+        </Typography>
 
-  <Typography
-    textAlign="center"
-    sx={{ color: "text.secondary", mb: 6 }}
-  >
-    Learn from industry experts with years of teaching experience
-  </Typography>
+        {/* DESKTOP GRID */}
+        <Grid
+          container
+          spacing={5}
+          sx={{ display: { xs: "none", md: "flex" } }}
+        >
+          {teachers.map((t, i) => (
+            <Grid item md={4} key={i}>
+              <TeacherCard t={t} />
+            </Grid>
+          ))}
+        </Grid>
 
-  <Grid container spacing={5}>
-    {teachers.map((t) => (
-      <Grid item xs={12} sm={6} md={4} key={t.name}>
-        <Card
+        {/* MOBILE NETFLIX SLIDER */}
+        <Box
           sx={{
-            textAlign: "center",
-            px: 3,
-            py: 5,
-            height: "100%",
-            borderRadius: 5,
-            background: "linear-gradient(180deg,#ffffff,#f9f9ff)",
-            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
-            transition: "all 0.35s ease",
-            "&:hover": {
-              transform: "translateY(-12px)",
-              boxShadow: "0 20px 45px rgba(26,115,232,0.25)",
-            },
+            display: { xs: "block", md: "none" },
+            overflow: "hidden",
           }}
         >
-          <Avatar
-            src={t.photo}
-            alt={t.name}
-            sx={{
-              width: 120,
-              height: 120,
-              mx: "auto",
-              mb: 3,
-              border: "5px solid #1a73e8",
-              boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+          <motion.div
+            style={{
+              display: "flex",
+              gap: 16,
+              scrollSnapType: "x mandatory",
             }}
-          />
-
-          <Typography
-            variant="h6"
-            fontWeight={700}
-            mb={0.5}
+            drag="x"
+            animate={controls}
+            onHoverStart={() => controls.stop()}
+            onHoverEnd={() => controls.start()}
+            onDragStart={() => controls.stop()}
+            onDragEnd={() => controls.start()}
           >
-            {t.name}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontSize: 15,
-              color: "text.secondary",
-              mb: 2,
-            }}
-          >
-            {t.subject}
-          </Typography>
-
-          <Typography
-            sx={{
-              fontSize: 14,
-              color: "#1a73e8",
-              fontWeight: 600,
-            }}
-          >
-            ⭐ Top Rated Instructor
-          </Typography>
-        </Card>
-      </Grid>
-    ))}
-  </Grid>
-</Container>
-
+            {[...teachers, ...teachers].map((t, i) => (
+              <Box key={i} sx={{ minWidth: 260 }}>
+                <TeacherCard t={t} />
+              </Box>
+            ))}
+          </motion.div>
+        </Box>
+      </Container>
 
       {/* ================= HELP BUTTON ================= */}
       {!isLoggedIn && (
