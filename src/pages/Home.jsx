@@ -29,6 +29,9 @@ import { motion } from "framer-motion";
 import banner1 from "../Images/banner1.png";
 
 import img1 from "../Images/banner.jpeg";
+import teacher1 from "../Images/selfcircle.jpeg";
+import teacher2 from "../Images/selfcircle.jpeg";
+import teacher3 from "../Images/selfcircle.jpeg";
 
 /* ================= SEO (React 19 SAFE) ================= */
 const setSEO = () => {
@@ -54,15 +57,27 @@ const categories = [
 const images = [banner1]; // fixed image imports
 
 const popularCourses = [
-  { title: "Full Stack MERN Bootcamp", teacher: "Rahul Sharma", rating: 4.7 },
-  { title: "Business Fundamentals", teacher: "Anil Mehta", rating: 4.6 },
-  { title: "Stock Market Basics", teacher: "Aman Gupta", rating: 4.8 },
+  { title: "Full Stack MERN Bootcamp", teacher: "Akshay Goyal", rating: 4.7 },
+  { title: "Carrers Guidence", teacher: "Akshay Goyal", rating: 4.6 },
+  { title: "Doubt solving", teacher: "Akshay Goyal", rating: 4.8 },
 ];
 
 const teachers = [
-  { name: "Pooja Singh", subject: "Maths" },
-  { name: "Ankit Verma", subject: "Web Development" },
-  { name: "Neha Basu", subject: "Business Studies" },
+  {
+    name: "Akshay Goyal",
+    subject: "DSA",
+    photo: teacher1,
+  },
+  {
+    name: "Akshay Goyal",
+    subject: "Web Development",
+    photo: teacher2,
+  },
+  {
+    name: "Akshay Goyal",
+    subject: "Basic of Computer",
+    photo: teacher3,
+  },
 ];
 
 /* ================= COMPONENT ================= */
@@ -302,32 +317,88 @@ function HomePage() {
       </Container>
 
       {/* ================= TEACHERS ================= */}
-      <Container sx={{ pb: 8 }}>
-        <Typography variant="h5" fontWeight={700} mb={3}>
-          Top Teachers
-        </Typography>
-        <Grid container spacing={3}>
-          {teachers.map((t) => (
-            <Grid item xs={12} sm={4} key={t.name}>
-              <Card sx={{ textAlign: "center", py: 4, borderRadius: 3 }}>
-                <Avatar
-                  sx={{
-                    width: 80,
-                    height: 80,
-                    mx: "auto",
-                    mb: 2,
-                    bgcolor: "#1a73e8",
-                  }}
-                >
-                  {t.name.charAt(0)}
-                </Avatar>
-                <Typography variant="h6">{t.name}</Typography>
-                <Typography sx={{ opacity: 0.7 }}>{t.subject}</Typography>
-              </Card>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
+    <Container sx={{ py: { xs: 8, md: 10 } }}>
+  <Typography
+    variant="h4"
+    fontWeight={800}
+    mb={1}
+    textAlign="center"
+  >
+    Meet Our Expert Teachers
+  </Typography>
+
+  <Typography
+    textAlign="center"
+    sx={{ color: "text.secondary", mb: 6 }}
+  >
+    Learn from industry experts with years of teaching experience
+  </Typography>
+
+  <Grid container spacing={5}>
+    {teachers.map((t) => (
+      <Grid item xs={12} sm={6} md={4} key={t.name}>
+        <Card
+          sx={{
+            textAlign: "center",
+            px: 3,
+            py: 5,
+            height: "100%",
+            borderRadius: 5,
+            background: "linear-gradient(180deg,#ffffff,#f9f9ff)",
+            boxShadow: "0 10px 30px rgba(0,0,0,0.08)",
+            transition: "all 0.35s ease",
+            "&:hover": {
+              transform: "translateY(-12px)",
+              boxShadow: "0 20px 45px rgba(26,115,232,0.25)",
+            },
+          }}
+        >
+          <Avatar
+            src={t.photo}
+            alt={t.name}
+            sx={{
+              width: 120,
+              height: 120,
+              mx: "auto",
+              mb: 3,
+              border: "5px solid #1a73e8",
+              boxShadow: "0 8px 20px rgba(0,0,0,0.15)",
+            }}
+          />
+
+          <Typography
+            variant="h6"
+            fontWeight={700}
+            mb={0.5}
+          >
+            {t.name}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 15,
+              color: "text.secondary",
+              mb: 2,
+            }}
+          >
+            {t.subject}
+          </Typography>
+
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#1a73e8",
+              fontWeight: 600,
+            }}
+          >
+            ⭐ Top Rated Instructor
+          </Typography>
+        </Card>
+      </Grid>
+    ))}
+  </Grid>
+</Container>
+
 
       {/* ================= HELP BUTTON ================= */}
       {!isLoggedIn && (
