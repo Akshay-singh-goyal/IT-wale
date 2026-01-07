@@ -25,7 +25,7 @@ import HelpOutlineIcon from "@mui/icons-material/HelpOutline";
 import SearchIcon from "@mui/icons-material/Search";
 import { ArrowBackIos, ArrowForwardIos } from "@mui/icons-material";
 
-import { motion } from "framer-motion";
+import { motion, useAnimation } from "framer-motion";
 import banner1 from "../Images/banner1.png";
 
 import img1 from "../Images/banner.jpeg";
@@ -118,6 +118,7 @@ function HomePage() {
   const [openHelp, setOpenHelp] = useState(false);
   const [openBanner, setOpenBanner] = useState(true);
   const [index, setIndex] = useState(0);
+  const controls = useAnimation();
 
   /* 🔐 AUTH + SEO */
   useEffect(() => {
