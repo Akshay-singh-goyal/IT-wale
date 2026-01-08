@@ -274,13 +274,13 @@ const CreateNotes = () => {
         />
 
         {/* ================= SUBJECT CODE ================= */}
-        <Autocomplete
+       <Autocomplete
           options={[
             ...new Map(
               universities
                 .flatMap((u) =>
-                  u.subjects.flatMap((s) =>
-                    s.subjectCodes.map((sc) => ({
+                  (u.subjects || []).flatMap((s) =>
+                    (s.subjectCodes || []).map((sc) => ({
                       code: sc.code,
                       branch: sc.branch,
                       department: sc.department,
@@ -293,7 +293,7 @@ const CreateNotes = () => {
           getOptionLabel={(option) =>
             `${option.code} - ${option.branch}`
           }
-          value={null} // intentionally uncontrolled (multi add)
+          value={null}
           onChange={(e, v) => {
             if (!v) return;
 
