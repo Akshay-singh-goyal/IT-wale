@@ -14,6 +14,10 @@ import {
   Paper,
   IconButton,
   Stack,
+  MenuItem,
+  Select,
+  FormControl,
+  InputLabel,
 } from '@mui/material';
 import {
   Edit,
@@ -35,6 +39,7 @@ const CreateNotes = () => {
   const topicNameRef = useRef(null);
   const topicDetailsRef = useRef(null);
 
+  const [fontSize, setFontSize] = useState(14); // ✅ Default font size
   const [formData, setFormData] = useState({
     university: null,
     department: '',
@@ -134,6 +139,7 @@ const CreateNotes = () => {
       topicNameRef.current.innerHTML = '';
       topicDetailsRef.current.innerHTML = '';
       setEditingId(null);
+      setFontSize(14); // Reset font size
       fetchNotes();
       fetchUniversities();
     } catch (err) {
@@ -157,6 +163,14 @@ const CreateNotes = () => {
 
     topicNameRef.current.innerHTML = note.topicName;
     topicDetailsRef.current.innerHTML = note.topicDetails;
+
+    // Optional: Extract font size from saved content (if saved in style)
+    const size = parseInt(
+      window
+        .getComputedStyle(topicDetailsRef.current)
+        .fontSize.replace('px', '')
+    );
+    setFontSize(size || 14);
   };
 
   // ===== DELETE NOTE =====
@@ -189,6 +203,8 @@ const CreateNotes = () => {
     'German',
     'Other',
   ];
+
+  const fontSizes = Array.from({ length: 25 }, (_, i) => i + 12); // 12px to 36px
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', mt: 3, p: 2 }}>
@@ -229,9 +245,7 @@ const CreateNotes = () => {
         <Autocomplete
           options={[
             ...new Set(
-              universities.flatMap((u) =>
-                u.subjects.map((s) => s.branch)
-              )
+              universities.flatMap((u) => u.subjects.map((s) => s.branch))
             ),
           ]}
           value={formData.branch}
@@ -317,7 +331,7 @@ const CreateNotes = () => {
         />
 
         {/* ===== FORMAT TOOLBAR ===== */}
-        <Stack direction="row" spacing={1} mt={2}>
+        <Stack direction="row" spacing={1} mt={2} alignItems="center">
           <IconButton onClick={() => formatText('bold')}>
             <FormatBold />
           </IconButton>
@@ -327,6 +341,22 @@ const CreateNotes = () => {
           <IconButton onClick={() => formatText('underline')}>
             <FormatUnderlined />
           </IconButton>
+
+          {/* ===== FONT SIZE SELECT ===== */}
+          <FormControl size="small" sx={{ minWidth: 100 }}>
+            <InputLabel>Font Size</InputLabel>
+            <Select
+              value={fontSize}
+              label="Font Size"
+              onChange={(e) => setFontSize(e.target.value)}
+            >
+              {fontSizes.map((size) => (
+                <MenuItem key={size} value={size}>
+                  {size}px
+                </MenuItem>
+              ))}
+            </Select>
+          </FormControl>
         </Stack>
 
         {/* ===== TOPIC NAME ===== */}
@@ -340,6 +370,7 @@ const CreateNotes = () => {
             p: 1,
             mt: 1,
             minHeight: 40,
+            fontSize: `${fontSize}px`, // ✅ Apply font size
           }}
         />
 
@@ -354,6 +385,7 @@ const CreateNotes = () => {
             p: 1,
             mt: 2,
             minHeight: 120,
+            fontSize: `${fontSize}px`, // ✅ Apply font size
           }}
         />
 
@@ -386,9 +418,7 @@ const CreateNotes = () => {
                     {note.subjectName} ({note.subjectCode})
                   </TableCell>
                   <TableCell>
-                    <div
-                      dangerouslySetInnerHTML={{ __html: note.topicName }}
-                    />
+                    <div dangerouslySetInnerHTML={{ __html: note.topicName }} />
                   </TableCell>
                   <TableCell>{note.language || '-'}</TableCell>
                   <TableCell>
