@@ -40,7 +40,7 @@ const CreateNotes = () => {
     department: '',
     branch: '',
     subjectName: '',
-    subjectCode: '',
+    subjectCodes: [],
     year: '',
     semester: '',
     topicName: '',
@@ -123,7 +123,7 @@ const CreateNotes = () => {
         department: '',
         branch: '',
         subjectName: '',
-        subjectCode: '',
+        subjectCodes: [],
         year: '',
         semester: '',
         topicName: '',
@@ -189,6 +189,12 @@ const CreateNotes = () => {
     'German',
     'Other',
   ];
+  const [tempSubjectCode, setTempSubjectCode] = useState({
+  code: "",
+  branch: "",
+  department: "",
+});
+
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', mt: 3, p: 2 }}>
@@ -264,23 +270,38 @@ const CreateNotes = () => {
         />
 
         {/* ===== SUBJECT CODE ===== */}
-        <Autocomplete
-          options={[
-            ...new Set(
-              universities.flatMap((u) =>
-                u.subjects.map((s) => s.subjectCode)
-              )
-            ),
-          ]}
-          value={formData.subjectCode}
-          onChange={(e, v) =>
-            setFormData({ ...formData, subjectCode: v || '' })
-          }
-          renderInput={(p) => (
-            <TextField {...p} label="Subject Code" margin="dense" />
-          )}
-          freeSolo
-        />
+       <Autocomplete
+  options={[
+    ...new Map(
+      universities
+        .flatMap((u) =>
+          u.subjects.flatMap((s) =>
+            s.subjectCodes.map((sc) => ({
+              code: sc.code,
+              branch: sc.branch,
+              department: sc.department,
+            }))
+          )
+        )
+        .map((item) => [item.code, item])
+    ).values(),
+  ]}
+  getOptionLabel={(option) =>
+    `${option.code} - ${option.branch}`
+  }
+  value={null}
+  onChange={(e, v) => {
+    if (!v) return;
+
+    setFormData({
+      ...formData,
+      subjectCodes: [...formData.subjectCodes, v],
+    });
+  }}
+  renderInput={(params) => (
+    <TextField {...params} label="Subject Code" margin="dense" />
+  )}
+/>
 
         {/* ===== YEAR ===== */}
         <TextField
