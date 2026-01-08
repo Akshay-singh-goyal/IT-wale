@@ -81,11 +81,7 @@ const CreateNotes = () => {
       console.error(err);
     }
   };
-useEffect(() => {
-  axios.get("/api/notes")
-    .then(res => setNotes(res.data))
-    .catch(err => console.error(err));
-}, []);
+
   useEffect(() => {
     fetchUniversities();
     fetchNotes();
