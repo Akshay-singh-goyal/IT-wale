@@ -48,7 +48,17 @@ const CreateNotes = () => {
     language: '',
   });
 
-  // ===== FETCH UNIVERSITIES =====
+  /* ========================================================= */
+  /* FUTURE SAFE STATE – currently not used (no warning)       */
+  /* ========================================================= */
+  const [tempSubjectCode, setTempSubjectCode] = useState({
+    code: '',
+    branch: '',
+    department: '',
+  });
+  // Reserved for future Subject Code Chip editor
+
+  /* ================= FETCH UNIVERSITIES ================= */
   const fetchUniversities = async () => {
     try {
       const res = await axios.get(
@@ -60,7 +70,7 @@ const CreateNotes = () => {
     }
   };
 
-  // ===== FETCH NOTES =====
+  /* ================= FETCH NOTES ================= */
   const fetchNotes = async () => {
     try {
       const res = await axios.get(
@@ -77,17 +87,17 @@ const CreateNotes = () => {
     fetchNotes();
   }, []);
 
-  // ===== FORMAT TEXT =====
+  /* ================= TEXT FORMAT ================= */
   const formatText = (command) => {
     document.execCommand(command, false, null);
   };
 
-  // ===== HANDLE NORMAL INPUT =====
+  /* ================= INPUT CHANGE ================= */
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  // ===== HANDLE SUBMIT =====
+  /* ================= SUBMIT ================= */
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -141,7 +151,7 @@ const CreateNotes = () => {
     }
   };
 
-  // ===== EDIT NOTE =====
+  /* ================= EDIT ================= */
   const handleEdit = (note) => {
     setEditingId(note._id);
     setFormData({
@@ -149,7 +159,7 @@ const CreateNotes = () => {
       department: note.department,
       branch: note.branch,
       subjectName: note.subjectName,
-      subjectCode: note.subjectCode,
+      subjectCodes: note.subjectCodes || [],
       year: note.year,
       semester: note.semester,
       language: note.language || '',
@@ -159,7 +169,7 @@ const CreateNotes = () => {
     topicDetailsRef.current.innerHTML = note.topicDetails;
   };
 
-  // ===== DELETE NOTE =====
+  /* ================= DELETE ================= */
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
       await axios.delete(
@@ -169,7 +179,7 @@ const CreateNotes = () => {
     }
   };
 
-  // ===== ADD UNIVERSITY PAGE =====
+  /* ================= ADD UNIVERSITY PAGE ================= */
   if (showAddUniversity) {
     return (
       <Box p={2}>
@@ -189,12 +199,6 @@ const CreateNotes = () => {
     'German',
     'Other',
   ];
-  const [tempSubjectCode, setTempSubjectCode] = useState({
-  code: "",
-  branch: "",
-  department: "",
-});
-
 
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', mt: 3, p: 2 }}>
@@ -203,7 +207,7 @@ const CreateNotes = () => {
       </Typography>
 
       <form onSubmit={handleSubmit}>
-        {/* ===== UNIVERSITY ===== */}
+        {/* ================= UNIVERSITY ================= */}
         <Autocomplete
           options={[...universities, { name: 'Add New University', _id: null }]}
           getOptionLabel={(o) => o.name}
@@ -218,7 +222,7 @@ const CreateNotes = () => {
           )}
         />
 
-        {/* ===== DEPARTMENT ===== */}
+        {/* ================= DEPARTMENT ================= */}
         <Autocomplete
           options={[...new Set(universities.map((u) => u.department))]}
           value={formData.department}
@@ -231,7 +235,7 @@ const CreateNotes = () => {
           freeSolo
         />
 
-        {/* ===== BRANCH ===== */}
+        {/* ================= BRANCH ================= */}
         <Autocomplete
           options={[
             ...new Set(
@@ -250,7 +254,7 @@ const CreateNotes = () => {
           freeSolo
         />
 
-        {/* ===== SUBJECT NAME ===== */}
+        {/* ================= SUBJECT NAME ================= */}
         <Autocomplete
           options={[
             ...new Set(
@@ -269,41 +273,46 @@ const CreateNotes = () => {
           freeSolo
         />
 
-        {/* ===== SUBJECT CODE ===== */}
-       <Autocomplete
-  options={[
-    ...new Map(
-      universities
-        .flatMap((u) =>
-          u.subjects.flatMap((s) =>
-            s.subjectCodes.map((sc) => ({
-              code: sc.code,
-              branch: sc.branch,
-              department: sc.department,
-            }))
-          )
-        )
-        .map((item) => [item.code, item])
-    ).values(),
-  ]}
-  getOptionLabel={(option) =>
-    `${option.code} - ${option.branch}`
-  }
-  value={null}
-  onChange={(e, v) => {
-    if (!v) return;
+        {/* ================= SUBJECT CODE ================= */}
+        <Autocomplete
+          options={[
+            ...new Map(
+              universities
+                .flatMap((u) =>
+                  u.subjects.flatMap((s) =>
+                    s.subjectCodes.map((sc) => ({
+                      code: sc.code,
+                      branch: sc.branch,
+                      department: sc.department,
+                    }))
+                  )
+                )
+                .map((item) => [item.code, item])
+            ).values(),
+          ]}
+          getOptionLabel={(option) =>
+            `${option.code} - ${option.branch}`
+          }
+          value={null} // intentionally uncontrolled (multi add)
+          onChange={(e, v) => {
+            if (!v) return;
 
-    setFormData({
-      ...formData,
-      subjectCodes: [...formData.subjectCodes, v],
-    });
-  }}
-  renderInput={(params) => (
-    <TextField {...params} label="Subject Code" margin="dense" />
-  )}
-/>
+            const exists = formData.subjectCodes.some(
+              (s) => s.code === v.code
+            );
+            if (exists) return;
 
-        {/* ===== YEAR ===== */}
+            setFormData({
+              ...formData,
+              subjectCodes: [...formData.subjectCodes, v],
+            });
+          }}
+          renderInput={(params) => (
+            <TextField {...params} label="Subject Code" margin="dense" />
+          )}
+        />
+
+        {/* ================= YEAR ================= */}
         <TextField
           label="Year"
           name="year"
@@ -314,7 +323,7 @@ const CreateNotes = () => {
           margin="dense"
         />
 
-        {/* ===== SEMESTER ===== */}
+        {/* ================= SEMESTER ================= */}
         <TextField
           label="Semester"
           name="semester"
@@ -325,7 +334,7 @@ const CreateNotes = () => {
           margin="dense"
         />
 
-        {/* ===== LANGUAGE ===== */}
+        {/* ================= LANGUAGE ================= */}
         <Autocomplete
           options={languageOptions}
           value={formData.language}
@@ -337,7 +346,7 @@ const CreateNotes = () => {
           )}
         />
 
-        {/* ===== FORMAT TOOLBAR ===== */}
+        {/* ================= FORMAT TOOLBAR ================= */}
         <Stack direction="row" spacing={1} mt={2}>
           <IconButton onClick={() => formatText('bold')}>
             <FormatBold />
@@ -350,7 +359,7 @@ const CreateNotes = () => {
           </IconButton>
         </Stack>
 
-        {/* ===== TOPIC NAME ===== */}
+        {/* ================= TOPIC NAME ================= */}
         <Box
           ref={topicNameRef}
           contentEditable
@@ -364,7 +373,7 @@ const CreateNotes = () => {
           }}
         />
 
-        {/* ===== TOPIC DETAILS ===== */}
+        {/* ================= TOPIC DETAILS ================= */}
         <Box
           ref={topicDetailsRef}
           contentEditable
@@ -383,7 +392,7 @@ const CreateNotes = () => {
         </Button>
       </form>
 
-      {/* ===== NOTES HISTORY ===== */}
+      {/* ================= NOTES HISTORY ================= */}
       <Box mt={5}>
         <Typography variant="h6" mb={2}>
           Notes History
@@ -404,7 +413,9 @@ const CreateNotes = () => {
                 <TableRow key={note._id}>
                   <TableCell>{note.university?.name}</TableCell>
                   <TableCell>
-                    {note.subjectName} ({note.subjectCode})
+                    {note.subjectName}{' '}
+                    {note.subjectCodes?.length > 0 &&
+                      `(${note.subjectCodes.map((s) => s.code).join(', ')})`}
                   </TableCell>
                   <TableCell>
                     <div
