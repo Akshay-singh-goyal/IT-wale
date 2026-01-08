@@ -81,7 +81,11 @@ const CreateNotes = () => {
       console.error(err);
     }
   };
-
+useEffect(() => {
+  axios.get("/api/notes")
+    .then(res => setNotes(res.data))
+    .catch(err => console.error(err));
+}, []);
   useEffect(() => {
     fetchUniversities();
     fetchNotes();
@@ -275,64 +279,58 @@ const CreateNotes = () => {
 
         {/* ================= SUBJECT CODE ================= */}
        <Autocomplete
-          options={[
-            ...new Map(
-              universities
-                .flatMap((u) =>
-                  (u.subjects || []).flatMap((s) =>
-                    (s.subjectCodes || []).map((sc) => ({
-                      code: sc.code,
-                      branch: sc.branch,
-                      department: sc.department,
-                    }))
-                  )
-                )
-                .map((item) => [item.code, item])
-            ).values(),
-          ]}
-          getOptionLabel={(option) =>
-            `${option.code} - ${option.branch}`
-          }
-          value={null}
-          onChange={(e, v) => {
-            if (!v) return;
+  options={[
+    ...new Map(
+      notes
+        .flatMap((n) => n.subjectCodes || [])
+        .map((sc) => [sc.code, sc])
+    ).values(),
+  ]}
+  getOptionLabel={(option) =>
+    `${option.code} - ${option.branch} (${option.department})`
+  }
+  value={null}
+  onChange={(e, v) => {
+    if (!v) return;
 
-            const exists = formData.subjectCodes.some(
-              (s) => s.code === v.code
-            );
-            if (exists) return;
+    const exists = formData.subjectCodes.some(
+      (s) => s.code === v.code
+    );
+    if (exists) return;
 
-            setFormData({
-              ...formData,
-              subjectCodes: [...formData.subjectCodes, v],
-            });
-          }}
-          renderInput={(params) => (
-            <TextField {...params} label="Subject Code" margin="dense" />
-          )}
-        />
-
+    setFormData({
+      ...formData,
+      subjectCodes: [...formData.subjectCodes, v],
+    });
+  }}
+  renderInput={(params) => (
+    <TextField {...params} label="Subject Code" margin="dense" />
+  )}
+/>
         {/* ================= YEAR ================= */}
-        <TextField
-          label="Year"
-          name="year"
-          type="number"
-          value={formData.year}
-          onChange={handleChange}
-          fullWidth
-          margin="dense"
-        />
+       <Autocomplete
+  options={[1,2,3,4]}
+  value={formData.year}
+  onChange={(e, v) =>
+    setFormData({ ...formData, year: v })
+  }
+  renderInput={(params) => (
+    <TextField {...params} label="Year" margin="dense" />
+  )}
+/>
+
 
         {/* ================= SEMESTER ================= */}
-        <TextField
-          label="Semester"
-          name="semester"
-          type="number"
-          value={formData.semester}
-          onChange={handleChange}
-          fullWidth
-          margin="dense"
-        />
+       <Autocomplete
+  options={[1,2]}
+  value={formData.semester}
+  onChange={(e, v) =>
+    setFormData({ ...formData, semester: v })
+  }
+  renderInput={(params) => (
+    <TextField {...params} label="Semester" margin="dense" />
+  )}
+/>
 
         {/* ================= LANGUAGE ================= */}
         <Autocomplete
