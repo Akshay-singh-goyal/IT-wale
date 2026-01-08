@@ -14,7 +14,6 @@ import {
   Paper,
   IconButton,
   Stack,
-  Chip,
 } from '@mui/material';
 import {
   Edit,
@@ -28,7 +27,6 @@ import axios from 'axios';
 import AddUniversity from './AddUniversity';
 
 const CreateNotes = () => {
-  /* ================= STATES ================= */
   const [universities, setUniversities] = useState([]);
   const [notes, setNotes] = useState([]);
   const [editingId, setEditingId] = useState(null);
@@ -42,7 +40,7 @@ const CreateNotes = () => {
     department: '',
     branch: '',
     subjectName: '',
-    subjectCodes: [],
+    subjectCode: '',
     year: '',
     semester: '',
     topicName: '',
@@ -50,56 +48,46 @@ const CreateNotes = () => {
     language: '',
   });
 
-  /* ========================================================= */
-  /* FUTURE SAFE STATE – currently not used (no warning)       */
-  /* ========================================================= */
-  const [tempSubjectCode, setTempSubjectCode] = useState({
-    code: '',
-    branch: '',
-    department: '',
-  });
-
-  /* ================= FETCH UNIVERSITIES ================= */
+  // ===== FETCH UNIVERSITIES =====
   const fetchUniversities = async () => {
     try {
       const res = await axios.get(
         'https://sm-backend-8me3.onrender.com/api/notes/universities'
       );
-      setUniversities(res.data || []);
+      setUniversities(res.data);
     } catch (err) {
-      console.error('Fetch Universities Error:', err);
+      console.error(err);
     }
   };
 
-  /* ================= FETCH NOTES ================= */
+  // ===== FETCH NOTES =====
   const fetchNotes = async () => {
     try {
       const res = await axios.get(
         'https://sm-backend-8me3.onrender.com/api/notes'
       );
-      setNotes(res.data || []);
+      setNotes(res.data);
     } catch (err) {
-      console.error('Fetch Notes Error:', err);
+      console.error(err);
     }
   };
 
-  /* ================= INITIAL DATA LOAD ================= */
   useEffect(() => {
     fetchUniversities();
     fetchNotes();
   }, []);
 
-  /* ================= TEXT FORMATTING ================= */
+  // ===== FORMAT TEXT =====
   const formatText = (command) => {
     document.execCommand(command, false, null);
   };
 
-  /* ================= HANDLE FORM CHANGE ================= */
+  // ===== HANDLE NORMAL INPUT =====
   const handleChange = (e) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   };
 
-  /* ================= HANDLE SUBMIT ================= */
+  // ===== HANDLE SUBMIT =====
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -130,13 +118,12 @@ const CreateNotes = () => {
         alert('Note added successfully');
       }
 
-      // Reset Form
       setFormData({
         university: null,
         department: '',
         branch: '',
         subjectName: '',
-        subjectCodes: [],
+        subjectCode: '',
         year: '',
         semester: '',
         topicName: '',
@@ -150,11 +137,11 @@ const CreateNotes = () => {
       fetchNotes();
       fetchUniversities();
     } catch (err) {
-      console.error('Submit Error:', err);
+      console.error(err);
     }
   };
 
-  /* ================= HANDLE EDIT ================= */
+  // ===== EDIT NOTE =====
   const handleEdit = (note) => {
     setEditingId(note._id);
     setFormData({
@@ -162,7 +149,7 @@ const CreateNotes = () => {
       department: note.department,
       branch: note.branch,
       subjectName: note.subjectName,
-      subjectCodes: note.subjectCodes || [],
+      subjectCode: note.subjectCode,
       year: note.year,
       semester: note.semester,
       language: note.language || '',
@@ -172,28 +159,21 @@ const CreateNotes = () => {
     topicDetailsRef.current.innerHTML = note.topicDetails;
   };
 
-  /* ================= HANDLE DELETE ================= */
+  // ===== DELETE NOTE =====
   const handleDelete = async (id) => {
     if (window.confirm('Are you sure you want to delete this note?')) {
-      try {
-        await axios.delete(
-          `https://sm-backend-8me3.onrender.com/api/notes/${id}`
-        );
-        fetchNotes();
-      } catch (err) {
-        console.error('Delete Error:', err);
-      }
+      await axios.delete(
+        `https://sm-backend-8me3.onrender.com/api/notes/${id}`
+      );
+      fetchNotes();
     }
   };
 
-  /* ================= ADD UNIVERSITY PAGE ================= */
+  // ===== ADD UNIVERSITY PAGE =====
   if (showAddUniversity) {
     return (
       <Box p={2}>
-        <Button
-          startIcon={<Add />}
-          onClick={() => setShowAddUniversity(false)}
-        >
+        <Button startIcon={<Add />} onClick={() => setShowAddUniversity(false)}>
           Back to Notes
         </Button>
         <AddUniversity onAdded={() => setShowAddUniversity(false)} />
@@ -210,27 +190,6 @@ const CreateNotes = () => {
     'Other',
   ];
 
-  /* ================= SUBJECT CODE OPTIONS ================= */
-  const subjectCodeOptions = Array.isArray(notes)
-    ? [...new Map(notes.flatMap(n => n.subjectCodes || []).map(sc => [sc.code, sc])).values()]
-    : [];
-
-  /* ================= BRANCH OPTIONS ================= */
-  const branchOptions = Array.isArray(universities)
-    ? [...new Set(universities.flatMap(u => (u.subjects || []).map(s => s.branch)))]
-    : [];
-
-  /* ================= SUBJECT NAME OPTIONS ================= */
-  const subjectNameOptions = Array.isArray(universities)
-    ? [...new Set(universities.flatMap(u => (u.subjects || []).map(s => s.subjectName)))]
-    : [];
-
-  /* ================= DEPARTMENT OPTIONS ================= */
-  const departmentOptions = Array.isArray(universities)
-    ? [...new Set(universities.map(u => u.department))]
-    : [];
-
-  /* ================= RENDER ================= */
   return (
     <Box sx={{ maxWidth: 900, mx: 'auto', mt: 3, p: 2 }}>
       <Typography variant="h5" mb={3}>
@@ -238,7 +197,7 @@ const CreateNotes = () => {
       </Typography>
 
       <form onSubmit={handleSubmit}>
-        {/* ================= UNIVERSITY ================= */}
+        {/* ===== UNIVERSITY ===== */}
         <Autocomplete
           options={[...universities, { name: 'Add New University', _id: null }]}
           getOptionLabel={(o) => o.name}
@@ -253,81 +212,111 @@ const CreateNotes = () => {
           )}
         />
 
-        {/* ================= DEPARTMENT ================= */}
+        {/* ===== DEPARTMENT ===== */}
         <Autocomplete
-          options={departmentOptions}
+          options={[...new Set(universities.map((u) => u.department))]}
           value={formData.department}
-          onChange={(e, v) => setFormData({ ...formData, department: v || '' })}
-          renderInput={(p) => <TextField {...p} label="Department" margin="dense" />}
-          freeSolo
-        />
-
-        {/* ================= BRANCH ================= */}
-        <Autocomplete
-          options={branchOptions}
-          value={formData.branch}
-          onChange={(e, v) => setFormData({ ...formData, branch: v || '' })}
-          renderInput={(p) => <TextField {...p} label="Branch" margin="dense" />}
-          freeSolo
-        />
-
-        {/* ================= SUBJECT NAME ================= */}
-        <Autocomplete
-          options={subjectNameOptions}
-          value={formData.subjectName}
-          onChange={(e, v) => setFormData({ ...formData, subjectName: v || '' })}
-          renderInput={(p) => <TextField {...p} label="Subject Name" margin="dense" />}
-          freeSolo
-        />
-
-        {/* ================= SUBJECT CODE ================= */}
-        <Autocomplete
-          multiple
-          options={subjectCodeOptions}
-          getOptionLabel={(option) =>
-            `${option.code} - ${option.branch} (${option.department})`
+          onChange={(e, v) =>
+            setFormData({ ...formData, department: v || '' })
           }
-          value={formData.subjectCodes}
-          onChange={(e, v) => setFormData({ ...formData, subjectCodes: v })}
-          renderTags={(value, getTagProps) =>
-            value.map((option, index) => (
-              <Chip
-                key={option.code}
-                label={`${option.code}`}
-                {...getTagProps({ index })}
-              />
-            ))
-          }
-          renderInput={(params) => (
-            <TextField {...params} label="Subject Codes" margin="dense" />
+          renderInput={(p) => (
+            <TextField {...p} label="Department" margin="dense" />
           )}
+          freeSolo
         />
 
-        {/* ================= YEAR ================= */}
+        {/* ===== BRANCH ===== */}
         <Autocomplete
-          options={[1, 2, 3, 4]}
+          options={[
+            ...new Set(
+              universities.flatMap((u) =>
+                u.subjects.map((s) => s.branch)
+              )
+            ),
+          ]}
+          value={formData.branch}
+          onChange={(e, v) =>
+            setFormData({ ...formData, branch: v || '' })
+          }
+          renderInput={(p) => (
+            <TextField {...p} label="Branch" margin="dense" />
+          )}
+          freeSolo
+        />
+
+        {/* ===== SUBJECT NAME ===== */}
+        <Autocomplete
+          options={[
+            ...new Set(
+              universities.flatMap((u) =>
+                u.subjects.map((s) => s.subjectName)
+              )
+            ),
+          ]}
+          value={formData.subjectName}
+          onChange={(e, v) =>
+            setFormData({ ...formData, subjectName: v || '' })
+          }
+          renderInput={(p) => (
+            <TextField {...p} label="Subject Name" margin="dense" />
+          )}
+          freeSolo
+        />
+
+        {/* ===== SUBJECT CODE ===== */}
+        <Autocomplete
+          options={[
+            ...new Set(
+              universities.flatMap((u) =>
+                u.subjects.map((s) => s.subjectCode)
+              )
+            ),
+          ]}
+          value={formData.subjectCode}
+          onChange={(e, v) =>
+            setFormData({ ...formData, subjectCode: v || '' })
+          }
+          renderInput={(p) => (
+            <TextField {...p} label="Subject Code" margin="dense" />
+          )}
+          freeSolo
+        />
+
+        {/* ===== YEAR ===== */}
+        <TextField
+          label="Year"
+          name="year"
+          type="number"
           value={formData.year}
-          onChange={(e, v) => setFormData({ ...formData, year: v })}
-          renderInput={(params) => <TextField {...params} label="Year" margin="dense" />}
+          onChange={handleChange}
+          fullWidth
+          margin="dense"
         />
 
-        {/* ================= SEMESTER ================= */}
-        <Autocomplete
-          options={[1, 2]}
+        {/* ===== SEMESTER ===== */}
+        <TextField
+          label="Semester"
+          name="semester"
+          type="number"
           value={formData.semester}
-          onChange={(e, v) => setFormData({ ...formData, semester: v })}
-          renderInput={(params) => <TextField {...params} label="Semester" margin="dense" />}
+          onChange={handleChange}
+          fullWidth
+          margin="dense"
         />
 
-        {/* ================= LANGUAGE ================= */}
+        {/* ===== LANGUAGE ===== */}
         <Autocomplete
           options={languageOptions}
           value={formData.language}
-          onChange={(e, v) => setFormData({ ...formData, language: v || '' })}
-          renderInput={(p) => <TextField {...p} label="Language" margin="dense" />}
+          onChange={(e, v) =>
+            setFormData({ ...formData, language: v || '' })
+          }
+          renderInput={(p) => (
+            <TextField {...p} label="Language" margin="dense" />
+          )}
         />
 
-        {/* ================= FORMAT TOOLBAR ================= */}
+        {/* ===== FORMAT TOOLBAR ===== */}
         <Stack direction="row" spacing={1} mt={2}>
           <IconButton onClick={() => formatText('bold')}>
             <FormatBold />
@@ -340,7 +329,7 @@ const CreateNotes = () => {
           </IconButton>
         </Stack>
 
-        {/* ================= TOPIC NAME ================= */}
+        {/* ===== TOPIC NAME ===== */}
         <Box
           ref={topicNameRef}
           contentEditable
@@ -354,7 +343,7 @@ const CreateNotes = () => {
           }}
         />
 
-        {/* ================= TOPIC DETAILS ================= */}
+        {/* ===== TOPIC DETAILS ===== */}
         <Box
           ref={topicDetailsRef}
           contentEditable
@@ -373,7 +362,7 @@ const CreateNotes = () => {
         </Button>
       </form>
 
-      {/* ================= NOTES HISTORY ================= */}
+      {/* ===== NOTES HISTORY ===== */}
       <Box mt={5}>
         <Typography variant="h6" mb={2}>
           Notes History
@@ -394,9 +383,7 @@ const CreateNotes = () => {
                 <TableRow key={note._id}>
                   <TableCell>{note.university?.name}</TableCell>
                   <TableCell>
-                    {note.subjectName}{' '}
-                    {note.subjectCodes?.length > 0 &&
-                      `(${note.subjectCodes.map((s) => s.code).join(', ')})`}
+                    {note.subjectName} ({note.subjectCode})
                   </TableCell>
                   <TableCell>
                     <div
