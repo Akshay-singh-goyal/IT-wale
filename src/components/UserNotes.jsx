@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useRef } from "react";
+import React, { useEffect, useState, useRef, useMemo } from "react";
 import axios from "axios";
 import {
   Box,
@@ -13,17 +13,12 @@ import {
   TextField,
   Divider,
   IconButton,
-  Tooltip,
   Popper,
   Drawer,
   useMediaQuery,
 } from "@mui/material";
 import {
   MenuBook as BookIcon,
-  School as UniversityIcon,
-  Category as BranchIcon,
-  Code as CodeIcon,
-  Subject as SubjectIcon,
   Star as StarIcon,
   StarBorder as StarBorderIcon,
   Search as SearchIcon,
@@ -105,22 +100,27 @@ const UserNotes = () => {
     fetchUserData();
   }, [filters]);
 
-  /* ================= FILTER OPTIONS ================= */
-  const universities = [...new Set(notes.map((n) => n.university?.name))];
-  const departments = [...new Set(notes.map((n) => n.department))];
-  const branches = [...new Set(notes.map((n) => n.branch))];
-  const subjects = [...new Set(notes.map((n) => n.subjectName))];
-  const subjectCodes = [...new Set(notes.map((n) => n.subjectCode))];
-  const languages = [...new Set(notes.map((n) => n.language))];
+  /* ================= SORT + SEARCH (FIX HERE ✅) ================= */
+  const sortedNotes = useMemo(() => {
+    return [...notes]
+      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) // 👈 FIRST → TOP
+      .filter((note) =>
+        note.topicName?.toLowerCase().includes(search.toLowerCase())
+      );
+  }, [notes, search]);
 
-  const filteredNotes = notes.filter((note) =>
-    note.topicName?.toLowerCase().includes(search.toLowerCase())
-  );
+  /* ================= FILTER OPTIONS ================= */
+  const universities = [...new Set(notes.map(n => n.university?.name))];
+  const departments = [...new Set(notes.map(n => n.department))];
+  const branches = [...new Set(notes.map(n => n.branch))];
+  const subjects = [...new Set(notes.map(n => n.subjectName))];
+  const subjectCodes = [...new Set(notes.map(n => n.subjectCode))];
+  const languages = [...new Set(notes.map(n => n.language))];
 
   /* ================= BOOKMARK ================= */
   const toggleBookmark = async (id) => {
     const updated = userData.bookmarks.includes(id)
-      ? userData.bookmarks.filter((b) => b !== id)
+      ? userData.bookmarks.filter(b => b !== id)
       : [...userData.bookmarks, id];
 
     setUserData({ ...userData, bookmarks: updated });
@@ -165,7 +165,7 @@ const UserNotes = () => {
 
   const removeHighlight = async (text) => {
     const list = (userData.highlights[selectedNote._id] || []).filter(
-      (h) => h.text !== text
+      h => h.text !== text
     );
     const updated = { ...userData.highlights, [selectedNote._id]: list };
     setUserData({ ...userData, highlights: updated });
@@ -215,7 +215,7 @@ const UserNotes = () => {
       </Box>
 
       <List>
-        {filteredNotes.map((note) => (
+        {sortedNotes.map((note) => (
           <ListItemButton
             key={note._id}
             selected={selectedNote?._id === note._id}
@@ -228,7 +228,9 @@ const UserNotes = () => {
               <BookIcon />
             </ListItemIcon>
 
-            <Typography dangerouslySetInnerHTML={{ __html: note.topicName }} />
+            <Typography
+              dangerouslySetInnerHTML={{ __html: note.topicName }}
+            />
 
             <IconButton onClick={() => toggleBookmark(note._id)}>
               {userData.bookmarks.includes(note._id) ? (
@@ -246,44 +248,21 @@ const UserNotes = () => {
   /* ================= RENDER ================= */
   return (
     <Box sx={{ p: 2 }} onMouseUp={handleTextSelect}>
-      {/* FILTERS */}
       <Paper sx={{ p: 2, mb: 3 }}>
         <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-          <Select fullWidth value={filters.university} displayEmpty
-            onChange={(e)=>setFilters({...filters, university:e.target.value, department:"", branch:"", subject:"", subjectCode:""})}>
-            <MenuItem value="">All Universities</MenuItem>
-            {universities.map(u => <MenuItem key={u} value={u}>{u}</MenuItem>)}
-          </Select>
-
-          <Select fullWidth value={filters.department} displayEmpty
-            onChange={(e)=>setFilters({...filters, department:e.target.value, branch:"", subject:"", subjectCode:""})}>
-            <MenuItem value="">All Departments</MenuItem>
-            {departments.map(d => <MenuItem key={d} value={d}>{d}</MenuItem>)}
-          </Select>
-
-          <Select fullWidth value={filters.branch} displayEmpty
-            onChange={(e)=>setFilters({...filters, branch:e.target.value, subject:"", subjectCode:""})}>
-            <MenuItem value="">All Branches</MenuItem>
-            {branches.map(b => <MenuItem key={b} value={b}>{b}</MenuItem>)}
-          </Select>
-
-          <Select fullWidth value={filters.subject} displayEmpty
-            onChange={(e)=>setFilters({...filters, subject:e.target.value, subjectCode:""})}>
-            <MenuItem value="">All Subjects</MenuItem>
-            {subjects.map(s => <MenuItem key={s} value={s}>{s}</MenuItem>)}
-          </Select>
-
-          <Select fullWidth value={filters.subjectCode} displayEmpty
-            onChange={(e)=>setFilters({...filters, subjectCode:e.target.value})}>
-            <MenuItem value="">All Codes</MenuItem>
-            {subjectCodes.map(c => <MenuItem key={c} value={c}>{c}</MenuItem>)}
-          </Select>
-
-          <Select fullWidth value={filters.language} displayEmpty
-            onChange={(e)=>setFilters({...filters, language:e.target.value})}>
-            <MenuItem value="">All Languages</MenuItem>
-            {languages.map(l => <MenuItem key={l} value={l}>{l}</MenuItem>)}
-          </Select>
+          {["university","department","branch","subject","subjectCode","language"].map((key) => (
+            <Select
+              key={key}
+              fullWidth
+              value={filters[key]}
+              displayEmpty
+              onChange={(e) =>
+                setFilters({ ...filters, [key]: e.target.value })
+              }
+            >
+              <MenuItem value="">All {key}</MenuItem>
+            </Select>
+          ))}
         </Stack>
       </Paper>
 
@@ -305,8 +284,10 @@ const UserNotes = () => {
             <Typography>Loading...</Typography>
           ) : selectedNote ? (
             <>
-              <Typography variant="h5"
-                dangerouslySetInnerHTML={{ __html: selectedNote.topicName }} />
+              <Typography
+                variant="h5"
+                dangerouslySetInnerHTML={{ __html: selectedNote.topicName }}
+              />
               <Divider sx={{ my: 2 }} />
               {renderHighlightedContent(selectedNote)}
             </>
@@ -319,9 +300,12 @@ const UserNotes = () => {
       {selectionRect && (
         <Popper open anchorEl={{ getBoundingClientRect: () => selectionRect }}>
           <Paper sx={{ p: 1, display: "flex", gap: 1 }}>
-            {HIGHLIGHT_COLORS.map(c => (
-              <IconButton key={c} onClick={() => applyHighlight(c)}
-                sx={{ bgcolor: c, width: 30, height: 30 }} />
+            {HIGHLIGHT_COLORS.map((c) => (
+              <IconButton
+                key={c}
+                onClick={() => applyHighlight(c)}
+                sx={{ bgcolor: c, width: 30, height: 30 }}
+              />
             ))}
             <IconButton onClick={() => setSelectionRect(null)}>
               <DeleteIcon />
