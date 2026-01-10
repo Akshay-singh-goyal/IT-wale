@@ -1,4 +1,9 @@
-import React, { useEffect, useState, useRef, useMemo } from "react";
+import React, {
+  useEffect,
+  useState,
+  useRef,
+  useMemo
+} from "react";
 import { Helmet } from "react-helmet-async";
 import axios from "axios";
 import {
@@ -27,10 +32,18 @@ import {
   Menu as MenuIcon,
 } from "@mui/icons-material";
 
+/* ================= CONSTANTS ================= */
 const API_BASE = "https://sm-backend-8me3.onrender.com/api";
 const token = localStorage.getItem("accessToken");
-const HIGHLIGHT_COLORS = ["yellow", "lightgreen", "cyan", "pink", "orange"];
+const HIGHLIGHT_COLORS = [
+  "yellow",
+  "lightgreen",
+  "cyan",
+  "pink",
+  "orange",
+];
 
+/* ================= COMPONENT ================= */
 const UserNotes = () => {
   const isMobile = useMediaQuery("(max-width:900px)");
 
@@ -49,9 +62,12 @@ const UserNotes = () => {
   const [selectedNote, setSelectedNote] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
-  const [userData, setUserData] = useState({ bookmarks: [], highlights: {} });
+  const [userData, setUserData] = useState({
+    bookmarks: [],
+    highlights: {},
+  });
+
   const [selectionRect, setSelectionRect] = useState(null);
-  const popperRef = useRef(null);
 
   /* ================= FETCH NOTES ================= */
   const fetchNotes = async () => {
@@ -101,27 +117,51 @@ const UserNotes = () => {
     fetchUserData();
   }, [filters]);
 
-  /* ================= SORT + SEARCH (FIX HERE ✅) ================= */
+  /* ================= SEO DYNAMIC ================= */
+  useEffect(() => {
+    if (!selectedNote) return;
+
+    document.title = `${selectedNote.topicName} Notes | ${selectedNote.subjectName} | The IT Wallah`;
+  }, [selectedNote]);
+
+  /* ================= SORT + SEARCH ================= */
   const sortedNotes = useMemo(() => {
     return [...notes]
-      .sort((a, b) => new Date(a.createdAt) - new Date(b.createdAt)) // 👈 FIRST → TOP
+      .sort(
+        (a, b) =>
+          new Date(a.createdAt) - new Date(b.createdAt)
+      )
       .filter((note) =>
-        note.topicName?.toLowerCase().includes(search.toLowerCase())
+        note.topicName
+          ?.toLowerCase()
+          .includes(search.toLowerCase())
       );
   }, [notes, search]);
 
   /* ================= FILTER OPTIONS ================= */
-  const universities = [...new Set(notes.map(n => n.university?.name))];
-  const departments = [...new Set(notes.map(n => n.department))];
-  const branches = [...new Set(notes.map(n => n.branch))];
-  const subjects = [...new Set(notes.map(n => n.subjectName))];
-  const subjectCodes = [...new Set(notes.map(n => n.subjectCode))];
-  const languages = [...new Set(notes.map(n => n.language))];
+  const universities = [
+    ...new Set(notes.map((n) => n.university?.name).filter(Boolean)),
+  ];
+  const departments = [
+    ...new Set(notes.map((n) => n.department).filter(Boolean)),
+  ];
+  const branches = [
+    ...new Set(notes.map((n) => n.branch).filter(Boolean)),
+  ];
+  const subjects = [
+    ...new Set(notes.map((n) => n.subjectName).filter(Boolean)),
+  ];
+  const subjectCodes = [
+    ...new Set(notes.map((n) => n.subjectCode).filter(Boolean)),
+  ];
+  const languages = [
+    ...new Set(notes.map((n) => n.language).filter(Boolean)),
+  ];
 
   /* ================= BOOKMARK ================= */
   const toggleBookmark = async (id) => {
     const updated = userData.bookmarks.includes(id)
-      ? userData.bookmarks.filter(b => b !== id)
+      ? userData.bookmarks.filter((b) => b !== id)
       : [...userData.bookmarks, id];
 
     setUserData({ ...userData, bookmarks: updated });
@@ -137,8 +177,12 @@ const UserNotes = () => {
   const handleTextSelect = () => {
     const sel = window.getSelection();
     if (sel && sel.toString().trim()) {
-      setSelectionRect(sel.getRangeAt(0).getBoundingClientRect());
-    } else setSelectionRect(null);
+      setSelectionRect(
+        sel.getRangeAt(0).getBoundingClientRect()
+      );
+    } else {
+      setSelectionRect(null);
+    }
   };
 
   const applyHighlight = async (color) => {
@@ -146,7 +190,9 @@ const UserNotes = () => {
     const text = window.getSelection().toString();
     if (!text) return;
 
-    const list = userData.highlights[selectedNote._id] || [];
+    const list =
+      userData.highlights[selectedNote._id] || [];
+
     const updated = {
       ...userData.highlights,
       [selectedNote._id]: [...list, { text, color }],
@@ -165,10 +211,16 @@ const UserNotes = () => {
   };
 
   const removeHighlight = async (text) => {
-    const list = (userData.highlights[selectedNote._id] || []).filter(
-      h => h.text !== text
-    );
-    const updated = { ...userData.highlights, [selectedNote._id]: list };
+    const list =
+      (userData.highlights[selectedNote._id] || []).filter(
+        (h) => h.text !== text
+      );
+
+    const updated = {
+      ...userData.highlights,
+      [selectedNote._id]: list,
+    };
+
     setUserData({ ...userData, highlights: updated });
 
     await axios.put(
@@ -180,84 +232,31 @@ const UserNotes = () => {
 
   const renderHighlightedContent = (note) => {
     let html = note.topicDetails;
-    (userData.highlights[note._id] || []).forEach(({ text, color }) => {
-      const esc = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      html = html.replace(
-        new RegExp(esc, "g"),
-        `<mark style="background:${color};cursor:pointer" data-text="${text}">${text}</mark>`
-      );
-    });
-    useEffect(() => {
-  if (!selectedNote) return;
 
-  document.title = `${selectedNote.topicName} Notes | ${selectedNote.subjectName} | The IT Wallah`;
-
-  const metaDesc = document.querySelector("meta[name='description']");
-  if (metaDesc) {
-    metaDesc.setAttribute(
-      "content",
-      `Read ${selectedNote.topicName} notes for ${selectedNote.subjectName}. Free engineering notes for students.`
+    (userData.highlights[note._id] || []).forEach(
+      ({ text, color }) => {
+        const esc = text.replace(
+          /[.*+?^${}()|[\]\\]/g,
+          "\\$&"
+        );
+        html = html.replace(
+          new RegExp(esc, "g"),
+          `<mark style="background:${color};cursor:pointer" data-text="${text}">${text}</mark>`
+        );
+      }
     );
-  }
-}, [selectedNote]);
-
 
     return (
       <div
         dangerouslySetInnerHTML={{ __html: html }}
         onClick={(e) => {
-          if (e.target.tagName === "MARK")
+          if (e.target.tagName === "MARK") {
             removeHighlight(e.target.dataset.text);
+          }
         }}
       />
     );
   };
-<Helmet>
-  <title>
-    Free Study Notes | RGPV Notes | Engineering Notes – The IT Wallah
-  </title>
-
-  <meta
-    name="description"
-    content="Read free engineering study notes for RGPV students. Subject-wise, topic-wise notes with highlights, bookmarks and search."
-  />
-
-  <meta
-    name="keywords"
-    content="RGPV notes, engineering notes, free study notes, computer science notes, IT Wallah notes"
-  />
-
-  <link
-    rel="canonical"
-    href="https://theitwallah.vercel.app/user-notes"
-  />
-
-  {/* Open Graph */}
-  <meta property="og:title" content="Free Study Notes – The IT Wallah" />
-  <meta
-    property="og:description"
-    content="Topic-wise engineering notes with highlights and bookmarks."
-  />
-  <meta
-    property="og:url"
-    content="https://theitwallah.vercel.app/user-notes"
-  />
-  <meta property="og:type" content="website" />
-
-  {/* Schema */}
-  <script type="application/ld+json">
-    {JSON.stringify({
-      "@context": "https://schema.org",
-      "@type": "EducationalOrganization",
-      name: "The IT Wallah",
-      url: "https://theitwallah.vercel.app",
-      offers: {
-        "@type": "Offer",
-        category: "Study Notes",
-      },
-    })}
-  </script>
-</Helmet>
 
   /* ================= SIDEBAR ================= */
   const TopicList = (
@@ -290,10 +289,14 @@ const UserNotes = () => {
             </ListItemIcon>
 
             <Typography
-              dangerouslySetInnerHTML={{ __html: note.topicName }}
+              dangerouslySetInnerHTML={{
+                __html: note.topicName,
+              }}
             />
 
-            <IconButton onClick={() => toggleBookmark(note._id)}>
+            <IconButton
+              onClick={() => toggleBookmark(note._id)}
+            >
               {userData.bookmarks.includes(note._id) ? (
                 <StarIcon color="warning" />
               ) : (
@@ -308,73 +311,144 @@ const UserNotes = () => {
 
   /* ================= RENDER ================= */
   return (
-    <Box sx={{ p: 2 }} onMouseUp={handleTextSelect}>
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
-          {["university","department","branch","subject","subjectCode","language"].map((key) => (
+    <>
+      {/* ========== SEO ========== */}
+      <Helmet>
+        <title>
+          Free Study Notes | RGPV Engineering Notes – The IT Wallah
+        </title>
+
+        <meta
+          name="description"
+          content="Free engineering study notes for RGPV students. Topic-wise notes with search, bookmarks and highlights."
+        />
+
+        <link
+          rel="canonical"
+          href="https://theitwallah.vercel.app/user-notes"
+        />
+      </Helmet>
+
+      <Box sx={{ p: 2 }} onMouseUp={handleTextSelect}>
+        {/* Filters */}
+        <Paper sx={{ p: 2, mb: 3 }}>
+          <Stack
+            direction={{ xs: "column", md: "row" }}
+            spacing={2}
+          >
             <Select
-              key={key}
-              fullWidth
-              value={filters[key]}
-              displayEmpty
+              value={filters.university}
               onChange={(e) =>
-                setFilters({ ...filters, [key]: e.target.value })
+                setFilters({
+                  ...filters,
+                  university: e.target.value,
+                })
               }
+              displayEmpty
+              fullWidth
             >
-              <MenuItem value="">All {key}</MenuItem>
+              <MenuItem value="">All Universities</MenuItem>
+              {universities.map((u) => (
+                <MenuItem key={u} value={u}>
+                  {u}
+                </MenuItem>
+              ))}
             </Select>
-          ))}
-        </Stack>
-      </Paper>
 
-      {isMobile && (
-        <IconButton onClick={() => setDrawerOpen(true)}>
-          <MenuIcon />
-        </IconButton>
-      )}
-
-      <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
-        <Box sx={{ width: 280 }}>{TopicList}</Box>
-      </Drawer>
-
-      <Box sx={{ display: "flex", gap: 2 }}>
-        {!isMobile && <Box sx={{ width: "25%" }}>{TopicList}</Box>}
-
-        <Paper sx={{ flex: 1, p: 3, maxHeight: "75vh", overflowY: "auto" }}>
-          {loading ? (
-            <Typography>Loading...</Typography>
-          ) : selectedNote ? (
-            <>
-              <Typography
-                variant="h5"
-                dangerouslySetInnerHTML={{ __html: selectedNote.topicName }}
-              />
-              <Divider sx={{ my: 2 }} />
-              {renderHighlightedContent(selectedNote)}
-            </>
-          ) : (
-            <Typography>Select a topic</Typography>
-          )}
+            <Select
+              value={filters.subject}
+              onChange={(e) =>
+                setFilters({
+                  ...filters,
+                  subject: e.target.value,
+                })
+              }
+              displayEmpty
+              fullWidth
+            >
+              <MenuItem value="">All Subjects</MenuItem>
+              {subjects.map((s) => (
+                <MenuItem key={s} value={s}>
+                  {s}
+                </MenuItem>
+              ))}
+            </Select>
+          </Stack>
         </Paper>
-      </Box>
 
-      {selectionRect && (
-        <Popper open anchorEl={{ getBoundingClientRect: () => selectionRect }}>
-          <Paper sx={{ p: 1, display: "flex", gap: 1 }}>
-            {HIGHLIGHT_COLORS.map((c) => (
-              <IconButton
-                key={c}
-                onClick={() => applyHighlight(c)}
-                sx={{ bgcolor: c, width: 30, height: 30 }}
-              />
-            ))}
-            <IconButton onClick={() => setSelectionRect(null)}>
-              <DeleteIcon />
-            </IconButton>
+        {isMobile && (
+          <IconButton onClick={() => setDrawerOpen(true)}>
+            <MenuIcon />
+          </IconButton>
+        )}
+
+        <Drawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        >
+          <Box sx={{ width: 280 }}>{TopicList}</Box>
+        </Drawer>
+
+        <Box sx={{ display: "flex", gap: 2 }}>
+          {!isMobile && (
+            <Box sx={{ width: "25%" }}>{TopicList}</Box>
+          )}
+
+          <Paper
+            sx={{
+              flex: 1,
+              p: 3,
+              maxHeight: "75vh",
+              overflowY: "auto",
+            }}
+          >
+            {loading ? (
+              <Typography>Loading...</Typography>
+            ) : selectedNote ? (
+              <>
+                <Typography variant="h1" fontSize="24px">
+                  {selectedNote.topicName}
+                </Typography>
+                <Divider sx={{ my: 2 }} />
+                {renderHighlightedContent(selectedNote)}
+              </>
+            ) : (
+              <Typography>Select a topic</Typography>
+            )}
           </Paper>
-        </Popper>
-      )}
-    </Box>
+        </Box>
+
+        {selectionRect && (
+          <Popper
+            open
+            anchorEl={{
+              getBoundingClientRect: () => selectionRect,
+            }}
+          >
+            <Paper
+              sx={{ p: 1, display: "flex", gap: 1 }}
+            >
+              {HIGHLIGHT_COLORS.map((c) => (
+                <IconButton
+                  key={c}
+                  onClick={() => applyHighlight(c)}
+                  sx={{
+                    bgcolor: c,
+                    width: 30,
+                    height: 30,
+                  }}
+                />
+              ))}
+              <IconButton
+                onClick={() => setSelectionRect(null)}
+              >
+                <DeleteIcon />
+              </IconButton>
+            </Paper>
+          </Popper>
+        )}
+      </Box>
+    </>
   );
 };
 
