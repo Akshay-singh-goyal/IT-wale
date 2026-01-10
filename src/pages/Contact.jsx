@@ -1,3 +1,9 @@
+/* =========================================================
+   SupportPage.jsx
+   Author: The IT Wallah
+   Purpose: SEO Optimized Support & Contact Page
+   ========================================================= */
+
 import React, { useState, useEffect } from "react";
 import {
   Box,
@@ -10,15 +16,38 @@ import {
   MenuItem,
   CircularProgress,
   Alert,
+  Divider,
 } from "@mui/material";
-import { FaComments, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
+import {
+  FaComments,
+  FaPhoneAlt,
+  FaWhatsapp,
+} from "react-icons/fa";
 import { Helmet } from "react-helmet";
 import API from "../api";
 
-const categories = ["Payments", "Orders", "Account", "Travel", "Events", "Other"];
+/* =========================================================
+   CONSTANTS
+   ========================================================= */
+
+const categories = [
+  "Payments",
+  "Orders",
+  "Account",
+  "Travel",
+  "Events",
+  "Other",
+];
+
 const priorities = ["Low", "Medium", "High"];
 
+/* =========================================================
+   MAIN COMPONENT
+   ========================================================= */
+
 export default function SupportPage({ dark }) {
+  /* ================= STATE ================= */
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -35,18 +64,22 @@ export default function SupportPage({ dark }) {
   const [ticketsLoading, setTicketsLoading] = useState(false);
   const [ticketsError, setTicketsError] = useState("");
 
-  /* ================= FETCH USER TICKETS ================= */
+  /* =========================================================
+     FETCH USER SUPPORT TICKETS
+     ========================================================= */
+
   const fetchTickets = async () => {
     if (!form.email) return;
 
     setTicketsLoading(true);
     setTicketsError("");
+
     try {
       const res = await API.get(
         `/contact/user-tickets?email=${form.email}`
       );
       setTickets(res.data.tickets || []);
-    } catch (err) {
+    } catch (error) {
       setTicketsError("Failed to fetch tickets");
     } finally {
       setTicketsLoading(false);
@@ -57,9 +90,15 @@ export default function SupportPage({ dark }) {
     fetchTickets();
   }, [form.email]);
 
-  /* ================= FORM HANDLERS ================= */
+  /* =========================================================
+     FORM HANDLERS
+     ========================================================= */
+
   const handleChange = (e) =>
-    setForm({ ...form, [e.target.name]: e.target.value });
+    setForm({
+      ...form,
+      [e.target.name]: e.target.value,
+    });
 
   const submit = async (e) => {
     e.preventDefault();
@@ -74,6 +113,7 @@ export default function SupportPage({ dark }) {
       await API.post("/contact", form);
 
       setStatus("Ticket submitted successfully 🎉");
+
       setForm({
         ...form,
         name: "",
@@ -90,6 +130,10 @@ export default function SupportPage({ dark }) {
     }
   };
 
+  /* =========================================================
+     RENDER
+     ========================================================= */
+
   return (
     <Box
       sx={{
@@ -98,12 +142,67 @@ export default function SupportPage({ dark }) {
         pb: 8,
       }}
     >
+      {/* =====================================================
+         SEO META TAGS (VERY IMPORTANT)
+         ===================================================== */}
       <Helmet>
-        <title>The IT Wallah Support</title>
+        <title>
+          Contact Support | The IT Wallah – RGPV Student Help Desk
+        </title>
+
+        <meta
+          name="description"
+          content="Contact The IT Wallah support for RGPV notes, payments, orders, travel, events and account issues. 24/7 student help desk."
+        />
+
+        <meta
+          name="keywords"
+          content="The IT Wallah support, RGPV student support, contact IT Wallah, RGPV help desk, RGPV notes support"
+        />
+
+        <link
+          rel="canonical"
+          href="https://theitwallah.vercel.app/support"
+        />
+
+        {/* Open Graph */}
+        <meta
+          property="og:title"
+          content="The IT Wallah Support – Contact & Help Center"
+        />
+        <meta
+          property="og:description"
+          content="Need help with RGPV notes or services? Contact The IT Wallah support team anytime."
+        />
+        <meta property="og:type" content="website" />
+        <meta
+          property="og:url"
+          content="https://theitwallah.vercel.app/support"
+        />
+
+        {/* Structured Data (JSON-LD) */}
+        <script type="application/ld+json">
+          {JSON.stringify({
+            "@context": "https://schema.org",
+            "@type": "Organization",
+            name: "The IT Wallah",
+            url: "https://theitwallah.vercel.app",
+            contactPoint: {
+              "@type": "ContactPoint",
+              telephone: "+91-6263615262",
+              contactType: "customer support",
+              areaServed: "IN",
+              availableLanguage: ["English", "Hindi"],
+            },
+          })}
+        </script>
       </Helmet>
 
-      {/* ================= HEADER ================= */}
+      {/* =====================================================
+         PAGE HEADER
+         ===================================================== */}
       <Box
+        component="header"
         sx={{
           backgroundColor: "#0A1F44",
           color: "#fff",
@@ -112,21 +211,25 @@ export default function SupportPage({ dark }) {
           mb: 6,
         }}
       >
-        <Typography variant="h3" fontWeight={800}>
-          The IT Wallah Support
+        <Typography component="h1" variant="h3" fontWeight={800}>
+          The IT Wallah Support – Contact & Help Center
         </Typography>
-        <Typography mt={1}>
-          Have a question? We’re here 24/7 to assist you.
+
+        <Typography component="h2" mt={1}>
+          24/7 Student Support for RGPV Notes & Services
         </Typography>
       </Box>
 
+      {/* =====================================================
+         MAIN CONTENT
+         ===================================================== */}
       <Container maxWidth="md">
         <Grid container spacing={4}>
           {/* ================= CONTACT FORM ================= */}
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 4 }}>
-              <Typography variant="h6" mb={3}>
-                Contact Us
+              <Typography component="h2" variant="h6" mb={3}>
+                Contact The IT Wallah Support Team
               </Typography>
 
               <Box
@@ -143,6 +246,7 @@ export default function SupportPage({ dark }) {
                   onChange={handleChange}
                   required
                 />
+
                 <TextField
                   label="Email"
                   name="email"
@@ -150,6 +254,7 @@ export default function SupportPage({ dark }) {
                   onChange={handleChange}
                   required
                 />
+
                 <TextField
                   select
                   label="Category"
@@ -163,6 +268,7 @@ export default function SupportPage({ dark }) {
                     </MenuItem>
                   ))}
                 </TextField>
+
                 <TextField
                   select
                   label="Priority"
@@ -176,6 +282,7 @@ export default function SupportPage({ dark }) {
                     </MenuItem>
                   ))}
                 </TextField>
+
                 <TextField
                   label="Subject"
                   name="subject"
@@ -183,6 +290,7 @@ export default function SupportPage({ dark }) {
                   onChange={handleChange}
                   required
                 />
+
                 <TextField
                   label="Message"
                   name="message"
@@ -196,49 +304,65 @@ export default function SupportPage({ dark }) {
                   type="submit"
                   variant="contained"
                   disabled={loading}
+                  startIcon={<FaComments />}
                 >
                   {loading ? "Sending..." : "Send Message"}
                 </Button>
 
-                {status && <Alert severity="success">{status}</Alert>}
+                {status && (
+                  <Alert severity="success">{status}</Alert>
+                )}
               </Box>
             </Paper>
           </Grid>
 
           {/* ================= QUICK SUPPORT + STATUS ================= */}
           <Grid item xs={12} md={6}>
-            {/* QUICK SUPPORT */}
             <Paper sx={{ p: 4, mb: 4 }}>
-              <Typography variant="h6" mb={2}>
-                Quick Support
+              <Typography component="h2" variant="h6" mb={2}>
+                Quick Support Options
               </Typography>
+
               <Box display="flex" gap={2}>
-                <Button startIcon={<FaPhoneAlt />} variant="contained">
-                  Call
+                <Button
+                  startIcon={<FaPhoneAlt />}
+                  variant="contained"
+                >
+                  Call Support
                 </Button>
+
                 <Button
                   startIcon={<FaWhatsapp />}
                   variant="outlined"
                   color="success"
                   onClick={() =>
-                    window.open("https://wa.me/6263615262", "_blank")
+                    window.open(
+                      "https://wa.me/6263615262",
+                      "_blank"
+                    )
                   }
                 >
-                  WhatsApp
+                  WhatsApp Support
                 </Button>
               </Box>
+
+              <Typography mt={2}>
+                Looking for study material?{" "}
+                <a href="/notes">Explore RGPV Notes</a>
+              </Typography>
             </Paper>
 
-            {/* SUPPORT STATUS */}
             <Paper sx={{ p: 4 }}>
-              <Typography variant="h6" mb={3}>
-                Your Support Status
+              <Typography component="h2" variant="h6" mb={3}>
+                Your Support Ticket Status
               </Typography>
 
               {ticketsLoading ? (
                 <CircularProgress />
               ) : ticketsError ? (
-                <Alert severity="error">{ticketsError}</Alert>
+                <Alert severity="error">
+                  {ticketsError}
+                </Alert>
               ) : tickets.length === 0 ? (
                 <Typography>No tickets found</Typography>
               ) : (
@@ -249,13 +373,19 @@ export default function SupportPage({ dark }) {
                       p: 2,
                       mb: 2,
                       borderLeft: `5px solid ${
-                        ticket.resolved ? "green" : "orange"
+                        ticket.resolved
+                          ? "green"
+                          : "orange"
                       }`,
                     }}
                   >
                     <Typography
                       fontWeight={600}
-                      color={ticket.resolved ? "green" : "orange"}
+                      color={
+                        ticket.resolved
+                          ? "green"
+                          : "orange"
+                      }
                     >
                       Status:{" "}
                       {ticket.resolved
@@ -263,20 +393,35 @@ export default function SupportPage({ dark }) {
                         : "Pending ⏳"}
                     </Typography>
 
-                    <Box mt={1}>
-                      <Typography fontWeight={600}>
-                        Admin Reply:
-                      </Typography>
-                      <Typography>
-                        {ticket.reply || "No reply from admin yet"}
-                      </Typography>
-                    </Box>
+                    <Divider sx={{ my: 1 }} />
+
+                    <Typography fontWeight={600}>
+                      Admin Reply:
+                    </Typography>
+                    <Typography>
+                      {ticket.reply ||
+                        "No reply from admin yet"}
+                    </Typography>
                   </Paper>
                 ))
               )}
             </Paper>
           </Grid>
         </Grid>
+
+        {/* ================= SEO CONTENT BLOCK ================= */}
+        <Box mt={6}>
+          <Typography component="h2" fontWeight={700}>
+            Why Contact The IT Wallah Support?
+          </Typography>
+          <Typography mt={1}>
+            The IT Wallah provides dedicated support for
+            RGPV students. Get help related to notes,
+            payments, account issues, travel events and
+            more. Our support team ensures fast and
+            reliable assistance.
+          </Typography>
+        </Box>
       </Container>
     </Box>
   );
