@@ -239,7 +239,7 @@ export default function JoinBatch() {
 
         <meta
           name="description"
-          content="Join The IT Wallah IT training batch & access RGPV notes. Paid and free courses, online test, seat confirmation & student support."
+          content="Join The IT Wallah IT training batch . Paid and free courses, online test, seat confirmation & student support."
         />
 
         <meta
@@ -275,7 +275,7 @@ export default function JoinBatch() {
         textAlign="center"
         mb={3}
       >
-        Join IT Training Batch & Access RGPV Notes
+        Join IT Training Batch
       </Typography>
 
       {/* ================= PROFILE ================= */}
