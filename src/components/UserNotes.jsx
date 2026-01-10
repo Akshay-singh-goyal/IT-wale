@@ -187,6 +187,20 @@ const UserNotes = () => {
         `<mark style="background:${color};cursor:pointer" data-text="${text}">${text}</mark>`
       );
     });
+    useEffect(() => {
+  if (!selectedNote) return;
+
+  document.title = `${selectedNote.topicName} Notes | ${selectedNote.subjectName} | The IT Wallah`;
+
+  const metaDesc = document.querySelector("meta[name='description']");
+  if (metaDesc) {
+    metaDesc.setAttribute(
+      "content",
+      `Read ${selectedNote.topicName} notes for ${selectedNote.subjectName}. Free engineering notes for students.`
+    );
+  }
+}, [selectedNote]);
+
 
     return (
       <div
