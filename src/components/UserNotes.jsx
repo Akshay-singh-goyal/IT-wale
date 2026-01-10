@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef, useMemo } from "react";
+import { Helmet } from "react-helmet-async";
 import axios from "axios";
 import {
   Box,
@@ -197,6 +198,52 @@ const UserNotes = () => {
       />
     );
   };
+<Helmet>
+  <title>
+    Free Study Notes | RGPV Notes | Engineering Notes – The IT Wallah
+  </title>
+
+  <meta
+    name="description"
+    content="Read free engineering study notes for RGPV students. Subject-wise, topic-wise notes with highlights, bookmarks and search."
+  />
+
+  <meta
+    name="keywords"
+    content="RGPV notes, engineering notes, free study notes, computer science notes, IT Wallah notes"
+  />
+
+  <link
+    rel="canonical"
+    href="https://theitwallah.vercel.app/user-notes"
+  />
+
+  {/* Open Graph */}
+  <meta property="og:title" content="Free Study Notes – The IT Wallah" />
+  <meta
+    property="og:description"
+    content="Topic-wise engineering notes with highlights and bookmarks."
+  />
+  <meta
+    property="og:url"
+    content="https://theitwallah.vercel.app/user-notes"
+  />
+  <meta property="og:type" content="website" />
+
+  {/* Schema */}
+  <script type="application/ld+json">
+    {JSON.stringify({
+      "@context": "https://schema.org",
+      "@type": "EducationalOrganization",
+      name: "The IT Wallah",
+      url: "https://theitwallah.vercel.app",
+      offers: {
+        "@type": "Offer",
+        category: "Study Notes",
+      },
+    })}
+  </script>
+</Helmet>
 
   /* ================= SIDEBAR ================= */
   const TopicList = (
