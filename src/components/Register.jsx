@@ -1,4 +1,5 @@
-import React, { useState } from "react"; import axios from "axios"; import { Box, TextField, Button, Typography, Container, Paper, InputAdornment, IconButton, MenuItem, Alert, CircularProgress, } from "@mui/material"; import { Person, Email, Phone, Lock, Visibility, VisibilityOff, } from "@mui/icons-material";
+import React, { useState } from "react"; 
+import api from "../api"; // axios instance with Render baseURL import { Box, TextField, Button, Typography, Container, Paper, InputAdornment, IconButton, MenuItem, Alert, CircularProgress, } from "@mui/material"; import { Person, Email, Phone, Lock, Visibility, VisibilityOff, } from "@mui/icons-material";
 
 const countries = [ { code: "+91", label: "India" }, { code: "+1", label: "USA" }, { code: "+44", label: "UK" }, { code: "+61", label: "Australia" }, ];
 
@@ -6,9 +7,9 @@ export default function Register() { const [form, setForm] = useState({ name: ""
 
 const [errors, setErrors] = useState({}); const [showPassword, setShowPassword] = useState(false); const [loading, setLoading] = useState(false); const [serverError, setServerError] = useState(""); const [success, setSuccess] = useState("");
 
-const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); };
+/* ================= HANDLE CHANGE ================= */ const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); };
 
-const validate = () => { let temp = {};
+/* ================= VALIDATION ================= */ const validate = () => { const temp = {};
 
 if (!form.name.trim()) temp.name = "Full name is required";
 
@@ -16,7 +17,7 @@ if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
   temp.email = "Enter a valid email address";
 
 if (!/^\d{10}$/.test(form.mobile))
-  temp.mobile = "Mobile number must be 10 digits";
+  temp.mobile = "Mobile number must be exactly 10 digits";
 
 if (form.password.length < 6)
   temp.password = "Password must be at least 6 characters";
@@ -26,27 +27,35 @@ return Object.keys(temp).length === 0;
 
 };
 
-const handleSubmit = async (e) => { e.preventDefault(); if (!validate()) return;
+/* ================= SUBMIT ================= */ const handleSubmit = async (e) => { e.preventDefault(); if (!validate()) return;
 
 try {
   setLoading(true);
   setServerError("");
   setSuccess("");
 
+  // Backend-compatible payload
   const payload = {
     name: form.name.trim(),
     email: form.email.trim().toLowerCase(),
-    mobile: `${form.countryCode}${form.mobile}`,
+    mobile: form.mobile, // backend expects plain 10-digit number
     password: form.password,
   };
 
-  const res = await axios.post("/api/users/register", payload);
+  const res = await api.post("/api/users/register", payload);
 
   setSuccess(res.data.message || "Registration successful");
-  setForm({ name: "", email: "", countryCode: "+91", mobile: "", password: "" });
+
+  setForm({
+    name: "",
+    email: "",
+    countryCode: "+91",
+    mobile: "",
+    password: "",
+  });
 } catch (err) {
   setServerError(
-    err.response?.data?.message || "Registration failed. Try again"
+    err?.response?.data?.message || "Registration failed. Please try again"
   );
 } finally {
   setLoading(false);
@@ -54,16 +63,31 @@ try {
 
 };
 
-return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borderRadius: 3 }}> <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom> Create Your Account </Typography>
+return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borderRadius: 3 }}> <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom> Create Account </Typography>
 
-<Typography variant="body2" textAlign="center" color="text.secondary" mb={3}>
-      Register to access all features
+<Typography
+      variant="body2"
+      textAlign="center"
+      color="text.secondary"
+      mb={3}
+    >
+      Register to continue
     </Typography>
 
-    {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
-    {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+    {serverError && (
+      <Alert severity="error" sx={{ mb: 2 }}>
+        {serverError}
+      </Alert>
+    )}
+
+    {success && (
+      <Alert severity="success" sx={{ mb: 2 }}>
+        {success}
+      </Alert>
+    )}
 
     <Box component="form" onSubmit={handleSubmit} noValidate>
+      {/* NAME */}
       <TextField
         fullWidth
         margin="normal"
@@ -82,6 +106,7 @@ return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borde
         }}
       />
 
+      {/* EMAIL */}
       <TextField
         fullWidth
         margin="normal"
@@ -100,14 +125,14 @@ return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borde
         }}
       />
 
+      {/* MOBILE */}
       <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
         <TextField
           select
           label="Code"
-          name="countryCode"
           value={form.countryCode}
-          onChange={handleChange}
-          sx={{ width: "32%" }}
+          sx={{ width: "30%" }}
+          disabled
         >
           {countries.map((c) => (
             <MenuItem key={c.code} value={c.code}>
@@ -134,6 +159,7 @@ return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borde
         />
       </Box>
 
+      {/* PASSWORD */}
       <TextField
         fullWidth
         margin="normal"
@@ -152,7 +178,10 @@ return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borde
           ),
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
+              <IconButton
+                onClick={() => setShowPassword(!showPassword)}
+                edge="end"
+              >
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
             </InputAdornment>
@@ -160,6 +189,7 @@ return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borde
         }}
       />
 
+      {/* SUBMIT */}
       <Button
         type="submit"
         fullWidth
@@ -167,7 +197,11 @@ return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borde
         disabled={loading}
         sx={{ mt: 3, py: 1.3, borderRadius: 2, fontWeight: "bold" }}
       >
-        {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
+        {loading ? (
+          <CircularProgress size={24} color="inherit" />
+        ) : (
+          "Register"
+        )}
       </Button>
 
       <Typography textAlign="center" mt={2} variant="body2">
