@@ -315,12 +315,12 @@ const UserNotes = () => {
       {/* ========== SEO ========== */}
       <Helmet>
         <title>
-          Free Study Notes | RGPV Engineering Notes – The IT Wallah
+         Study Notes | RGPV Engineering Notes – The IT Wallah
         </title>
 
         <meta
           name="description"
-          content="Free engineering study notes for RGPV students. Topic-wise notes with search, bookmarks and highlights."
+          content=" Engineering study notes for RGPV students. Topic-wise notes with search, bookmarks and highlights."
         />
 
         <link
