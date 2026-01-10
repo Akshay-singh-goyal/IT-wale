@@ -147,7 +147,7 @@ export default function SupportPage({ dark }) {
          ===================================================== */}
       <Helmet>
         <title>
-          Contact Support | The IT Wallah – RGPV Student Help Desk
+          Contact Support | The IT Wallah – Student Help Desk
         </title>
 
         <meta
@@ -162,7 +162,7 @@ export default function SupportPage({ dark }) {
 
         <link
           rel="canonical"
-          href="https://theitwallah.vercel.app/support"
+          href="https://theitwallah.vercel.app/contact-us"
         />
 
         {/* Open Graph */}
@@ -177,7 +177,7 @@ export default function SupportPage({ dark }) {
         <meta property="og:type" content="website" />
         <meta
           property="og:url"
-          content="https://theitwallah.vercel.app/support"
+          content="https://theitwallah.vercel.app/contact-us"
         />
 
         {/* Structured Data (JSON-LD) */}
