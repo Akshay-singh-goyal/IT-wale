@@ -1,21 +1,23 @@
-import React, { useState } from "react"; import { Box, TextField, Button, Typography, Container, Paper, InputAdornment, IconButton, MenuItem, } from "@mui/material"; 
-import { Person, Email, Phone, Lock, Visibility, VisibilityOff, } from "@mui/icons-material";
+import React, { useState } from "react"; import axios from "axios"; import { Box, TextField, Button, Typography, Container, Paper, InputAdornment, IconButton, MenuItem, Alert, CircularProgress, } from "@mui/material"; import { Person, Email, Phone, Lock, Visibility, VisibilityOff, } from "@mui/icons-material";
 
 const countries = [ { code: "+91", label: "India" }, { code: "+1", label: "USA" }, { code: "+44", label: "UK" }, { code: "+61", label: "Australia" }, ];
 
 export default function Register() { const [form, setForm] = useState({ name: "", email: "", countryCode: "+91", mobile: "", password: "", });
 
-const [errors, setErrors] = useState({}); const [showPassword, setShowPassword] = useState(false);
+const [errors, setErrors] = useState({}); const [showPassword, setShowPassword] = useState(false); const [loading, setLoading] = useState(false); const [serverError, setServerError] = useState(""); const [success, setSuccess] = useState("");
 
 const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); };
 
 const validate = () => { let temp = {};
 
-if (!form.name.trim()) temp.name = "Name is required";
+if (!form.name.trim()) temp.name = "Full name is required";
+
 if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-  temp.email = "Valid email is required";
+  temp.email = "Enter a valid email address";
+
 if (!/^\d{10}$/.test(form.mobile))
   temp.mobile = "Mobile number must be 10 digits";
+
 if (form.password.length < 6)
   temp.password = "Password must be at least 6 characters";
 
@@ -24,15 +26,44 @@ return Object.keys(temp).length === 0;
 
 };
 
-const handleSubmit = (e) => { e.preventDefault(); if (validate()) { console.log("Register Data:", form); alert("Registered Successfully ✅"); } };
+const handleSubmit = async (e) => { e.preventDefault(); if (!validate()) return;
 
-return ( <Container maxWidth="sm"> <Paper elevation={6} sx={{ p: 4, mt: 6, borderRadius: 3 }}> <Typography variant="h4" fontWeight="bold" textAlign="center" mb={2}> Create Account </Typography>
+try {
+  setLoading(true);
+  setServerError("");
+  setSuccess("");
+
+  const payload = {
+    name: form.name.trim(),
+    email: form.email.trim().toLowerCase(),
+    mobile: `${form.countryCode}${form.mobile}`,
+    password: form.password,
+  };
+
+  const res = await axios.post("/api/users/register", payload);
+
+  setSuccess(res.data.message || "Registration successful");
+  setForm({ name: "", email: "", countryCode: "+91", mobile: "", password: "" });
+} catch (err) {
+  setServerError(
+    err.response?.data?.message || "Registration failed. Try again"
+  );
+} finally {
+  setLoading(false);
+}
+
+};
+
+return ( <Container maxWidth="sm"> <Paper elevation={8} sx={{ p: 4, mt: 8, borderRadius: 3 }}> <Typography variant="h4" fontWeight="bold" textAlign="center" gutterBottom> Create Your Account </Typography>
 
 <Typography variant="body2" textAlign="center" color="text.secondary" mb={3}>
-      Register to continue
+      Register to access all features
     </Typography>
 
-    <Box component="form" onSubmit={handleSubmit}>
+    {serverError && <Alert severity="error" sx={{ mb: 2 }}>{serverError}</Alert>}
+    {success && <Alert severity="success" sx={{ mb: 2 }}>{success}</Alert>}
+
+    <Box component="form" onSubmit={handleSubmit} noValidate>
       <TextField
         fullWidth
         margin="normal"
@@ -76,7 +107,7 @@ return ( <Container maxWidth="sm"> <Paper elevation={6} sx={{ p: 4, mt: 6, borde
           name="countryCode"
           value={form.countryCode}
           onChange={handleChange}
-          sx={{ width: "30%" }}
+          sx={{ width: "32%" }}
         >
           {countries.map((c) => (
             <MenuItem key={c.code} value={c.code}>
@@ -121,7 +152,7 @@ return ( <Container maxWidth="sm"> <Paper elevation={6} sx={{ p: 4, mt: 6, borde
           ),
           endAdornment: (
             <InputAdornment position="end">
-              <IconButton onClick={() => setShowPassword(!showPassword)}>
+              <IconButton onClick={() => setShowPassword(!showPassword)} edge="end">
                 {showPassword ? <VisibilityOff /> : <Visibility />}
               </IconButton>
             </InputAdornment>
@@ -133,9 +164,10 @@ return ( <Container maxWidth="sm"> <Paper elevation={6} sx={{ p: 4, mt: 6, borde
         type="submit"
         fullWidth
         variant="contained"
-        sx={{ mt: 3, py: 1.2, borderRadius: 2 }}
+        disabled={loading}
+        sx={{ mt: 3, py: 1.3, borderRadius: 2, fontWeight: "bold" }}
       >
-        Register
+        {loading ? <CircularProgress size={24} color="inherit" /> : "Register"}
       </Button>
 
       <Typography textAlign="center" mt={2} variant="body2">
