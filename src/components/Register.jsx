@@ -1,447 +1,148 @@
-import React, { useEffect, useState, useRef } from "react";
-import axios from "axios";
-import {
-  Box,
-  Typography,
-  Select,
-  MenuItem,
-  Stack,
-  Paper,
-  List,
-  ListItemButton,
-  ListItemIcon,
-  TextField,
-  Divider,
-  IconButton,
-  Tooltip,
-  Popper,
-} from "@mui/material";
-import {
-  MenuBook as BookIcon,
-  School as UniversityIcon,
-  Category as BranchIcon,
-  Code as CodeIcon,
-  Subject as SubjectIcon,
-  Star as StarIcon,
-  StarBorder as StarBorderIcon,
-  Search as SearchIcon,
-  Delete as DeleteIcon,
-} from "@mui/icons-material";
+import React, { useState } from "react"; import { Box, TextField, Button, Typography, Container, Paper, InputAdornment, IconButton, MenuItem, } from "@mui/material"; 
+import { Person, Email, Phone, Lock, Visibility, VisibilityOff, } from "@mui/icons-material";
 
-const API_BASE = "https://sm-backend-8me3.onrender.com/api";
-const token = localStorage.getItem("accessToken");
-const HIGHLIGHT_COLORS = ["yellow", "lightgreen", "cyan", "pink", "orange"];
+const countries = [ { code: "+91", label: "India" }, { code: "+1", label: "USA" }, { code: "+44", label: "UK" }, { code: "+61", label: "Australia" }, ];
 
-const UserNotes = () => {
-  const [filters, setFilters] = useState({
-    university: "",
-    department: "",
-    branch: "",
-    subject: "",
-    subjectCode: "",
-    language: "",
-  });
-  const [notes, setNotes] = useState([]);
-  const [selectedNote, setSelectedNote] = useState(null);
-  const [loading, setLoading] = useState(false);
-  const [search, setSearch] = useState("");
-  const [userData, setUserData] = useState({ bookmarks: [], highlights: {} });
-  const [selectionRect, setSelectionRect] = useState(null);
+export default function Register() { const [form, setForm] = useState({ name: "", email: "", countryCode: "+91", mobile: "", password: "", });
 
-  const popperRef = useRef(null);
+const [errors, setErrors] = useState({}); const [showPassword, setShowPassword] = useState(false);
 
-  // ===== Fetch Notes =====
-  const fetchNotes = async () => {
-    try {
-      setLoading(true);
-      const query = new URLSearchParams({
-        university: filters.university,
-        department: filters.department,
-        branch: filters.branch,
-        subject: filters.subject,
-        subjectCode: filters.subjectCode,
-        language: filters.language,
-      }).toString();
+const handleChange = (e) => { setForm({ ...form, [e.target.name]: e.target.value }); };
 
-      const res = await axios.get(`${API_BASE}/study-notes?${query}`);
-      setNotes(res.data || []);
-      setSelectedNote(null);
-    } catch (err) {
-      console.error("Fetch notes error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+const validate = () => { let temp = {};
 
-  // ===== Fetch User Data =====
-  const fetchUserData = async () => {
-    if (!token) return;
-    try {
-      const res = await axios.get(`${API_BASE}/auth/me`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      setUserData({
-        bookmarks: res.data.bookmarks || [],
-        highlights: res.data.highlights || {},
-      });
-    } catch (err) {
-      console.error("Fetch user data error:", err);
-    }
-  };
+if (!form.name.trim()) temp.name = "Name is required";
+if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
+  temp.email = "Valid email is required";
+if (!/^\d{10}$/.test(form.mobile))
+  temp.mobile = "Mobile number must be 10 digits";
+if (form.password.length < 6)
+  temp.password = "Password must be at least 6 characters";
 
-  useEffect(() => {
-    fetchNotes();
-    fetchUserData();
-  }, [filters]);
+setErrors(temp);
+return Object.keys(temp).length === 0;
 
-  // ===== Dropdowns =====
-  const universities = [...new Set(notes.map((n) => n.university?.name || ""))];
-  const departments = [
-    ...new Set(
-      notes
-        .filter((n) => !filters.university || n.university?.name === filters.university)
-        .map((n) => n.department)
-    ),
-  ];
-  const branches = [
-    ...new Set(
-      notes
-        .filter(
-          (n) =>
-            (!filters.university || n.university?.name === filters.university) &&
-            (!filters.department || n.department === filters.department)
-        )
-        .map((n) => n.branch)
-    ),
-  ];
-  const subjects = [
-    ...new Set(
-      notes
-        .filter(
-          (n) =>
-            (!filters.university || n.university?.name === filters.university) &&
-            (!filters.department || n.department === filters.department) &&
-            (!filters.branch || n.branch === filters.branch)
-        )
-        .map((n) => n.subjectName)
-    ),
-  ];
-  const subjectCodes = [
-    ...new Set(
-      notes
-        .filter(
-          (n) =>
-            (!filters.university || n.university?.name === filters.university) &&
-            (!filters.department || n.department === filters.department) &&
-            (!filters.branch || n.branch === filters.branch) &&
-            (!filters.subject || n.subjectName === filters.subject)
-        )
-        .map((n) => n.subjectCode)
-    ),
-  ];
-  const languages = [...new Set(notes.map((n) => n.language))];
-
-  const filteredNotes = notes.filter((note) =>
-    note.topicName.toLowerCase().includes(search.toLowerCase())
-  );
-
-  // ===== Bookmark =====
-  const toggleBookmark = async (noteId) => {
-    try {
-      const newBookmarks = userData.bookmarks.includes(noteId)
-        ? userData.bookmarks.filter((id) => id !== noteId)
-        : [...userData.bookmarks, noteId];
-      setUserData({ ...userData, bookmarks: newBookmarks });
-
-      await axios.put(
-        `${API_BASE}/users/me/bookmarks`,
-        { bookmarks: newBookmarks },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error("Bookmark update error:", err);
-    }
-  };
-
-  // ===== Highlight =====
-  const handleTextSelect = () => {
-    const selection = window.getSelection();
-    if (selection && selection.toString().trim() !== "") {
-      const range = selection.getRangeAt(0);
-      setSelectionRect(range.getBoundingClientRect());
-    } else setSelectionRect(null);
-  };
-
-  const applyHighlight = async (color) => {
-    if (!selectedNote) return;
-    const text = window.getSelection().toString();
-    if (!text) return;
-
-    const noteHighlights = userData.highlights[selectedNote._id] || [];
-    noteHighlights.push({ text, color });
-    const updated = { ...userData.highlights, [selectedNote._id]: noteHighlights };
-
-    setUserData({ ...userData, highlights: updated });
-
-    try {
-      await axios.put(
-        `${API_BASE}/users/me/highlights`,
-        { highlights: updated },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error("Highlight save error:", err);
-    }
-    setSelectionRect(null);
-    window.getSelection().removeAllRanges();
-  };
-
-  const removeHighlight = async (text) => {
-    if (!selectedNote) return;
-    const noteHighlights = (userData.highlights[selectedNote._id] || []).filter(
-      (h) => h.text !== text
-    );
-    const updated = { ...userData.highlights, [selectedNote._id]: noteHighlights };
-
-    setUserData({ ...userData, highlights: updated });
-
-    try {
-      await axios.put(
-        `${API_BASE}/users/me/highlights`,
-        { highlights: updated },
-        { headers: { Authorization: `Bearer ${token}` } }
-      );
-    } catch (err) {
-      console.error("Highlight remove error:", err);
-    }
-  };
-
-  const renderHighlightedContent = (note) => {
-    let content = note.topicDetails || "";
-    const highlights = userData.highlights[note._id] || [];
-    highlights.forEach(({ text, color }) => {
-      const escaped = text.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      const regex = new RegExp(escaped, "g");
-      content = content.replace(
-        regex,
-        `<mark style="background-color:${color}; cursor:pointer;" data-text="${text}">${text}</mark>`
-      );
-    });
-    return <span dangerouslySetInnerHTML={{ __html: content }} />;
-  };
-
-  const handleHighlightClick = (e) => {
-    if (e.target.tagName === "MARK") removeHighlight(e.target.dataset.text);
-  };
-
-  return (
-    <Box component="main" sx={{ p: { xs: 2, sm: 4 } }} onMouseUp={handleTextSelect}>
-      {/* Filters */}
-      <Paper sx={{ p: 2, mb: 3 }}>
-        <Stack direction={{ xs: "column", sm: "row" }} spacing={2}>
-          {/* University */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <UniversityIcon color="primary" />
-            <Select
-              value={filters.university}
-              onChange={(e) =>
-                setFilters({
-                  ...filters,
-                  university: e.target.value,
-                  department: "",
-                  branch: "",
-                  subject: "",
-                  subjectCode: "",
-                  language: "",
-                })
-              }
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="">All Universities</MenuItem>
-              {universities.map((u) => (
-                <MenuItem key={u} value={u}>
-                  {u}
-                </MenuItem>
-              ))}
-            </Select>
-          </Stack>
-
-          {/* Department */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <SubjectIcon color="success" />
-            <Select
-              value={filters.department}
-              onChange={(e) =>
-                setFilters({ ...filters, department: e.target.value, branch: "", subject: "", subjectCode: "" })
-              }
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="">All Departments</MenuItem>
-              {departments.map((d) => (
-                <MenuItem key={d} value={d}>
-                  {d}
-                </MenuItem>
-              ))}
-            </Select>
-          </Stack>
-
-          {/* Branch */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <BranchIcon color="secondary" />
-            <Select
-              value={filters.branch}
-              onChange={(e) =>
-                setFilters({ ...filters, branch: e.target.value, subject: "", subjectCode: "" })
-              }
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="">All Branches</MenuItem>
-              {branches.map((b) => (
-                <MenuItem key={b} value={b}>
-                  {b}
-                </MenuItem>
-              ))}
-            </Select>
-          </Stack>
-
-          {/* Subject */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <SubjectIcon color="action" />
-            <Select
-              value={filters.subject}
-              onChange={(e) => setFilters({ ...filters, subject: e.target.value, subjectCode: "" })}
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="">All Subjects</MenuItem>
-              {subjects.map((s) => (
-                <MenuItem key={s} value={s}>
-                  {s}
-                </MenuItem>
-              ))}
-            </Select>
-          </Stack>
-
-          {/* Subject Code */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <CodeIcon color="disabled" />
-            <Select
-              value={filters.subjectCode}
-              onChange={(e) => setFilters({ ...filters, subjectCode: e.target.value })}
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="">All Codes</MenuItem>
-              {subjectCodes.map((c) => (
-                <MenuItem key={c} value={c}>
-                  {c}
-                </MenuItem>
-              ))}
-            </Select>
-          </Stack>
-
-          {/* Language */}
-          <Stack direction="row" alignItems="center" spacing={1}>
-            <CodeIcon color="secondary" />
-            <Select
-              value={filters.language}
-              onChange={(e) => setFilters({ ...filters, language: e.target.value })}
-              displayEmpty
-              fullWidth
-            >
-              <MenuItem value="">All Languages</MenuItem>
-              {languages.map((l) => (
-                <MenuItem key={l} value={l}>
-                  {l}
-                </MenuItem>
-              ))}
-            </Select>
-          </Stack>
-        </Stack>
-      </Paper>
-
-      {/* Notes List + Content */}
-      <Box sx={{ display: "flex", flexDirection: { xs: "column", sm: "row" }, gap: 2 }}>
-        {/* Sidebar */}
-        <Paper sx={{ width: { xs: "100%", sm: "25%" }, maxHeight: "70vh", overflowY: "auto" }}>
-          <Box sx={{ p: 2, borderBottom: "1px solid #ddd" }}>
-            <Stack direction="row" spacing={1} alignItems="center">
-              <SearchIcon />
-              <TextField
-                placeholder="Search topics..."
-                variant="standard"
-                fullWidth
-                value={search}
-                onChange={(e) => setSearch(e.target.value)}
-              />
-            </Stack>
-          </Box>
-          <List>
-            {filteredNotes.map((note) => (
-              <ListItemButton
-                key={note._id}
-                selected={selectedNote?._id === note._id}
-                onClick={() => setSelectedNote(note)}
-                sx={{ justifyContent: "space-between" }}
-              >
-                <Stack direction="row" alignItems="center">
-                  <ListItemIcon sx={{ minWidth: 36 }}><BookIcon /></ListItemIcon>
-                  <Typography>{note.topicName}</Typography>
-                </Stack>
-                <IconButton onClick={() => toggleBookmark(note._id)}> 
-                  {userData.bookmarks.includes(note._id) ? <StarIcon color="warning" /> : <StarBorderIcon />} 
-                </IconButton>
-              </ListItemButton>
-            ))}
-          </List>
-        </Paper>
-
-        {/* Content */}
-        <Paper sx={{ flex: 1, p: 3, maxHeight: "70vh", overflowY: "auto" }} onClick={handleHighlightClick}>
-          {loading ? (
-            <Typography>Loading...</Typography>
-          ) : selectedNote ? (
-            <>
-              <Stack direction="row" justifyContent="space-between" alignItems="center" sx={{ mb: 1 }}>
-                <Typography variant="h5">{selectedNote.topicName}</Typography>
-                <Tooltip title={userData.bookmarks.includes(selectedNote._id) ? "Remove Bookmark" : "Bookmark"}>
-                  <IconButton onClick={() => toggleBookmark(selectedNote._id)}>
-                    {userData.bookmarks.includes(selectedNote._id) ? <StarIcon color="warning" /> : <StarBorderIcon />} 
-                  </IconButton>
-                </Tooltip>
-              </Stack>
-              <Divider sx={{ mb: 2 }} />
-              <Box sx={{ whiteSpace: "pre-line", cursor: "text" }}>
-                {renderHighlightedContent(selectedNote)}
-              </Box>
-              <Typography variant="caption" sx={{ mt: 1, display: "block", color: "text.secondary" }}>
-                Select text to highlight (click highlight to remove)
-              </Typography>
-            </>
-          ) : (
-            <Typography>Select a topic to view notes</Typography>
-          )}
-        </Paper>
-      </Box>
-
-      {/* Floating Toolbar */}
-      {selectionRect && (
-        <Popper open anchorEl={{ getBoundingClientRect: () => selectionRect }} placement="top" style={{ zIndex: 9999 }}>
-          <Paper sx={{ display: "flex", p: 1, gap: 1, boxShadow: 3 }}>
-            {HIGHLIGHT_COLORS.map((color) => (
-              <IconButton key={color} onClick={() => applyHighlight(color)} sx={{ bgcolor: color, width: 30, height: 30 }} />
-            ))}
-            <Tooltip title="Cancel">
-              <IconButton onClick={() => setSelectionRect(null)}><DeleteIcon /></IconButton>
-            </Tooltip>
-          </Paper>
-        </Popper>
-      )}
-    </Box>
-  );
 };
 
-export default UserNotes;
+const handleSubmit = (e) => { e.preventDefault(); if (validate()) { console.log("Register Data:", form); alert("Registered Successfully ✅"); } };
+
+return ( <Container maxWidth="sm"> <Paper elevation={6} sx={{ p: 4, mt: 6, borderRadius: 3 }}> <Typography variant="h4" fontWeight="bold" textAlign="center" mb={2}> Create Account </Typography>
+
+<Typography variant="body2" textAlign="center" color="text.secondary" mb={3}>
+      Register to continue
+    </Typography>
+
+    <Box component="form" onSubmit={handleSubmit}>
+      <TextField
+        fullWidth
+        margin="normal"
+        label="Full Name"
+        name="name"
+        value={form.name}
+        onChange={handleChange}
+        error={!!errors.name}
+        helperText={errors.name}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Person />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <TextField
+        fullWidth
+        margin="normal"
+        label="Email Address"
+        name="email"
+        value={form.email}
+        onChange={handleChange}
+        error={!!errors.email}
+        helperText={errors.email}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Email />
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <Box sx={{ display: "flex", gap: 1, mt: 2 }}>
+        <TextField
+          select
+          label="Code"
+          name="countryCode"
+          value={form.countryCode}
+          onChange={handleChange}
+          sx={{ width: "30%" }}
+        >
+          {countries.map((c) => (
+            <MenuItem key={c.code} value={c.code}>
+              {c.label} ({c.code})
+            </MenuItem>
+          ))}
+        </TextField>
+
+        <TextField
+          fullWidth
+          label="Mobile Number"
+          name="mobile"
+          value={form.mobile}
+          onChange={handleChange}
+          error={!!errors.mobile}
+          helperText={errors.mobile}
+          InputProps={{
+            startAdornment: (
+              <InputAdornment position="start">
+                <Phone />
+              </InputAdornment>
+            ),
+          }}
+        />
+      </Box>
+
+      <TextField
+        fullWidth
+        margin="normal"
+        label="Password"
+        name="password"
+        type={showPassword ? "text" : "password"}
+        value={form.password}
+        onChange={handleChange}
+        error={!!errors.password}
+        helperText={errors.password}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <Lock />
+            </InputAdornment>
+          ),
+          endAdornment: (
+            <InputAdornment position="end">
+              <IconButton onClick={() => setShowPassword(!showPassword)}>
+                {showPassword ? <VisibilityOff /> : <Visibility />}
+              </IconButton>
+            </InputAdornment>
+          ),
+        }}
+      />
+
+      <Button
+        type="submit"
+        fullWidth
+        variant="contained"
+        sx={{ mt: 3, py: 1.2, borderRadius: 2 }}
+      >
+        Register
+      </Button>
+
+      <Typography textAlign="center" mt={2} variant="body2">
+        Already have an account? <b>Login</b>
+      </Typography>
+    </Box>
+  </Paper>
+</Container>
+
+); }
