@@ -25,12 +25,9 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
-import { Helmet } from "react-helmet";
-
 import qrImg from "../Images/Qr.jpeg";
 import bannerImg from "../Images/banner.jpeg";
 
-/* ================= API CONFIG ================= */
 const api = axios.create({
   baseURL: "https://sm-backend-8me3.onrender.com",
 });
@@ -41,11 +38,9 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
-/* ================= COMPONENT ================= */
 export default function JoinBatch() {
   const navigate = useNavigate();
 
-  /* ================= STATE ================= */
   const [agree, setAgree] = useState(false);
   const [mode, setMode] = useState("");
   const [status, setStatus] = useState("NOT_REGISTERED");
@@ -57,11 +52,7 @@ export default function JoinBatch() {
 
   const [testDate, setTestDate] = useState("");
   const [testTime, setTestTime] = useState("");
-  const [profile, setProfile] = useState({
-    name: "",
-    email: "",
-    mobile: "",
-  });
+  const [profile, setProfile] = useState({ name: "", email: "", mobile: "" });
 
   const [timer, setTimer] = useState(0);
   const timerRef = useRef(null);
@@ -74,7 +65,6 @@ export default function JoinBatch() {
     "SEAT_CONFIRMED",
   ];
 
-  /* ================= AUTH CHECK ================= */
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
@@ -85,7 +75,6 @@ export default function JoinBatch() {
     }
   }, []);
 
-  /* ================= FETCH STATUS ================= */
   const fetchStatus = async () => {
     try {
       const res = await api.get("/api/register/status");
@@ -112,7 +101,6 @@ export default function JoinBatch() {
     }
   };
 
-  /* ================= TIMER ================= */
   useEffect(() => {
     if (timer > 0) {
       timerRef.current = setInterval(() => {
@@ -137,7 +125,6 @@ export default function JoinBatch() {
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
 
-  /* ================= ACTIONS ================= */
   const selectMode = async (m) => {
     if (!agree) return toast.error("Accept Terms & Conditions");
     try {
@@ -215,29 +202,34 @@ export default function JoinBatch() {
   };
 
   return (
-    <>
-      {/* ================= SEO META ================= */}
+    
+    <Container sx={{ py: 5 }}>
+      <ToastContainer position="bottom-center" />
+       {/* ================= SEO META ================= */}
       <Helmet>
-        <title>
-          Join IT Training Batch | Paid & Free Courses – The IT Wallah
-        </title>
+        <title>Join IT Training Batch | The IT Wallah</title>
+
         <meta
           name="description"
-          content="Join The IT Wallah training batch. Choose paid or unpaid courses, book test slots, make payments, and confirm your seat online."
-        />
-        <meta
-          name="keywords"
-          content="IT training batch, join coding course, paid IT course, free IT training, online IT classes, developer course"
+          content="Join The IT Wallah IT training batch. Paid and free courses, test slots, payments, and online seat confirmation."
         />
 
-        {/* JSON-LD SCHEMA */}
+        <meta
+          name="keywords"
+          content="IT training, coding classes, paid IT course, free IT course, The IT Wallah"
+        />
+
+        <link
+          rel="canonical"
+          href="https://theitwallah.vercel.app/join-batch"
+        />
+
+        {/* Schema */}
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Course",
             name: "IT Training Batch",
-            description:
-              "Paid and unpaid IT training batch with online registration, test slots, and seat confirmation.",
             provider: {
               "@type": "Organization",
               name: "The IT Wallah",
@@ -247,66 +239,39 @@ export default function JoinBatch() {
         </script>
       </Helmet>
 
-      {/* ================= PAGE CONTENT ================= */}
-      <Container sx={{ py: 5 }}>
-        <ToastContainer position="bottom-center" />
-
-        {/* ================= H1 ================= */}
-        <Typography variant="h3" component="h1" align="center" gutterBottom>
-          Join IT Training Batch
-        </Typography>
-
-        <Typography
-          component="h2"
-          variant="subtitle1"
-          align="center"
-          sx={{ mb: 4 }}
-        >
-          Register for Paid or Free IT Courses, Book Test Slots & Confirm Your
-          Seat
-        </Typography>
-
-        {/* ================= PROFILE ================= */}
-        <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
-          <Avatar>{profile?.name?.[0]?.toUpperCase() || "U"}</Avatar>
-          <Box sx={{ ml: 1 }}>
-            <Typography component="h3">{profile.name || "User"}</Typography>
-            <Typography variant="caption">{profile.email}</Typography>
-          </Box>
+      {/* PROFILE */}
+      <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
+        <Avatar sx={{ mr: 1 }}>
+          {profile?.name?.[0]?.toUpperCase() || "U"}
+        </Avatar>
+        <Box>
+          <Typography>{profile.name || "User"}</Typography>
+          <Typography variant="caption">{profile.email}</Typography>
         </Box>
+      </Box>
 
-        {/* ================= BANNER ================= */}
-        {!showForm && (
-          <Box sx={{ textAlign: "center", mb: 4 }}>
-            <img
-              src={bannerImg}
-              alt="Join IT Training Batch Banner"
-              style={{ width: "100%" }}
-            />
-            <Button
-              variant="contained"
-              sx={{ mt: 2 }}
-              onClick={() => setShowForm(true)}
-            >
-              Enroll Now
-            </Button>
-          </Box>
-        )}
+      {!showForm && (
+        <Box sx={{ textAlign: "center", mb: 4 }}>
+          <img src={bannerImg} alt="Banner" style={{ width: "100%" }} />
+          <Button variant="contained" sx={{ mt: 2 }} onClick={() => setShowForm(true)}>
+            Enroll Now
+          </Button>
+        </Box>
+      )}
 
-        {/* ================= FORM ================= */}
-        {showForm && (
-          <>
-            <Stepper
-              activeStep={Math.max(steps.indexOf(status), 0)}
-              alternativeLabel
-              sx={{ mb: 4 }}
-            >
-              {steps.map((s) => (
-                <Step key={s}>
-                  <StepLabel>{s.replaceAll("_", " ")}</StepLabel>
-                </Step>
-              ))}
-            </Stepper>
+      {showForm && (
+        <>
+          <Stepper
+            activeStep={Math.max(steps.indexOf(status), 0)}
+            alternativeLabel
+            sx={{ mb: 4 }}
+          >
+            {steps.map((s) => (
+              <Step key={s}>
+                <StepLabel>{s.replaceAll("_", " ")}</StepLabel>
+              </Step>
+            ))}
+          </Stepper>
 
           <Grid container spacing={3}>
             <Grid item xs={12} md={8}>
@@ -458,7 +423,7 @@ export default function JoinBatch() {
             onChange={(e) => setTxnId(e.target.value)}
           />
         </DialogContent>
-        <DialogActions>  
+        <DialogActions>
           <Button onClick={() => setOpenCoursePay(false)}>Cancel</Button>
           <Button variant="contained" onClick={payCourseFee}>
             Submit
