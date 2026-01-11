@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import api from "../api";
 
 /* ================= MUI COMPONENTS ================= */
@@ -35,6 +36,8 @@ const countries = [
 ];
 
 export default function Register() {
+  const navigate = useNavigate();
+
   const [form, setForm] = useState({
     name: "",
     email: "",
@@ -101,6 +104,11 @@ export default function Register() {
         mobile: "",
         password: "",
       });
+
+      // ✅ AUTO REDIRECT TO LOGIN AFTER SUCCESS
+      setTimeout(() => {
+        navigate("/login");
+      }, 1500);
     } catch (err) {
       setServerError(
         err?.response?.data?.message || "Registration failed"
