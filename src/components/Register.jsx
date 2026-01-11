@@ -90,7 +90,7 @@ export default function Register() {
         password: form.password,
       };
 
-      const res = await api.post("/api/users/register", payload);
+      const res = await api.post("/api/auth/register", payload);
 
       setSuccess(res.data.message || "Registration successful");
 
