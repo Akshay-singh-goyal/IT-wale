@@ -1,11 +1,12 @@
 import React, {
   useEffect,
   useState,
-  useRef,
-  useMemo
+  useMemo,
+  useCallback,
 } from "react";
 import { Helmet } from "react-helmet-async";
 import axios from "axios";
+
 import {
   Box,
   Typography,
@@ -23,6 +24,7 @@ import {
   Drawer,
   useMediaQuery,
 } from "@mui/material";
+
 import {
   MenuBook as BookIcon,
   Star as StarIcon,
@@ -34,7 +36,6 @@ import {
 
 /* ================= CONSTANTS ================= */
 const API_BASE = "https://sm-backend-8me3.onrender.com/api";
-const token = localStorage.getItem("accessToken");
 const HIGHLIGHT_COLORS = [
   "yellow",
   "lightgreen",
@@ -46,9 +47,11 @@ const HIGHLIGHT_COLORS = [
 /* ================= COMPONENT ================= */
 const UserNotes = () => {
   const isMobile = useMediaQuery("(max-width:900px)");
+  const token = localStorage.getItem("accessToken");
 
   /* ================= STATE ================= */
   const [drawerOpen, setDrawerOpen] = useState(false);
+
   const [filters, setFilters] = useState({
     university: "",
     department: "",
@@ -62,6 +65,7 @@ const UserNotes = () => {
   const [selectedNote, setSelectedNote] = useState(null);
   const [loading, setLoading] = useState(false);
   const [search, setSearch] = useState("");
+
   const [userData, setUserData] = useState({
     bookmarks: [],
     highlights: {},
@@ -70,12 +74,12 @@ const UserNotes = () => {
   const [selectionRect, setSelectionRect] = useState(null);
 
   /* ================= FETCH NOTES ================= */
-  const fetchNotes = async () => {
+  const fetchNotes = useCallback(async () => {
     try {
       setLoading(true);
 
       const queryString = Object.entries(filters)
-        .filter(([_, v]) => v)
+        .filter(([_, v]) => Boolean(v))
         .map(([k, v]) => `${k}=${encodeURIComponent(v)}`)
         .join("&");
 
@@ -94,15 +98,17 @@ const UserNotes = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [filters, token]);
 
   /* ================= FETCH USER ================= */
-  const fetchUserData = async () => {
+  const fetchUserData = useCallback(async () => {
     if (!token) return;
+
     try {
       const res = await axios.get(`${API_BASE}/auth/me`, {
         headers: { Authorization: `Bearer ${token}` },
       });
+
       setUserData({
         bookmarks: res.data.bookmarks || [],
         highlights: res.data.highlights || {},
@@ -110,18 +116,18 @@ const UserNotes = () => {
     } catch (err) {
       console.error("Fetch user error:", err);
     }
-  };
+  }, [token]);
 
+  /* ================= EFFECTS ================= */
   useEffect(() => {
     fetchNotes();
     fetchUserData();
-  }, [filters]);
+  }, [fetchNotes, fetchUserData]);
 
-  /* ================= SEO DYNAMIC ================= */
   useEffect(() => {
-    if (!selectedNote) return;
-
-    document.title = `${selectedNote.topicName} Notes | ${selectedNote.subjectName} | The IT Wallah`;
+    if (selectedNote) {
+      document.title = `${selectedNote.topicName} | ${selectedNote.subjectName} Notes – The IT Wallah`;
+    }
   }, [selectedNote]);
 
   /* ================= SORT + SEARCH ================= */
@@ -139,24 +145,17 @@ const UserNotes = () => {
   }, [notes, search]);
 
   /* ================= FILTER OPTIONS ================= */
-  const universities = [
-    ...new Set(notes.map((n) => n.university?.name).filter(Boolean)),
-  ];
-  const departments = [
-    ...new Set(notes.map((n) => n.department).filter(Boolean)),
-  ];
-  const branches = [
-    ...new Set(notes.map((n) => n.branch).filter(Boolean)),
-  ];
-  const subjects = [
-    ...new Set(notes.map((n) => n.subjectName).filter(Boolean)),
-  ];
-  const subjectCodes = [
-    ...new Set(notes.map((n) => n.subjectCode).filter(Boolean)),
-  ];
-  const languages = [
-    ...new Set(notes.map((n) => n.language).filter(Boolean)),
-  ];
+  const universities = useMemo(
+    () =>
+      [...new Set(notes.map((n) => n.university?.name).filter(Boolean))],
+    [notes]
+  );
+
+  const subjects = useMemo(
+    () =>
+      [...new Set(notes.map((n) => n.subjectName).filter(Boolean))],
+    [notes]
+  );
 
   /* ================= BOOKMARK ================= */
   const toggleBookmark = async (id) => {
@@ -164,30 +163,38 @@ const UserNotes = () => {
       ? userData.bookmarks.filter((b) => b !== id)
       : [...userData.bookmarks, id];
 
-    setUserData({ ...userData, bookmarks: updated });
+    setUserData((prev) => ({
+      ...prev,
+      bookmarks: updated,
+    }));
 
-    await axios.put(
-      `${API_BASE}/users/me/bookmarks`,
-      { bookmarks: updated },
-      { headers: { Authorization: `Bearer ${token}` } }
-    );
+    try {
+      await axios.put(
+        `${API_BASE}/users/me/bookmarks`,
+        { bookmarks: updated },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+    } catch (err) {
+      console.error("Bookmark error:", err);
+    }
   };
 
   /* ================= HIGHLIGHT ================= */
   const handleTextSelect = () => {
     const sel = window.getSelection();
-    if (sel && sel.toString().trim()) {
-      setSelectionRect(
-        sel.getRangeAt(0).getBoundingClientRect()
-      );
-    } else {
+    if (!sel || sel.isCollapsed) {
       setSelectionRect(null);
+      return;
     }
+
+    const range = sel.getRangeAt(0);
+    setSelectionRect(range.getBoundingClientRect());
   };
 
   const applyHighlight = async (color) => {
     if (!selectedNote) return;
-    const text = window.getSelection().toString();
+
+    const text = window.getSelection()?.toString();
     if (!text) return;
 
     const list =
@@ -198,7 +205,10 @@ const UserNotes = () => {
       [selectedNote._id]: [...list, { text, color }],
     };
 
-    setUserData({ ...userData, highlights: updated });
+    setUserData((prev) => ({
+      ...prev,
+      highlights: updated,
+    }));
 
     await axios.put(
       `${API_BASE}/users/me/highlights`,
@@ -211,6 +221,8 @@ const UserNotes = () => {
   };
 
   const removeHighlight = async (text) => {
+    if (!selectedNote) return;
+
     const list =
       (userData.highlights[selectedNote._id] || []).filter(
         (h) => h.text !== text
@@ -221,7 +233,10 @@ const UserNotes = () => {
       [selectedNote._id]: list,
     };
 
-    setUserData({ ...userData, highlights: updated });
+    setUserData((prev) => ({
+      ...prev,
+      highlights: updated,
+    }));
 
     await axios.put(
       `${API_BASE}/users/me/highlights`,
@@ -231,7 +246,7 @@ const UserNotes = () => {
   };
 
   const renderHighlightedContent = (note) => {
-    let html = note.topicDetails;
+    let html = note.topicDetails || "";
 
     (userData.highlights[note._id] || []).forEach(
       ({ text, color }) => {
@@ -239,6 +254,7 @@ const UserNotes = () => {
           /[.*+?^${}()|[\]\\]/g,
           "\\$&"
         );
+
         html = html.replace(
           new RegExp(esc, "g"),
           `<mark style="background:${color};cursor:pointer" data-text="${text}">${text}</mark>`
@@ -295,7 +311,10 @@ const UserNotes = () => {
             />
 
             <IconButton
-              onClick={() => toggleBookmark(note._id)}
+              onClick={(e) => {
+                e.stopPropagation();
+                toggleBookmark(note._id);
+              }}
             >
               {userData.bookmarks.includes(note._id) ? (
                 <StarIcon color="warning" />
@@ -312,17 +331,14 @@ const UserNotes = () => {
   /* ================= RENDER ================= */
   return (
     <>
-      {/* ========== SEO ========== */}
       <Helmet>
         <title>
-         Study Notes | RGPV Engineering Notes – The IT Wallah
+          Study Notes | RGPV Engineering Notes – The IT Wallah
         </title>
-
         <meta
           name="description"
-          content=" Engineering study notes for RGPV students. Topic-wise notes with search, bookmarks and highlights."
+          content="Engineering study notes with search, bookmarks and highlights."
         />
-
         <link
           rel="canonical"
           href="https://theitwallah.vercel.app/user-notes"
@@ -330,19 +346,15 @@ const UserNotes = () => {
       </Helmet>
 
       <Box sx={{ p: 2 }} onMouseUp={handleTextSelect}>
-        {/* Filters */}
         <Paper sx={{ p: 2, mb: 3 }}>
-          <Stack
-            direction={{ xs: "column", md: "row" }}
-            spacing={2}
-          >
+          <Stack direction={{ xs: "column", md: "row" }} spacing={2}>
             <Select
               value={filters.university}
               onChange={(e) =>
-                setFilters({
-                  ...filters,
+                setFilters((prev) => ({
+                  ...prev,
                   university: e.target.value,
-                })
+                }))
               }
               displayEmpty
               fullWidth
@@ -358,10 +370,10 @@ const UserNotes = () => {
             <Select
               value={filters.subject}
               onChange={(e) =>
-                setFilters({
-                  ...filters,
+                setFilters((prev) => ({
+                  ...prev,
                   subject: e.target.value,
-                })
+                }))
               }
               displayEmpty
               fullWidth
@@ -382,11 +394,8 @@ const UserNotes = () => {
           </IconButton>
         )}
 
-        <Drawer
-          open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
-        >
-          <Box sx={{ width: 280 }}>{TopicList}</Box>
+        <Drawer open={drawerOpen} onClose={() => setDrawerOpen(false)}>
+          <Box sx={{ width: 300 }}>{TopicList}</Box>
         </Drawer>
 
         <Box sx={{ display: "flex", gap: 2 }}>
@@ -394,14 +403,7 @@ const UserNotes = () => {
             <Box sx={{ width: "25%" }}>{TopicList}</Box>
           )}
 
-          <Paper
-            sx={{
-              flex: 1,
-              p: 3,
-              maxHeight: "75vh",
-              overflowY: "auto",
-            }}
-          >
+          <Paper sx={{ flex: 1, p: 3, maxHeight: "75vh", overflowY: "auto" }}>
             {loading ? (
               <Typography>Loading...</Typography>
             ) : selectedNote ? (
@@ -425,23 +427,15 @@ const UserNotes = () => {
               getBoundingClientRect: () => selectionRect,
             }}
           >
-            <Paper
-              sx={{ p: 1, display: "flex", gap: 1 }}
-            >
+            <Paper sx={{ p: 1, display: "flex", gap: 1 }}>
               {HIGHLIGHT_COLORS.map((c) => (
                 <IconButton
                   key={c}
                   onClick={() => applyHighlight(c)}
-                  sx={{
-                    bgcolor: c,
-                    width: 30,
-                    height: 30,
-                  }}
+                  sx={{ bgcolor: c, width: 30, height: 30 }}
                 />
               ))}
-              <IconButton
-                onClick={() => setSelectionRect(null)}
-              >
+              <IconButton onClick={() => setSelectionRect(null)}>
                 <DeleteIcon />
               </IconButton>
             </Paper>

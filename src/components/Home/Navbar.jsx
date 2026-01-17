@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from "react";
-import { Link, NavLink, useLocation } from "react-router-dom";
+import React, { useState, useEffect, useRef } from "react";
+import { Link, NavLink, useLocation, useNavigate } from "react-router-dom";
 import {
   FaBook,
   FaUniversity,
@@ -11,6 +11,8 @@ import {
   FaBars,
   FaTimes,
   FaArrowLeft,
+  FaUserCircle,
+  FaSignOutAlt,
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
@@ -78,33 +80,70 @@ const MENU = [
 
 export default function Navbar() {
   const location = useLocation();
+  const navigate = useNavigate();
 
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  const [mobileView, setMobileView] = useState("MAIN"); // MAIN | CATEGORY | ITEMS
+  const [mobileView, setMobileView] = useState("MAIN");
   const [activeCategory, setActiveCategory] = useState(null);
 
+  /* ===== AUTH STATE ===== */
+  const [user, setUser] = useState(null);
+  const [profileOpen, setProfileOpen] = useState(false);
+  const profileRef = useRef();
+
+  /* ===== LOAD USER ===== */
+  useEffect(() => {
+    const storedUser = localStorage.getItem("user");
+    if (storedUser) {
+      setUser(JSON.parse(storedUser));
+    }
+  }, []);
+
+  /* ===== CLOSE DROPDOWNS ON ROUTE CHANGE ===== */
   useEffect(() => {
     setDesktopOpen(false);
     setMobileOpen(false);
     setMobileView("MAIN");
     setActiveCategory(null);
+    setProfileOpen(false);
   }, [location.pathname]);
+
+  /* ===== OUTSIDE CLICK ===== */
+  useEffect(() => {
+    const handler = (e) => {
+      if (profileRef.current && !profileRef.current.contains(e.target)) {
+        setProfileOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, []);
+
+  /* ===== LOGOUT ===== */
+  const handleLogout = () => {
+    localStorage.removeItem("user");
+    setUser(null);
+    navigate("/");
+  };
+
+  const userInitial = user?.name?.charAt(0).toUpperCase();
 
   return (
     <>
       {/* ================= NAVBAR ================= */}
       <nav className="navbar">
         <div className="nav-container">
-          {/* MOBILE HAMBURGER */}
+
+          {/* MOBILE */}
           <button className="hamburger" onClick={() => setMobileOpen(true)}>
             <FaBars />
           </button>
 
           {/* LOGO */}
           <Link to="/" className="logo-wrap">
-            <img src={logo} alt="The IT Wallah" className="logo" />
+            <img src={logo} alt="logo" className="logo" />
           </Link>
 
           {/* DESKTOP COURSES */}
@@ -136,7 +175,7 @@ export default function Navbar() {
                   </div>
 
                   <div className="right">
-                    {(MENU[activeCategory ?? 0].items).map((it, i) => (
+                    {MENU[activeCategory ?? 0].items.map((it, i) => (
                       <Link key={i} to={it.path} className="card">
                         {it.name}
                       </Link>
@@ -156,10 +195,40 @@ export default function Navbar() {
             <NavLink to="/project">Project</NavLink>
           </div>
 
-          {/* LOGIN */}
-          <Link to="/login" className="login-btn">
-            Login / Register
-          </Link>
+          {/* ===== AUTH SECTION ===== */}
+          {!user ? (
+            <Link to="/login" className="login-btn">
+              Login / Register
+            </Link>
+          ) : (
+            <div className="profile-wrap" ref={profileRef}>
+              <button
+                className="profile-btn"
+                onClick={() => setProfileOpen(!profileOpen)}
+              >
+                <span className="avatar">{userInitial}</span>
+                <span className="username">{user.name}</span>
+              </button>
+
+              <AnimatePresence>
+                {profileOpen && (
+                  <motion.div
+                    className="profile-dropdown"
+                    initial={{ opacity: 0, y: 10 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    exit={{ opacity: 0, y: 10 }}
+                  >
+                    <Link to="/profile">
+                      <FaUserCircle /> Profile
+                    </Link>
+                    <button onClick={handleLogout}>
+                      <FaSignOutAlt /> Logout
+                    </button>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
+          )}
         </div>
       </nav>
 
@@ -218,7 +287,7 @@ export default function Navbar() {
       </Link>
     </li>
     <li>
-      <Link to="/jbatch" onClick={() => setMobileOpen(false)}>
+      <Link to="/batch" onClick={() => setMobileOpen(false)}>
         Batch
       </Link>
     </li>
