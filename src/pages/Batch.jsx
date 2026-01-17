@@ -25,8 +25,12 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import jsPDF from "jspdf";
 import { useNavigate } from "react-router-dom";
+import { Helmet } from "react-helmet-async";
+
 import qrImg from "../Images/Qr.jpeg";
 import bannerImg from "../Images/banner.jpeg";
+
+/* ================= API CONFIG ================= */
 
 const api = axios.create({
   baseURL: "https://sm-backend-8me3.onrender.com",
@@ -38,21 +42,31 @@ api.interceptors.request.use((config) => {
   return config;
 });
 
+/* ================= COMPONENT ================= */
+
 export default function JoinBatch() {
   const navigate = useNavigate();
+
+  /* ================= STATES ================= */
 
   const [agree, setAgree] = useState(false);
   const [mode, setMode] = useState("");
   const [status, setStatus] = useState("NOT_REGISTERED");
   const [adminApproved, setAdminApproved] = useState(false);
   const [txnId, setTxnId] = useState("");
+
   const [openRegPay, setOpenRegPay] = useState(false);
   const [openCoursePay, setOpenCoursePay] = useState(false);
   const [showForm, setShowForm] = useState(false);
 
   const [testDate, setTestDate] = useState("");
   const [testTime, setTestTime] = useState("");
-  const [profile, setProfile] = useState({ name: "", email: "", mobile: "" });
+
+  const [profile, setProfile] = useState({
+    name: "",
+    email: "",
+    mobile: "",
+  });
 
   const [timer, setTimer] = useState(0);
   const timerRef = useRef(null);
@@ -65,15 +79,19 @@ export default function JoinBatch() {
     "SEAT_CONFIRMED",
   ];
 
+  /* ================= AUTH CHECK ================= */
+
   useEffect(() => {
     const token = localStorage.getItem("accessToken");
     if (!token) {
-      toast.error("Please login");
+      toast.error("Please login first");
       navigate("/login");
     } else {
       fetchStatus();
     }
-  }, []);
+  }, [navigate]);
+
+  /* ================= FETCH STATUS ================= */
 
   const fetchStatus = async () => {
     try {
@@ -83,6 +101,7 @@ export default function JoinBatch() {
       setStatus(data.status || "NOT_REGISTERED");
       setMode(data.mode || "");
       setAdminApproved(Boolean(data.adminApproved));
+
       setProfile({
         name: data.name || "",
         email: data.email || "",
@@ -96,10 +115,12 @@ export default function JoinBatch() {
         const diff = Math.floor((testDateTime - new Date()) / 1000);
         if (diff > 0) setTimer(diff);
       }
-    } catch (err) {
-      console.error(err);
+    } catch (error) {
+      console.error(error);
     }
   };
+
+  /* ================= TIMER ================= */
 
   useEffect(() => {
     if (timer > 0) {
@@ -124,6 +145,8 @@ export default function JoinBatch() {
       .toString()
       .padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
   };
+
+  /* ================= ACTIONS ================= */
 
   const selectMode = async (m) => {
     if (!agree) return toast.error("Accept Terms & Conditions");
@@ -162,7 +185,8 @@ export default function JoinBatch() {
   };
 
   const submitTestSlot = async () => {
-    if (!testDate || !testTime) return toast.error("Select date & time");
+    if (!testDate || !testTime)
+      return toast.error("Select test date & time");
     try {
       await api.post("/api/register/test-slot", {
         batchId: "default123",
@@ -195,28 +219,32 @@ export default function JoinBatch() {
 
   const downloadReceipt = () => {
     const pdf = new jsPDF();
-    pdf.text("Seat Confirmation", 20, 20);
+    pdf.text("Seat Confirmation - The IT Wallah", 20, 20);
     pdf.text(`Course Type: ${mode}`, 20, 40);
     pdf.text(`Status: ${status}`, 20, 60);
     pdf.save("seat-confirmation.pdf");
   };
 
+  /* ================= RENDER ================= */
+
   return (
-    
     <Container sx={{ py: 5 }}>
       <ToastContainer position="bottom-center" />
-       {/* ================= SEO META ================= */}
+
+      {/* ================= SEO ================= */}
       <Helmet>
-        <title>Join IT Training Batch | The IT Wallah</title>
+        <title>
+          Join IT Training Batch & Notes | The IT Wallah – RGPV Students
+        </title>
 
         <meta
           name="description"
-          content="Join The IT Wallah IT training batch. Paid and free courses, test slots, payments, and online seat confirmation."
+          content="Join The IT Wallah IT training batch . Paid and free courses, online test, seat confirmation & student support."
         />
 
         <meta
           name="keywords"
-          content="IT training, coding classes, paid IT course, free IT course, The IT Wallah"
+          content="The IT Wallah notes, RGPV notes, IT training batch, join coding course, paid IT course, free IT course"
         />
 
         <link
@@ -229,7 +257,7 @@ export default function JoinBatch() {
           {JSON.stringify({
             "@context": "https://schema.org",
             "@type": "Course",
-            name: "IT Training Batch",
+            name: "IT Training & RGPV Notes Batch",
             provider: {
               "@type": "Organization",
               name: "The IT Wallah",
@@ -239,7 +267,18 @@ export default function JoinBatch() {
         </script>
       </Helmet>
 
-      {/* PROFILE */}
+      {/* ================= H1 ================= */}
+      <Typography
+        variant="h4"
+        component="h1"
+        fontWeight={800}
+        textAlign="center"
+        mb={3}
+      >
+        Join IT Training Batch
+      </Typography>
+
+      {/* ================= PROFILE ================= */}
       <Box sx={{ display: "flex", justifyContent: "flex-end", mb: 2 }}>
         <Avatar sx={{ mr: 1 }}>
           {profile?.name?.[0]?.toUpperCase() || "U"}
@@ -250,10 +289,19 @@ export default function JoinBatch() {
         </Box>
       </Box>
 
+      {/* ================= BANNER ================= */}
       {!showForm && (
         <Box sx={{ textAlign: "center", mb: 4 }}>
-          <img src={bannerImg} alt="Banner" style={{ width: "100%" }} />
-          <Button variant="contained" sx={{ mt: 2 }} onClick={() => setShowForm(true)}>
+          <img
+            src={bannerImg}
+            alt="Join IT Wallah IT Training Batch"
+            style={{ width: "100%", borderRadius: 10 }}
+          />
+          <Button
+            variant="contained"
+            sx={{ mt: 2 }}
+            onClick={() => setShowForm(true)}
+          >
             Enroll Now
           </Button>
         </Box>

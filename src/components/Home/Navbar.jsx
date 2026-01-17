@@ -82,9 +82,7 @@ export default function Navbar() {
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
 
-  // mobile states
-  const [mobileView, setMobileView] = useState("MAIN"); 
-  // MAIN | CATEGORY | ITEMS
+  const [mobileView, setMobileView] = useState("MAIN"); // MAIN | CATEGORY | ITEMS
   const [activeCategory, setActiveCategory] = useState(null);
 
   useEffect(() => {
@@ -99,12 +97,8 @@ export default function Navbar() {
       {/* ================= NAVBAR ================= */}
       <nav className="navbar">
         <div className="nav-container">
-
-          {/* MOBILE LEFT */}
-          <button
-            className="hamburger"
-            onClick={() => setMobileOpen(true)}
-          >
+          {/* MOBILE HAMBURGER */}
+          <button className="hamburger" onClick={() => setMobileOpen(true)}>
             <FaBars />
           </button>
 
@@ -157,8 +151,8 @@ export default function Navbar() {
           <div className="menu">
             <NavLink to="/live-courses">Live Courses</NavLink>
             <NavLink to="/tiw-store">TIW Store</NavLink>
-            <NavLink to="/study-notes">Study Notes</NavLink>
-            <NavLink to="/join-batch">Batch</NavLink>
+            <NavLink to="/user-notes">Study Notes</NavLink>
+            <NavLink to="/batch">Batch</NavLink>
             <NavLink to="/project">Project</NavLink>
           </div>
 
@@ -207,18 +201,45 @@ export default function Navbar() {
               </div>
 
               {/* MAIN MENU */}
-              {mobileView === "MAIN" && (
-                <ul className="mobile-main">
-                  <li onClick={() => setMobileView("CATEGORY")}>
-                    All Courses <FaAngleRight />
-                  </li>
-                  <li><Link to="/live-courses">Live Courses</Link></li>
-                  <li><Link to="/join-batch">Batch</Link></li>
-                  <li><Link to="/project">Project</Link></li>
-                  <li><Link to="/study-notes">Study Notes</Link></li>
-                  <li><Link to="/tiw-store">TIW Store</Link></li>
-                </ul>
-              )}
+             {/* MAIN MENU */}
+{mobileView === "MAIN" && (
+  <ul className="mobile-main">
+    <li>
+      <button
+        onClick={() => setMobileView("CATEGORY")}
+        className="category-btn"
+      >
+        All Courses <FaAngleRight />
+      </button>
+    </li>
+    <li>
+      <Link to="/live-courses" onClick={() => setMobileOpen(false)}>
+        Live Courses
+      </Link>
+    </li>
+    <li>
+      <Link to="/jbatch" onClick={() => setMobileOpen(false)}>
+        Batch
+      </Link>
+    </li>
+    <li>
+      <Link to="/project" onClick={() => setMobileOpen(false)}>
+        Project
+      </Link>
+    </li>
+    <li>
+      <Link to="/study-notes" onClick={() => setMobileOpen(false)}>
+        Study Notes
+      </Link>
+    </li>
+    <li>
+      <Link to="/tiw-store" onClick={() => setMobileOpen(false)}>
+        TIW Store
+      </Link>
+    </li>
+  </ul>
+)}
+
 
               {/* CATEGORY */}
               {mobileView === "CATEGORY" && (
@@ -239,7 +260,7 @@ export default function Navbar() {
               )}
 
               {/* ITEMS */}
-              {mobileView === "ITEMS" && (
+              {mobileView === "ITEMS" && activeCategory !== null && (
                 <div className="mobile-items">
                   {MENU[activeCategory].items.map((it, i) => (
                     <Link
@@ -253,7 +274,7 @@ export default function Navbar() {
                 </div>
               )}
 
-              <Link to="/login" className="mobile-login">
+              <Link to="/login" className="mobile-login" onClick={() => setMobileOpen(false)}>
                 Login / Register
               </Link>
             </motion.aside>
