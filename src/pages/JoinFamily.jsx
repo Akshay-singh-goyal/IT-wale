@@ -10,29 +10,29 @@ import "./JoinFamily.css";
 
 const channels = [
   {
-    title: "Physics Wallah",
-    subs: "10M+ Subscribers",
+    title: "The IT Wallah",
+    subs: "10+ Subscribers",
     route: "/channels/physics-wallah",
     icon: <FaYoutube />,
     type: "youtube",
   },
   {
-    title: "Competition Wallah",
-    subs: "2.71M Followers",
+    title: "The IT Wallah",
+    subs: "21 Followers",
     route: "/channels/competition-wallah",
     icon: <FaInstagram />,
     type: "instagram",
   },
   {
-    title: "JEE Wallah",
-    subs: "1.69M Followers",
+    title: "The IT Wallah",
+    subs: "169 Followers",
     route: "/channels/jee-wallah",
     icon: <FaLinkedin />,
     type: "linkedin",
   },
   {
-    title: "NCERT Wallah",
-    subs: "1.35M Reviews",
+    title: "The IT Wallah",
+    subs: "135 Reviews",
     route: "/channels/ncert-wallah",
     icon: <FaGoogle />,
     type: "google",
