@@ -1,117 +1,155 @@
 import React, { useState } from "react";
-import { Box, Typography, TextField, Button, IconButton } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Link
+} from "@mui/material";
+
 import FacebookIcon from "@mui/icons-material/Facebook";
 import InstagramIcon from "@mui/icons-material/Instagram";
 import LinkedInIcon from "@mui/icons-material/LinkedIn";
 import YouTubeIcon from "@mui/icons-material/YouTube";
 import EmailIcon from "@mui/icons-material/Email";
-import API from "../api"; // Make sure api.js has baseURL
+
+import API from "../api";
+import logo from "../Images/logo.png";
 
 export default function Footer() {
   const [email, setEmail] = useState("");
   const [status, setStatus] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const handleSubscribe = async () => {
-    if (!email) {
-      setStatus("Please enter an email");
+    if (!email.trim()) {
+      setStatus("Please enter a valid email ❌");
       return;
     }
 
     try {
-      const response = await API.post("/newsletter", { email }); // Match backend
-      if (response.data.success) {
+      setLoading(true);
+      const res = await API.post("/newsletter", { email });
+
+      if (res.data.success) {
         setStatus("Subscribed successfully 🎉");
         setEmail("");
-      } else {
-        setStatus(response.data.message || "Subscription failed. Try again.");
       }
-    } catch (err) {
-      setStatus("Server error. Try again later.");
+    } catch (error) {
+      setStatus(
+        error.response?.data?.message || "Server error. Try again later."
+      );
+    } finally {
+      setLoading(false);
+      setTimeout(() => setStatus(""), 4000);
     }
-
-    setTimeout(() => setStatus(""), 4000);
   };
 
   return (
-    <Box sx={{ background: "#111827", color: "#fff", padding: "50px 20px", marginTop: "50px" }}>
+    <Box sx={{ backgroundColor: "#fff", borderTop: "1px solid #eee" }}>
       <Box
         sx={{
           maxWidth: "1300px",
-          margin: "auto",
+          mx: "auto",
+          px: { xs: 2, md: 0 },
+          py: 6,
           display: "grid",
-          gridTemplateColumns: { xs: "1fr", md: "2fr 1fr 1fr 1fr" },
-          gap: 4,
+          gridTemplateColumns: {
+            xs: "1fr",
+            md: "2.2fr 1fr 1fr 1.4fr"
+          },
+          gap: 4
         }}
       >
-        {/* Brand Info */}
+        {/* BRAND */}
         <Box>
-          <Typography sx={{ fontSize: "26px", fontWeight: 700 }}>The IT Wallah</Typography>
-          <Typography sx={{ color: "#ccc", marginTop: "10px" }}>
-            Learn • Build • Succeed
-            <br /> Your one-stop solution for IT courses, MERN stack learning, and interview preparation.
+          <img src={logo} alt="The IT Wallah" width="150" />
+
+          <Typography sx={{ fontSize: 14, color: "#444", mt: 2 }}>
+            We help learners build real-world IT skills with clarity,
+            confidence, and practical learning.
           </Typography>
-          <Box sx={{ display: "flex", gap: 1, marginTop: 2 }}>
-            <IconButton sx={{ color: "#fff" }}><FacebookIcon /></IconButton>
-            <IconButton sx={{ color: "#fff" }}><InstagramIcon /></IconButton>
-            <IconButton sx={{ color: "#fff" }}><LinkedInIcon /></IconButton>
-            <IconButton sx={{ color: "#fff" }}><YouTubeIcon /></IconButton>
+
+          <Box sx={{ display: "flex", gap: 1.5, mt: 3 }}>
+            <IconButton><FacebookIcon /></IconButton>
+            <IconButton><InstagramIcon /></IconButton>
+            <IconButton><LinkedInIcon /></IconButton>
+            <IconButton><YouTubeIcon /></IconButton>
           </Box>
         </Box>
 
-        {/* Quick Links */}
+        {/* COMPANY */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>Quick Links</Typography>
-          {["Home", "Courses", "About Us", "Contact", "The IT Wallah AI Tools"].map((item) => (
-            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>{item}</Typography>
+          <Typography fontWeight={700} mb={2}>Company</Typography>
+          {["About Us", "Contact Us", "Careers", "Updates"].map((item) => (
+            <Typography key={item} mb={1}>
+              <Link underline="none" sx={{ color: "#555" }}>
+                {item}
+              </Link>
+            </Typography>
           ))}
         </Box>
 
-        {/* Support */}
+        {/* QUICK LINKS */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600, marginBottom: 2 }}>Support</Typography>
-          {["Help Center", "Privacy Policy", "Terms & Conditions", "Refund Policy", "Feedback"].map((item) => (
-            <Typography sx={{ marginY: "6px", color: "#ccc" }} key={item}>{item}</Typography>
-          ))}
+          <Typography fontWeight={700} mb={2}>Quick Links</Typography>
+          {["MERN Stack", "DSA", "Frontend", "Backend", "AI Tools"].map(
+            (item) => (
+              <Typography key={item} mb={1}>
+                <Link underline="none" sx={{ color: "#555" }}>
+                  {item}
+                </Link>
+              </Typography>
+            )
+          )}
         </Box>
 
-        {/* Newsletter */}
+        {/* NEWSLETTER */}
         <Box>
-          <Typography sx={{ fontSize: "18px", fontWeight: 600 }}>Newsletter</Typography>
-          <Typography sx={{ color: "#ccc", marginTop: 1 }}>Subscribe for updates and new IT courses.</Typography>
+          <Typography fontWeight={700}>Newsletter</Typography>
+          <Typography fontSize={14} color="#555" mt={1}>
+            Get latest IT course updates.
+          </Typography>
 
-          <Box sx={{ marginTop: 2 }}>
-            <TextField
-              variant="filled"
-              fullWidth
-              label="Enter your email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              InputProps={{ style: { background: "#fff", borderRadius: "6px" } }}
-            />
-            <Button
-              fullWidth
-              onClick={handleSubscribe}
-              sx={{
-                marginTop: 2,
-                background: "linear-gradient(135deg,#7b3eff,#6242ff)",
-                color: "#fff",
-                padding: "10px 0",
-                borderRadius: "8px",
-                fontWeight: 600,
-              }}
-            >
-              Subscribe <EmailIcon sx={{ marginLeft: 1 }} />
-            </Button>
-            {status && (
-              <Typography sx={{ mt: 1, color: "success.main", fontWeight: 500 }}>{status}</Typography>
-            )}
-          </Box>
+          <TextField
+            fullWidth
+            size="small"
+            sx={{ mt: 2 }}
+            placeholder="Enter your email"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+
+          <Button
+            fullWidth
+            sx={{
+              mt: 1.5,
+              backgroundColor: "#5a4bff",
+              color: "#fff",
+              textTransform: "none",
+              "&:hover": { backgroundColor: "#4a3ee6" }
+            }}
+            onClick={handleSubscribe}
+            disabled={loading}
+          >
+            {loading ? "Subscribing..." : "Subscribe"}
+            <EmailIcon sx={{ ml: 1 }} />
+          </Button>
+
+          {status && (
+            <Typography fontSize={13} mt={1} color="green">
+              {status}
+            </Typography>
+          )}
         </Box>
       </Box>
 
-      <Typography sx={{ marginTop: 5, textAlign: "center", color: "#bbb", borderTop: "1px solid #333", paddingTop: 3 }}>
-        © {new Date().getFullYear()} The IT Wallah. All Rights Reserved.
-      </Typography>
+      <Box sx={{ borderTop: "1px solid #eee", py: 2 }}>
+        <Typography textAlign="center" fontSize={13} color="#777">
+          © {new Date().getFullYear()} The IT Wallah. All Rights Reserved.
+        </Typography>
+      </Box>
     </Box>
   );
 }
