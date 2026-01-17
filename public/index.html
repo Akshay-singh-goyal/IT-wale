@@ -1,79 +1,104 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <!-- ===== BASIC META ===== -->
+    <!-- ================= BASIC META ================= -->
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
-     <meta name="google-site-verification" content="kFS30C3apUg7RkW0fk_xPS2yW_ZqIz3mNOOQhfpWlJo" />
-    <meta name="msvalidate.01" content="862600F53CBDB7754323992A6A1D07E0" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <!-- ===== TITLE (MOST IMPORTANT SEO FACTOR) ===== -->
+
+    <!-- ================= SITE VERIFICATION ================= -->
+    <meta
+      name="google-site-verification"
+      content="kFS30C3apUg7RkW0fk_xPS2yW_ZqIz3mNOOQhfpWlJo"
+    />
+    <meta
+      name="msvalidate.01"
+      content="862600F53CBDB7754323992A6A1D07E0"
+    />
+
+    <!-- ================= TITLE (MOST IMPORTANT) ================= -->
     <title>
       The IT Wallah | Learn MERN Stack, React & Full Stack Development
     </title>
 
-    <!-- ===== META DESCRIPTION ===== -->
+    <!-- ================= META DESCRIPTION ================= -->
     <meta
       name="description"
-      content="The IT Wallah by Akshay Goyal helps you learn MERN Stack, React, Node.js, MongoDB, and Full Stack Web Development with practical projects, tutorials, and career guidance."
+      content="The IT Wallah by Akshay Goyal offers live online classes, MERN Stack, React, Node.js, MongoDB and Full Stack Web Development learning with real-world projects and career guidance."
     />
 
-    <!-- ===== KEYWORDS ===== -->
-    <meta
-      name="keywords"
-      content="The IT Wallah, Akshay Goyal, MERN Stack Developer, React Developer, Node.js, MongoDB, Full Stack Developer, Web Development Course, IT Tutorials, Coding for Beginners"
-    />
-
-    <!-- ===== AUTHOR ===== -->
-    <meta name="author" content="Akshay Goyal - The IT Wallah" />
-
-    <!-- ===== ROBOTS ===== -->
+    <!-- ================= ROBOTS ================= -->
     <meta name="robots" content="index, follow" />
 
-    <!-- ===== THEME COLOR ===== -->
+    <!-- ================= THEME COLOR ================= -->
     <meta name="theme-color" content="#0d6efd" />
 
-    <!-- ===== FAVICONS ===== -->
-    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
-    <link rel="apple-touch-icon" href="%PUBLIC_URL%/logo192.png" />
+    <!-- ================= CANONICAL ================= -->
+    <link rel="canonical" href="https://theitwallah.vercel.app/" />
 
-    <!-- ===== MANIFEST ===== -->
-    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+    <!-- ================= FAVICON (VERY IMPORTANT FOR GOOGLE LOGO) ================= -->
+    <link rel="icon" href="/favicon.ico" type="image/x-icon" />
+    <link rel="apple-touch-icon" href="/logo192.png" />
 
-    <!-- ===== OPEN GRAPH (FACEBOOK / WHATSAPP / LINKEDIN) ===== -->
+    <!-- ================= MANIFEST ================= -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ================= OPEN GRAPH (GOOGLE / FB / WHATSAPP) ================= -->
     <meta property="og:type" content="website" />
-    <meta property="og:title" content="The IT Wallah | Learn MERN Stack & Full Stack Development" />
+    <meta property="og:site_name" content="The IT Wallah" />
+    <meta
+      property="og:title"
+      content="The IT Wallah | Learn MERN Stack & Full Stack Development"
+    />
     <meta
       property="og:description"
-      content="Learn MERN Stack, React, Node.js & Full Stack Development with The IT Wallah by Akshay Goyal."
+      content="Learn MERN Stack, React, Node.js & Full Stack Development with expert guidance by Akshay Goyal."
     />
-    <meta property="og:image" content="%PUBLIC_URL%/seo-banner.png" />
-    <meta property="og:url" content="https://theitwallah.vercel.app" />
-    <meta property="og:site_name" content="The IT Wallah" />
+    <meta
+      property="og:url"
+      content="https://theitwallah.vercel.app/"
+    />
+    <meta
+      property="og:image"
+      content="https://theitwallah.vercel.app/seo-banner.png"
+    />
 
-    <!-- ===== TWITTER SEO ===== -->
+    <!-- ================= TWITTER SEO ================= -->
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="The IT Wallah | MERN Stack & Full Stack Learning" />
+    <meta
+      name="twitter:title"
+      content="The IT Wallah | MERN Stack & Full Stack Learning"
+    />
     <meta
       name="twitter:description"
       content="Practical MERN Stack & Full Stack Web Development tutorials by Akshay Goyal."
     />
-    <meta name="twitter:image" content="%PUBLIC_URL%/seo-banner.png" />
+    <meta
+      name="twitter:image"
+      content="https://theitwallah.vercel.app/seo-banner.png"
+    />
 
-    <!-- ===== CANONICAL URL ===== -->
-    <link rel="canonical" href="https://theitwallah.vercel.app" />
-
-    <!-- ===== PERFORMANCE OPTIMIZATION ===== -->
+    <!-- ================= PERFORMANCE ================= -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
 
-    <!-- ===== STRUCTURED DATA (GOOGLE RICH RESULTS) ===== -->
+    <!-- ================= STRUCTURED DATA (SITE NAME FIX) ================= -->
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@type": "WebSite",
+        "name": "The IT Wallah",
+        "url": "https://theitwallah.vercel.app/"
+      }
+    </script>
+
+    <!-- ================= STRUCTURED DATA (ORGANIZATION + LOGO) ================= -->
     <script type="application/ld+json">
       {
         "@context": "https://schema.org",
         "@type": "Organization",
         "name": "The IT Wallah",
-        "url": "https://theitwallah.vercel.app",
+        "url": "https://theitwallah.vercel.app/",
         "logo": "https://theitwallah.vercel.app/logo192.png",
         "founder": {
           "@type": "Person",
@@ -90,7 +115,6 @@
     <noscript>
       You need to enable JavaScript to run this application.
     </noscript>
-
     <div id="root"></div>
   </body>
 </html>
