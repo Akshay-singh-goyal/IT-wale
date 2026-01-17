@@ -1,7 +1,6 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import {
-  Box,
   Container,
   Typography,
   Table,
@@ -35,7 +34,7 @@ const AdminRegistrations = () => {
   const token = localStorage.getItem("accessToken");
 
   // Fetch all registrations
-  const fetchRegistrations = async () => {
+  const fetchRegistrations = useCallback(async () => {
     setLoading(true);
     try {
       const res = await axios.get(`${backendURL}/api/admin/registrations`, {
@@ -48,11 +47,11 @@ const AdminRegistrations = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [token]);
 
   useEffect(() => {
     fetchRegistrations();
-  }, []);
+  }, [fetchRegistrations]);
 
   // Update registration status
   const handleStatusChange = async (id, newStatus) => {

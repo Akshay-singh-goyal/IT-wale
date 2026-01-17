@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import axios from "axios";
 import {
   Box,
@@ -51,7 +51,7 @@ const UserManagement = () => {
   const uiRoles = ["student", "teacher", "admin"]; // Full role options
 
   /* ================= FETCH USERS ================= */
-  const fetchUsers = async () => {
+  const fetchUsers = useCallback(async () => {
     try {
       setLoading(true);
 
@@ -68,11 +68,11 @@ const UserManagement = () => {
     } finally {
       setLoading(false);
     }
-  };
+  }, [page, rowsPerPage, token]);
 
   useEffect(() => {
     fetchUsers();
-  }, [page, rowsPerPage]);
+  }, [fetchUsers]);
 
   /* ================= BLOCK / UNBLOCK ================= */
   const toggleBlockUser = async (id) => {
@@ -95,7 +95,7 @@ const UserManagement = () => {
     try {
       await axios.put(
         `${API_BASE}/users/${id}/role`,
-        { role }, // backend handles mapping
+        { role },
         { headers: { Authorization: `Bearer ${token}` } }
       );
       fetchUsers();
@@ -230,13 +230,21 @@ const UserManagement = () => {
         <DialogContent dividers>
           {selectedUser && (
             <Stack spacing={2}>
-              <Typography><b>Name:</b> {selectedUser.name}</Typography>
-              <Typography><b>Email:</b> {selectedUser.email}</Typography>
-              <Typography><b>Mobile:</b> {selectedUser.mobile || "-"}</Typography>
+              <Typography>
+                <b>Name:</b> {selectedUser.name}
+              </Typography>
+              <Typography>
+                <b>Email:</b> {selectedUser.email}
+              </Typography>
+              <Typography>
+                <b>Mobile:</b> {selectedUser.mobile || "-"}
+              </Typography>
 
               {/* Role Selector */}
               <Stack direction="row" spacing={2} alignItems="center">
-                <Typography><b>Role:</b></Typography>
+                <Typography>
+                  <b>Role:</b>
+                </Typography>
                 <Select
                   size="small"
                   value={dbToUiRole(selectedUser.role)}
@@ -257,8 +265,7 @@ const UserManagement = () => {
               </Typography>
 
               <Typography>
-                <LastLoginIcon fontSize="small" />{" "}
-                <b>Last Login:</b>{" "}
+                <LastLoginIcon fontSize="small" /> <b>Last Login:</b>{" "}
                 {selectedUser.lastLogin
                   ? new Date(selectedUser.lastLogin).toLocaleString()
                   : "-"}
@@ -290,12 +297,10 @@ const UserManagement = () => {
                 {selectedUser.downloadHistory?.length || 0}
               </Typography>
               <Typography>
-                <b>Saved Notes:</b>{" "}
-                {selectedUser.savedNotes?.length || 0}
+                <b>Saved Notes:</b> {selectedUser.savedNotes?.length || 0}
               </Typography>
               <Typography>
-                <b>Wishlist:</b>{" "}
-                {selectedUser.wishlist?.length || 0}
+                <b>Wishlist:</b> {selectedUser.wishlist?.length || 0}
               </Typography>
               <Typography>
                 <b>Payment History:</b>{" "}

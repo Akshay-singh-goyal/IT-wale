@@ -4,7 +4,7 @@
    Purpose: SEO Optimized Support & Contact Page
    ========================================================= */
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import {
   Box,
   Container,
@@ -18,11 +18,7 @@ import {
   Alert,
   Divider,
 } from "@mui/material";
-import {
-  FaComments,
-  FaPhoneAlt,
-  FaWhatsapp,
-} from "react-icons/fa";
+import { FaComments, FaPhoneAlt, FaWhatsapp } from "react-icons/fa";
 import { Helmet } from "react-helmet";
 import API from "../api";
 
@@ -30,15 +26,7 @@ import API from "../api";
    CONSTANTS
    ========================================================= */
 
-const categories = [
-  "Payments",
-  "Orders",
-  "Account",
-  "Travel",
-  "Events",
-  "Other",
-];
-
+const categories = ["Payments", "Orders", "Account", "Travel", "Events", "Other"];
 const priorities = ["Low", "Medium", "High"];
 
 /* =========================================================
@@ -68,27 +56,26 @@ export default function SupportPage({ dark }) {
      FETCH USER SUPPORT TICKETS
      ========================================================= */
 
-  const fetchTickets = async () => {
+  const fetchTickets = useCallback(async () => {
     if (!form.email) return;
 
     setTicketsLoading(true);
     setTicketsError("");
 
     try {
-      const res = await API.get(
-        `/contact/user-tickets?email=${form.email}`
-      );
+      const res = await API.get(`/contact/user-tickets?email=${form.email}`);
       setTickets(res.data.tickets || []);
     } catch (error) {
+      console.error("Error fetching tickets:", error);
       setTicketsError("Failed to fetch tickets");
     } finally {
       setTicketsLoading(false);
     }
-  };
+  }, [form.email]);
 
   useEffect(() => {
     fetchTickets();
-  }, [form.email]);
+  }, [fetchTickets]);
 
   /* =========================================================
      FORM HANDLERS
@@ -123,7 +110,8 @@ export default function SupportPage({ dark }) {
 
       fetchTickets();
       setTimeout(() => setStatus(""), 4000);
-    } catch {
+    } catch (err) {
+      console.error("Error submitting ticket:", err);
       setStatus("Something went wrong");
     } finally {
       setLoading(false);
@@ -131,7 +119,7 @@ export default function SupportPage({ dark }) {
   };
 
   /* =========================================================
-     RENDER
+     RENDER SUPPORT FORM, QUICK SUPPORT & TICKET STATUS
      ========================================================= */
 
   return (
@@ -142,45 +130,25 @@ export default function SupportPage({ dark }) {
         pb: 8,
       }}
     >
-      {/* =====================================================
-         SEO META TAGS (VERY IMPORTANT)
-         ===================================================== */}
+      {/* ================== SEO META TAGS ================== */}
       <Helmet>
-        <title>
-          Contact Support | The IT Wallah – Student Help Desk
-        </title>
-
+        <title>Contact Support | The IT Wallah – Student Help Desk</title>
         <meta
           name="description"
           content="Contact The IT Wallah support for RGPV notes, payments, orders, travel, events and account issues. 24/7 student help desk."
         />
-
         <meta
           name="keywords"
           content="The IT Wallah support, RGPV student support, contact IT Wallah, RGPV help desk, RGPV notes support"
         />
-
-        <link
-          rel="canonical"
-          href="https://theitwallah.vercel.app/contact-us"
-        />
-
-        {/* Open Graph */}
-        <meta
-          property="og:title"
-          content="The IT Wallah Support – Contact & Help Center"
-        />
+        <link rel="canonical" href="https://theitwallah.vercel.app/contact-us" />
+        <meta property="og:title" content="The IT Wallah Support – Contact & Help Center" />
         <meta
           property="og:description"
           content="Need help with RGPV notes or services? Contact The IT Wallah support team anytime."
         />
         <meta property="og:type" content="website" />
-        <meta
-          property="og:url"
-          content="https://theitwallah.vercel.app/contact-us"
-        />
-
-        {/* Structured Data (JSON-LD) */}
+        <meta property="og:url" content="https://theitwallah.vercel.app/contact-us" />
         <script type="application/ld+json">
           {JSON.stringify({
             "@context": "https://schema.org",
@@ -198,9 +166,7 @@ export default function SupportPage({ dark }) {
         </script>
       </Helmet>
 
-      {/* =====================================================
-         PAGE HEADER
-         ===================================================== */}
+      {/* ================== PAGE HEADER ================== */}
       <Box
         component="header"
         sx={{
@@ -214,18 +180,16 @@ export default function SupportPage({ dark }) {
         <Typography component="h1" variant="h3" fontWeight={800}>
           The IT Wallah Support – Contact & Help Center
         </Typography>
-
         <Typography component="h2" mt={1}>
           24/7 Student Support for RGPV Notes & Services
         </Typography>
       </Box>
 
-      {/* =====================================================
-         MAIN CONTENT
-         ===================================================== */}
+      {/* ================== MAIN CONTENT ================== */}
       <Container maxWidth="md">
         <Grid container spacing={4}>
-          {/* ================= CONTACT FORM ================= */}
+
+          {/* ================== CONTACT FORM ================== */}
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 4 }}>
               <Typography component="h2" variant="h6" mb={3}>
@@ -246,7 +210,6 @@ export default function SupportPage({ dark }) {
                   onChange={handleChange}
                   required
                 />
-
                 <TextField
                   label="Email"
                   name="email"
@@ -254,7 +217,6 @@ export default function SupportPage({ dark }) {
                   onChange={handleChange}
                   required
                 />
-
                 <TextField
                   select
                   label="Category"
@@ -268,7 +230,6 @@ export default function SupportPage({ dark }) {
                     </MenuItem>
                   ))}
                 </TextField>
-
                 <TextField
                   select
                   label="Priority"
@@ -282,7 +243,6 @@ export default function SupportPage({ dark }) {
                     </MenuItem>
                   ))}
                 </TextField>
-
                 <TextField
                   label="Subject"
                   name="subject"
@@ -290,7 +250,6 @@ export default function SupportPage({ dark }) {
                   onChange={handleChange}
                   required
                 />
-
                 <TextField
                   label="Message"
                   name="message"
@@ -299,7 +258,6 @@ export default function SupportPage({ dark }) {
                   multiline
                   rows={3}
                 />
-
                 <Button
                   type="submit"
                   variant="contained"
@@ -309,14 +267,12 @@ export default function SupportPage({ dark }) {
                   {loading ? "Sending..." : "Send Message"}
                 </Button>
 
-                {status && (
-                  <Alert severity="success">{status}</Alert>
-                )}
+                {status && <Alert severity="success">{status}</Alert>}
               </Box>
             </Paper>
           </Grid>
 
-          {/* ================= QUICK SUPPORT + STATUS ================= */}
+          {/* ================== QUICK SUPPORT OPTIONS ================== */}
           <Grid item xs={12} md={6}>
             <Paper sx={{ p: 4, mb: 4 }}>
               <Typography component="h2" variant="h6" mb={2}>
@@ -324,34 +280,25 @@ export default function SupportPage({ dark }) {
               </Typography>
 
               <Box display="flex" gap={2}>
-                <Button
-                  startIcon={<FaPhoneAlt />}
-                  variant="contained"
-                >
+                <Button startIcon={<FaPhoneAlt />} variant="contained">
                   Call Support
                 </Button>
-
                 <Button
                   startIcon={<FaWhatsapp />}
                   variant="outlined"
                   color="success"
-                  onClick={() =>
-                    window.open(
-                      "https://wa.me/6263615262",
-                      "_blank"
-                    )
-                  }
+                  onClick={() => window.open("https://wa.me/6263615262", "_blank")}
                 >
                   WhatsApp Support
                 </Button>
               </Box>
 
               <Typography mt={2}>
-                Looking for study material?{" "}
-                <a href="/notes">Explore RGPV Notes</a>
+                Looking for study material? <a href="/notes">Explore RGPV Notes</a>
               </Typography>
             </Paper>
 
+            {/* ================== TICKET STATUS ================== */}
             <Paper sx={{ p: 4 }}>
               <Typography component="h2" variant="h6" mb={3}>
                 Your Support Ticket Status
@@ -360,9 +307,7 @@ export default function SupportPage({ dark }) {
               {ticketsLoading ? (
                 <CircularProgress />
               ) : ticketsError ? (
-                <Alert severity="error">
-                  {ticketsError}
-                </Alert>
+                <Alert severity="error">{ticketsError}</Alert>
               ) : tickets.length === 0 ? (
                 <Typography>No tickets found</Typography>
               ) : (
@@ -372,36 +317,15 @@ export default function SupportPage({ dark }) {
                     sx={{
                       p: 2,
                       mb: 2,
-                      borderLeft: `5px solid ${
-                        ticket.resolved
-                          ? "green"
-                          : "orange"
-                      }`,
+                      borderLeft: `5px solid ${ticket.resolved ? "green" : "orange"}`,
                     }}
                   >
-                    <Typography
-                      fontWeight={600}
-                      color={
-                        ticket.resolved
-                          ? "green"
-                          : "orange"
-                      }
-                    >
-                      Status:{" "}
-                      {ticket.resolved
-                        ? "Resolved ✅"
-                        : "Pending ⏳"}
+                    <Typography fontWeight={600} color={ticket.resolved ? "green" : "orange"}>
+                      Status: {ticket.resolved ? "Resolved ✅" : "Pending ⏳"}
                     </Typography>
-
                     <Divider sx={{ my: 1 }} />
-
-                    <Typography fontWeight={600}>
-                      Admin Reply:
-                    </Typography>
-                    <Typography>
-                      {ticket.reply ||
-                        "No reply from admin yet"}
-                    </Typography>
+                    <Typography fontWeight={600}>Admin Reply:</Typography>
+                    <Typography>{ticket.reply || "No reply from admin yet"}</Typography>
                   </Paper>
                 ))
               )}
@@ -409,17 +333,14 @@ export default function SupportPage({ dark }) {
           </Grid>
         </Grid>
 
-        {/* ================= SEO CONTENT BLOCK ================= */}
+        {/* ================== SEO CONTENT BLOCK ================== */}
         <Box mt={6}>
           <Typography component="h2" fontWeight={700}>
             Why Contact The IT Wallah Support?
           </Typography>
           <Typography mt={1}>
-            The IT Wallah provides dedicated support for
-            RGPV students. Get help related to notes,
-            payments, account issues, travel events and
-            more. Our support team ensures fast and
-            reliable assistance.
+            The IT Wallah provides dedicated support for RGPV students. Get help related to notes, payments,
+            account issues, travel events and more. Our support team ensures fast and reliable assistance.
           </Typography>
         </Box>
       </Container>
