@@ -1,0 +1,64 @@
+.privacy-container {
+  margin-top: 40px;
+  margin-bottom: 40px;
+}
+
+.privacy-paper {
+  padding: 32px;
+  border-radius: 12px;
+}
+
+.privacy-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.privacy-main-icon {
+  font-size: 40px;
+  color: #1976d2;
+}
+
+.privacy-title {
+  font-weight: 600;
+}
+
+.privacy-updated {
+  margin-top: 8px;
+  color: gray;
+  font-size: 14px;
+}
+
+.privacy-divider {
+  margin: 24px 0;
+}
+
+.privacy-section-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 24px;
+  font-weight: 600;
+}
+
+.privacy-icon {
+  color: #1976d2;
+}
+
+.privacy-text {
+  margin-top: 10px;
+  line-height: 1.7;
+  color: #444;
+}
+
+.privacy-list {
+  margin-top: 10px;
+}
+
+.privacy-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-top: 16px;
+  font-weight: 500;
+}

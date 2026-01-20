@@ -249,7 +249,7 @@ export default function JoinBatch() {
 
         <link
           rel="canonical"
-          href="https://theitwallah.vercel.app/join-batch"
+          href="https://theitwallah.vercel.app/batch"
         />
 
         {/* Schema */}
@@ -394,7 +394,58 @@ export default function JoinBatch() {
     )}
   </Box>
 )}
+                {status === "ADMIN_APPROVED" && adminApproved && mode === "UNPAID" && (
+  <Box sx={{ mt: 3 }}>
+    <Typography variant="h6">Select Test Slot</Typography>
 
+    {!testDate && !testTime && (
+      <>
+        <TextField
+          type="date"
+          fullWidth
+          sx={{ mt: 1 }}
+          value={testDate}
+          onChange={(e) => setTestDate(e.target.value)}
+        />
+
+        <TextField
+          type="time"
+          fullWidth
+          sx={{ mt: 2 }}
+          value={testTime}
+          onChange={(e) => setTestTime(e.target.value)}
+        />
+
+        <Button
+          sx={{ mt: 2 }}
+          variant="contained"
+          onClick={submitTestSlot}
+        >
+          Submit Test Slot
+        </Button>
+      </>
+    )}
+
+    {/* TIMER */}
+    {testDate && testTime && timer > 0 && (
+      <Typography sx={{ mt: 2, fontWeight: "bold" }}>
+        ⏱ Test starts in: {formatTime(timer)}
+      </Typography>
+    )}
+
+    {/* GO TO TEST (BEFORE SEAT CONFIRM) */}
+    {testDate && testTime && timer === 0 && (
+      <Button
+        variant="contained"
+        color="success"
+        sx={{ mt: 3 }}
+        onClick={() => navigate("/test-page")}
+      >
+        Go to Test
+      </Button>
+    )}
+  </Box>
+)}
 
                   {/* PAID COURSE PAYMENT */}
                   {status === "ADMIN_APPROVED" && mode === "PAID" && adminApproved && (
@@ -438,7 +489,7 @@ export default function JoinBatch() {
       {/* REGISTRATION PAYMENT */}
       <Dialog open={openRegPay} onClose={() => setOpenRegPay(false)}>
         <DialogTitle>
-          Pay Registration Fee ₹{mode === "PAID" ? 200 : 1200}
+          Pay Registration Fee ₹{mode === "PAID" ? 200 : 200}
         </DialogTitle>
         <DialogContent sx={{ textAlign: "center" }}>
           <img src={qrImg} alt="QR" style={{ width: 220 }} />

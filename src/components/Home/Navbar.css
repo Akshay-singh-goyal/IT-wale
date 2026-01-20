@@ -1,32 +1,48 @@
 /* ======================================================
-   RESET
+   RESET & VARIABLES
    ====================================================== */
-* {
+*,
+*::before,
+*::after {
   margin: 0;
   padding: 0;
   box-sizing: border-box;
 }
 
+:root {
+  --bg-dark: #0b021a;
+  --purple: #7c3aed;
+  --purple-light: #c084fc;
+  --purple-soft: #ede9fe;
+  --purple-hover: #ddd6fe;
+  --text-dark: #111827;
+  --white: #ffffff;
+  --shadow-lg: 0 20px 40px rgba(0,0,0,0.25);
+  --shadow-md: 0 10px 30px rgba(0,0,0,0.35);
+  --radius-sm: 6px;
+  --radius-md: 10px;
+  --transition: 0.25s ease;
+}
+
 /* ======================================================
-   NAVBAR BASE
+   NAVBAR
    ====================================================== */
 .navbar {
-  height: 72px;
-  background: #0b021a;
   position: sticky;
   top: 0;
   z-index: 1000;
+  height: 72px;
+  background: var(--bg-dark);
 }
 
 .nav-container {
   max-width: 1280px;
-  margin: auto;
   height: 72px;
+  margin: auto;
   padding: 0 16px;
   display: flex;
   align-items: center;
   gap: 20px;
-  justify-content: space-between;
 }
 
 /* ======================================================
@@ -38,7 +54,7 @@
 }
 
 .logo {
-  height: 65px;
+  height: 60px;
 }
 
 /* ======================================================
@@ -52,31 +68,27 @@
 }
 
 .menu a {
-  color: white;
+  color: var(--white);
   text-decoration: none;
   font-weight: 500;
-  transition: color 0.25s ease;
+  transition: color var(--transition);
 }
 
-.menu a:hover {
-  color: #c084fc;
-}
-
+.menu a:hover,
 .menu a.active {
-  color: #c084fc;
-  font-weight: 600;
+  color: var(--purple-light);
 }
 
 /* ======================================================
    ALL COURSES BUTTON
    ====================================================== */
 .all-btn {
-  color: #c084fc;
-  border: 2px solid #7c3aed;
-  padding: 8px 16px;
-  border-radius: 6px;
-  cursor: pointer;
   position: relative;
+  padding: 8px 16px;
+  border: 2px solid var(--purple);
+  border-radius: var(--radius-sm);
+  color: var(--purple-light);
+  cursor: pointer;
   user-select: none;
 }
 
@@ -86,37 +98,40 @@
 .dropdown {
   position: absolute;
   top: 75px;
+  left: 50%;
+  transform: translateX(-50%);
   width: 1000px;
   height: 420px;
-  background: white;
+  background: var(--white);
   border-radius: 12px;
+  box-shadow: var(--shadow-lg);
   display: flex;
-  box-shadow: 0 20px 40px rgba(0,0,0,0.25);
   overflow: hidden;
 }
 
-.left {
+.dropdown .left {
   width: 35%;
   background: #f4f4f5;
   padding: 20px;
 }
 
 .left-item {
+  padding: 14px;
+  border-radius: var(--radius-sm);
   display: flex;
   justify-content: space-between;
   align-items: center;
-  padding: 14px;
+  font-weight: 600;
   cursor: pointer;
-  border-radius: 6px;
-  transition: background 0.25s ease;
+  transition: background var(--transition), color var(--transition);
 }
 
 .left-item:hover {
-  background: #7c3aed;
-  color: white;
+  background: var(--purple);
+  color: var(--white);
 }
 
-.right {
+.dropdown .right {
   width: 65%;
   padding: 24px;
   display: grid;
@@ -126,10 +141,12 @@
 
 .card {
   padding: 14px;
-  background: #ede9fe;
-  border-radius: 8px;
+  background: var(--purple-soft);
+  border-radius: var(--radius-sm);
   text-align: center;
-  transition: background 0.25s ease;
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
 }
 
 .card:hover {
@@ -140,20 +157,19 @@
    LOGIN BUTTON
    ====================================================== */
 .login-btn {
-  background: #7c3aed;
-  color: white;
+  background: var(--purple);
+  color: var(--white);
   padding: 10px 16px;
-  border-radius: 6px;
+  border-radius: var(--radius-sm);
   text-decoration: none;
-  white-space: nowrap;
+  font-weight: 600;
 }
 
 /* ======================================================
-   PROFILE SECTION
+   PROFILE DESKTOP
    ====================================================== */
 .profile-wrap {
   position: relative;
-  margin-left: auto;
 }
 
 .profile-btn {
@@ -162,8 +178,8 @@
   gap: 8px;
   background: none;
   border: none;
+  color: var(--white);
   cursor: pointer;
-  color: white;
 }
 
 .avatar {
@@ -171,48 +187,43 @@
   height: 36px;
   border-radius: 50%;
   background: #2563eb;
-  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-weight: 600;
+  font-weight: 700;
 }
 
 .username {
   font-size: 14px;
-  font-weight: 500;
-  color: white;
 }
 
 .profile-dropdown {
   position: absolute;
   top: 120%;
   right: 0;
+  background: var(--white);
+  border-radius: var(--radius-md);
   min-width: 180px;
-  background: #fff;
-  box-shadow: 0 10px 30px rgba(0,0,0,0.15);
-  border-radius: 10px;
+  box-shadow: var(--shadow-md);
   overflow: hidden;
-  z-index: 2000;
 }
 
 .profile-dropdown a,
 .profile-dropdown button {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
   width: 100%;
+  padding: 12px 16px;
   background: none;
   border: none;
+  display: flex;
+  gap: 10px;
   cursor: pointer;
   text-decoration: none;
-  color: #111827;
+  color: var(--text-dark);
 }
 
 .profile-dropdown a:hover,
 .profile-dropdown button:hover {
-  background: #ede9fe;
+  background: var(--purple-soft);
 }
 
 /* ======================================================
@@ -221,19 +232,10 @@
 .hamburger {
   display: none;
   background: none;
-  color: white;
-  font-size: 24px;
   border: none;
-  width: 42px;
-  height: 42px;
-  border-radius: 10px;
-  align-items: center;
-  justify-content: center;
-  transition: background 0.25s ease;
-}
-
-.hamburger:hover {
-  background: rgba(255,255,255,0.1);
+  color: var(--white);
+  font-size: 24px;
+  cursor: pointer;
 }
 
 /* ======================================================
@@ -248,14 +250,7 @@
   }
 
   .hamburger {
-    display: flex;
-    order: 1;
-    margin-right: auto;
-  }
-
-  .logo-wrap {
-    order: 2;
-    margin-left: auto;
+    display: block;
   }
 
   .logo {
@@ -283,7 +278,7 @@
   width: 85%;
   max-width: 360px;
   height: 100vh;
-  background: white;
+  background: var(--white);
   z-index: 1200;
   display: flex;
   flex-direction: column;
@@ -295,18 +290,12 @@
    ====================================================== */
 .mobile-header {
   height: 64px;
+  padding: 0 16px;
+  background: var(--bg-dark);
+  color: var(--white);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  padding: 0 16px;
-  background: #0b021a;
-  color: white;
-  border-bottom: 1px solid #e5e7eb;
-}
-
-.mobile-header svg {
-  font-size: 20px;
-  cursor: pointer;
 }
 
 .mobile-logo {
@@ -314,46 +303,73 @@
 }
 
 /* ======================================================
-   MOBILE MENUS
+   MOBILE USER SECTION
+   ====================================================== */
+.mobile-user {
+  padding: 16px;
+  border-bottom: 1px solid #e5e7eb;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.mobile-avatar {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  background: #2563eb;
+  color: var(--white);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 18px;
+  font-weight: 700;
+}
+
+.mobile-user a,
+.mobile-user button {
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  background: var(--purple-soft);
+  border: none;
+  text-decoration: none;
+  color: var(--text-dark);
+  display: flex;
+  gap: 8px;
+  cursor: pointer;
+}
+
+/* ======================================================
+   MOBILE MENU
    ====================================================== */
 .mobile-main li,
 .mobile-category li {
   padding: 14px;
+  border-bottom: 1px solid #e5e7eb;
+  font-weight: 600;
   display: flex;
   justify-content: space-between;
-  font-weight: 600;
-  border-bottom: 1px solid #e5e7eb;
 }
 
-.mobile-main a,
-.mobile-items a {
-  display: block;
-  padding: 12px;
-  margin: 6px;
-  background: #ede9fe;
-  border-radius: 6px;
-  text-decoration: none;
-  color: #111827;
-}
-
-.mobile-main a:hover,
-.mobile-items a:hover {
-  background: #ddd6fe;
-}
-
-/* ======================================================
-   CATEGORY BUTTON
-   ====================================================== */
 .category-btn {
+  width: 100%;
   background: none;
   border: none;
-  width: 100%;
-  text-align: left;
   font-size: 16px;
-  font-weight: 600;
   display: flex;
   justify-content: space-between;
   cursor: pointer;
+}
+
+.mobile-items a {
+  display: block;
+  margin: 6px 12px;
+  padding: 12px;
+  background: var(--purple-soft);
+  border-radius: var(--radius-sm);
+  text-decoration: none;
+  color: var(--text-dark);
+  font-weight: 500;
 }
 
 /* ======================================================
@@ -361,10 +377,11 @@
    ====================================================== */
 .mobile-login {
   margin: auto 16px 16px;
-  background: #7c3aed;
-  color: white;
   padding: 14px;
+  background: var(--purple);
+  color: var(--white);
   text-align: center;
-  border-radius: 10px;
   text-decoration: none;
+  border-radius: var(--radius-md);
+  font-weight: 600;
 }

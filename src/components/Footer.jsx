@@ -1,5 +1,12 @@
 import React, { useState } from "react";
-import { Box, Typography, TextField, Button, IconButton, Link } from "@mui/material";
+import {
+  Box,
+  Typography,
+  TextField,
+  Button,
+  IconButton,
+  Link,
+} from "@mui/material";
 import { Link as RouterLink } from "react-router-dom";
 
 import FacebookIcon from "@mui/icons-material/Facebook";
@@ -26,13 +33,14 @@ export default function Footer() {
       setLoading(true);
       const res = await API.post("/newsletter", { email });
 
-      if (res.data.success) {
+      if (res.data?.success) {
         setStatus("Subscribed successfully 🎉");
         setEmail("");
       }
     } catch (error) {
       setStatus(
-        error.response?.data?.message || "Server error. Try again later."
+        error.response?.data?.message ||
+          "Server error. Please try again later."
       );
     } finally {
       setLoading(false);
@@ -45,6 +53,12 @@ export default function Footer() {
     { label: "Contact Us", path: "/contact-us" },
     { label: "Careers", path: "/careers" },
     { label: "Updates", path: "/updates" },
+    { label: "Privacy Policy", path: "/privacy-policy" },
+    { label: "Terms & Conditions", path: "/terms-conditions" },
+    { label: "Disclamer", path: "/disclaimer" },
+    { label: "Refund Policy", path: "/refundPolicy" },
+
+
   ];
 
   const quickLinks = [
@@ -56,7 +70,13 @@ export default function Footer() {
   ];
 
   return (
-    <Box component="footer" sx={{ backgroundColor: "#fff", borderTop: "1px solid #eee" }}>
+    <Box
+      component="footer"
+      sx={{
+        backgroundColor: "#fff",
+        borderTop: "1px solid #eee",
+      }}
+    >
       {/* MAIN CONTENT */}
       <Box
         sx={{
@@ -74,10 +94,18 @@ export default function Footer() {
       >
         {/* BRAND SECTION */}
         <Box>
-          <img src={logo} alt="The IT Wallah" width="150" />
+          <img src={logo} alt="The IT Wallah Logo" width="150" />
 
-          <Typography sx={{ fontSize: 14, color: "#444", mt: 2, lineHeight: 1.6 }}>
-            We help learners build real-world IT skills with clarity, confidence, and practical learning.
+          <Typography
+            sx={{
+              fontSize: 14,
+              color: "#444",
+              mt: 2,
+              lineHeight: 1.6,
+            }}
+          >
+            We help learners build real-world IT skills with clarity, confidence,
+            and practical learning.
           </Typography>
 
           <Box sx={{ display: "flex", gap: 1.5, mt: 3 }}>
@@ -91,6 +119,7 @@ export default function Footer() {
             >
               <FacebookIcon />
             </IconButton>
+
             <IconButton
               component="a"
               href="https://www.instagram.com"
@@ -101,6 +130,7 @@ export default function Footer() {
             >
               <InstagramIcon />
             </IconButton>
+
             <IconButton
               component="a"
               href="https://www.linkedin.com"
@@ -111,6 +141,7 @@ export default function Footer() {
             >
               <LinkedInIcon />
             </IconButton>
+
             <IconButton
               component="a"
               href="https://www.youtube.com"
@@ -129,13 +160,17 @@ export default function Footer() {
           <Typography fontWeight={700} mb={2}>
             Company
           </Typography>
+
           {companyLinks.map((item) => (
             <Typography key={item.label} mb={1} fontSize={14}>
               <Link
                 component={RouterLink}
                 to={item.path}
                 underline="none"
-                sx={{ color: "#555", "&:hover": { color: "#000" } }}
+                sx={{
+                  color: "#555",
+                  "&:hover": { color: "#000" },
+                }}
               >
                 {item.label}
               </Link>
@@ -148,18 +183,23 @@ export default function Footer() {
           <Typography fontWeight={700} mb={2}>
             Quick Links
           </Typography>
+
           {quickLinks.map((item) => (
             <Typography key={item.label} mb={1} fontSize={14}>
               <Link
                 component={RouterLink}
                 to={item.path}
                 underline="none"
-                sx={{ color: "#555", "&:hover": { color: "#000" } }}
+                sx={{
+                  color: "#555",
+                  "&:hover": { color: "#000" },
+                }}
               >
                 {item.label}
               </Link>
             </Typography>
           ))}
+
         </Box>
 
         {/* NEWSLETTER */}
@@ -167,6 +207,7 @@ export default function Footer() {
           <Typography fontWeight={700} mb={1}>
             Newsletter
           </Typography>
+
           <Typography fontSize={14} color="#555" mb={2}>
             Get the latest IT course updates.
           </Typography>
@@ -196,7 +237,11 @@ export default function Footer() {
           </Button>
 
           {status && (
-            <Typography fontSize={13} mt={1} color={status.includes("❌") ? "red" : "green"}>
+            <Typography
+              fontSize={13}
+              mt={1}
+              color={status.includes("❌") ? "red" : "green"}
+            >
               {status}
             </Typography>
           )}

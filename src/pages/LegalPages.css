@@ -1,0 +1,50 @@
+.legal-container {
+  margin: 40px 0;
+}
+
+.legal-paper {
+  padding: 32px;
+  border-radius: 12px;
+}
+
+.legal-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.legal-main-icon {
+  font-size: 40px;
+  color: #1976d2;
+}
+
+.legal-updated {
+  margin-top: 8px;
+  font-size: 14px;
+  color: gray;
+}
+
+.legal-divider {
+  margin: 24px 0;
+}
+
+.legal-section-title {
+  margin-top: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legal-text {
+  margin-top: 10px;
+  line-height: 1.7;
+  color: #444;
+}
+
+.legal-footer {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 500;
+}

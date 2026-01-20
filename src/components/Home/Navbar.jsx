@@ -45,7 +45,7 @@ const MENU = [
     title: "School Preparation",
     icon: <FaSchool />,
     items: [
-      { name: "Foundation (6-10)", path: "/courses/foundation" },
+      { name: "Foundation (6-10)", path: "/foundation" },
       { name: "CuriousJr (3-8)", path: "/courses/curious-jr" },
     ],
   },
@@ -84,24 +84,21 @@ export default function Navbar() {
 
   const [desktopOpen, setDesktopOpen] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
-
   const [mobileView, setMobileView] = useState("MAIN");
   const [activeCategory, setActiveCategory] = useState(null);
 
-  /* ===== AUTH STATE ===== */
+  /* ===== AUTH ===== */
   const [user, setUser] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
-  const profileRef = useRef();
+  const profileRef = useRef(null);
 
   /* ===== LOAD USER ===== */
   useEffect(() => {
     const storedUser = localStorage.getItem("user");
-    if (storedUser) {
-      setUser(JSON.parse(storedUser));
-    }
+    if (storedUser) setUser(JSON.parse(storedUser));
   }, []);
 
-  /* ===== CLOSE DROPDOWNS ON ROUTE CHANGE ===== */
+  /* ===== ROUTE CHANGE RESET ===== */
   useEffect(() => {
     setDesktopOpen(false);
     setMobileOpen(false);
@@ -128,25 +125,25 @@ export default function Navbar() {
     navigate("/");
   };
 
-  const userInitial = user?.name?.charAt(0).toUpperCase();
+  const userInitial = user?.name?.charAt(0)?.toUpperCase();
 
   return (
     <>
       {/* ================= NAVBAR ================= */}
-      <nav className="navbar">
+      <nav className="navbar" role="navigation" aria-label="Main Navigation">
         <div className="nav-container">
 
-          {/* MOBILE */}
-          <button className="hamburger" onClick={() => setMobileOpen(true)}>
+          {/* MOBILE TOGGLE */}
+          <button className="hamburger" aria-label="Open menu" onClick={() => setMobileOpen(true)}>
             <FaBars />
           </button>
 
           {/* LOGO */}
-          <Link to="/" className="logo-wrap">
-            <img src={logo} alt="logo" className="logo" />
+          <Link to="/" className="logo-wrap" aria-label="Homepage">
+            <img src={logo} alt="The IT Wallah Logo" className="logo" />
           </Link>
 
-          {/* DESKTOP COURSES */}
+          {/* DESKTOP ALL COURSES */}
           <div
             className="all-btn"
             onMouseEnter={() => setDesktopOpen(true)}
@@ -195,17 +192,14 @@ export default function Navbar() {
             <NavLink to="/project">Project</NavLink>
           </div>
 
-          {/* ===== AUTH SECTION ===== */}
+          {/* DESKTOP AUTH */}
           {!user ? (
             <Link to="/login" className="login-btn">
               Login / Register
             </Link>
           ) : (
             <div className="profile-wrap" ref={profileRef}>
-              <button
-                className="profile-btn"
-                onClick={() => setProfileOpen(!profileOpen)}
-              >
+              <button className="profile-btn" onClick={() => setProfileOpen(!profileOpen)}>
                 <span className="avatar">{userInitial}</span>
                 <span className="username">{user.name}</span>
               </button>
@@ -218,12 +212,8 @@ export default function Navbar() {
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                   >
-                    <Link to="/profile">
-                      <FaUserCircle /> Profile
-                    </Link>
-                    <button onClick={handleLogout}>
-                      <FaSignOutAlt /> Logout
-                    </button>
+                    <Link to="/profile"><FaUserCircle /> Profile</Link>
+                    <button onClick={handleLogout}><FaSignOutAlt /> Logout</button>
                   </motion.div>
                 )}
               </AnimatePresence>
@@ -236,91 +226,60 @@ export default function Navbar() {
       <AnimatePresence>
         {mobileOpen && (
           <>
-            <motion.div
-              className="mobile-overlay"
-              onClick={() => setMobileOpen(false)}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-            />
+            <motion.div className="mobile-overlay" onClick={() => setMobileOpen(false)} />
+            <motion.aside className="mobile-drawer">
 
-            <motion.aside
-              className="mobile-drawer"
-              initial={{ x: "-100%" }}
-              animate={{ x: 0 }}
-              exit={{ x: "-100%" }}
-            >
               {/* HEADER */}
               <div className="mobile-header">
                 {mobileView !== "MAIN" ? (
-                  <button
-                    className="back-btn"
-                    onClick={() => {
-                      if (mobileView === "ITEMS") setMobileView("CATEGORY");
-                      else setMobileView("MAIN");
-                    }}
-                  >
+                  <button className="back-btn" onClick={() => setMobileView("MAIN")}>
                     <FaArrowLeft />
                   </button>
                 ) : (
                   <FaTimes onClick={() => setMobileOpen(false)} />
                 )}
-
                 <img src={logo} alt="logo" className="mobile-logo" />
               </div>
 
-              {/* MAIN MENU */}
-             {/* MAIN MENU */}
-{mobileView === "MAIN" && (
-  <ul className="mobile-main">
-    <li>
-      <button
-        onClick={() => setMobileView("CATEGORY")}
-        className="category-btn"
-      >
-        All Courses <FaAngleRight />
-      </button>
-    </li>
-    <li>
-      <Link to="/live-courses" onClick={() => setMobileOpen(false)}>
-        Live Courses
-      </Link>
-    </li>
-    <li>
-      <Link to="/batch" onClick={() => setMobileOpen(false)}>
-        Batch
-      </Link>
-    </li>
-    <li>
-      <Link to="/project" onClick={() => setMobileOpen(false)}>
-        Project
-      </Link>
-    </li>
-    <li>
-      <Link to="/study-notes" onClick={() => setMobileOpen(false)}>
-        Study Notes
-      </Link>
-    </li>
-    <li>
-      <Link to="/tiw-store" onClick={() => setMobileOpen(false)}>
-        TIW Store
-      </Link>
-    </li>
-  </ul>
-)}
+              {/* AUTH MOBILE */}
+              {user ? (
+                <div className="mobile-user">
+                  <div className="mobile-avatar">{userInitial}</div>
+                  <p>{user.name}</p>
+                  <Link to="/profile" onClick={() => setMobileOpen(false)}>
+                    <FaUserCircle /> Profile
+                  </Link>
+                  <button onClick={handleLogout}>
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </div>
+              ) : (
+                <Link to="/login" className="mobile-login" onClick={() => setMobileOpen(false)}>
+                  Login / Register
+                </Link>
+              )}
 
+              {/* MAIN MENU */}
+              {mobileView === "MAIN" && (
+                <ul className="mobile-main">
+                  <li>
+                    <button onClick={() => setMobileView("CATEGORY")} className="category-btn">
+                      All Courses <FaAngleRight />
+                    </button>
+                  </li>
+                  <li><Link to="/live-courses">Live Courses</Link></li>
+                  <li><Link to="/batch">Batch</Link></li>
+                  <li><Link to="/project">Project</Link></li>
+                  <li><Link to="/study-notes">Study Notes</Link></li>
+                  <li><Link to="/tiw-store">TIW Store</Link></li>
+                </ul>
+              )}
 
               {/* CATEGORY */}
               {mobileView === "CATEGORY" && (
                 <ul className="mobile-category">
                   {MENU.map((m, i) => (
-                    <li
-                      key={i}
-                      onClick={() => {
-                        setActiveCategory(i);
-                        setMobileView("ITEMS");
-                      }}
-                    >
+                    <li key={i} onClick={() => { setActiveCategory(i); setMobileView("ITEMS"); }}>
                       <span>{m.icon} {m.title}</span>
                       <FaAngleRight />
                     </li>
@@ -329,23 +288,15 @@ export default function Navbar() {
               )}
 
               {/* ITEMS */}
-              {mobileView === "ITEMS" && activeCategory !== null && (
+              {mobileView === "ITEMS" && (
                 <div className="mobile-items">
                   {MENU[activeCategory].items.map((it, i) => (
-                    <Link
-                      key={i}
-                      to={it.path}
-                      onClick={() => setMobileOpen(false)}
-                    >
+                    <Link key={i} to={it.path} onClick={() => setMobileOpen(false)}>
                       {it.name}
                     </Link>
                   ))}
                 </div>
               )}
-
-              <Link to="/login" className="mobile-login" onClick={() => setMobileOpen(false)}>
-                Login / Register
-              </Link>
             </motion.aside>
           </>
         )}

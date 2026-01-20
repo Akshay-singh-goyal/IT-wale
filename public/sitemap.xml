@@ -42,5 +42,23 @@
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
+  <url>
+    <loc>https://theitwallah.com/privacy-policy</loc>
+    <priority>0.8</priority>
+  </url>
 
+  <url>
+    <loc>https://theitwallah.com/terms-conditions</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://theitwallah.com/refund-policy</loc>
+    <priority>0.8</priority>
+  </url>
+
+  <url>
+    <loc>https://theitwallah.com/disclaimer</loc>
+    <priority>0.8</priority>
+  </url>
 </urlset>
