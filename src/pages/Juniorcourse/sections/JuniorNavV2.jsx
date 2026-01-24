@@ -17,7 +17,7 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 
 import logo from "../../Images/logo.png";
-import "./Navbar.css";
+import "./JuniorNav.css";
 
 /* ================= MENU DATA ================= */
 
