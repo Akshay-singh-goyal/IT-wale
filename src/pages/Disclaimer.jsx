@@ -4,7 +4,6 @@ import {
   Typography,
   Paper,
   Divider,
-  Box,
 } from "@mui/material";
 import WarningAmberRoundedIcon from "@mui/icons-material/WarningAmberRounded";
 import { Helmet } from "react-helmet-async";
@@ -26,7 +25,7 @@ const Disclaimer = () => {
         />
         <meta name="robots" content="index, follow" />
 
-        {/* Open Graph (Social Sharing) */}
+        {/* Open Graph */}
         <meta property="og:title" content="Disclaimer | The IT Wallah" />
         <meta
           property="og:description"
@@ -72,7 +71,7 @@ const Disclaimer = () => {
 
               <Divider className="legal-divider" />
 
-              {/* Content Section */}
+              {/* Content */}
               <section>
                 <Typography variant="body1" className="legal-text">
                   The information provided on{" "}

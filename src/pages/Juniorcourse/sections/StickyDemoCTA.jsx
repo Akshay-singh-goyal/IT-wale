@@ -8,31 +8,29 @@ export default function StickyDemoCTA() {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
+    const node = triggerRef.current;
+    if (!node) return;
+
     const observer = new IntersectionObserver(
       ([entry]) => {
         if (entry.isIntersecting) {
           setShow(true);
         }
       },
-      {
-        threshold: 0.1,
-      }
+      { threshold: 0.1 }
     );
 
-    if (triggerRef.current) {
-      observer.observe(triggerRef.current);
-    }
+    observer.observe(node);
 
     return () => {
-      if (triggerRef.current) {
-        observer.unobserve(triggerRef.current);
-      }
+      observer.unobserve(node);
+      observer.disconnect();
     };
   }, []);
 
   return (
     <>
-      {/* Invisible trigger (appears when user scrolls here) */}
+      {/* Invisible trigger */}
       <div ref={triggerRef} style={{ height: "1px" }} />
 
       {show && (
@@ -52,7 +50,7 @@ export default function StickyDemoCTA() {
           }}
         >
           <Typography fontWeight={600}>
-            Ready to begin your Child’s learning journey?
+            Ready to begin your child’s learning journey?
           </Typography>
 
           <Button

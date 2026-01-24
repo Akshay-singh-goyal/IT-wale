@@ -5,14 +5,12 @@ import {
   Typography,
   Stack,
   Paper,
-  Grid,
 } from "@mui/material";
 
 import PlayCircleFilledIcon from "@mui/icons-material/PlayCircleFilled";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import AutoGraphIcon from "@mui/icons-material/AutoGraph";
 import GroupsIcon from "@mui/icons-material/Groups";
-import StarIcon from "@mui/icons-material/Star";
 
 const TABS = [
   {
@@ -64,7 +62,6 @@ export default function CuriousWaySection() {
       <FloatingEmoji emoji="📚" bottom="10%" right="10%" />
 
       <Container maxWidth="lg">
-
         {/* 🔥 HEADING */}
         <Box textAlign="center" mb={7}>
           <Typography variant="h4" fontWeight={900}>
@@ -138,11 +135,14 @@ export default function CuriousWaySection() {
               muted
               loop
               playsInline
-              style={{ width: "100%", height: "100%", objectFit: "cover" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: "cover",
+              }}
             />
           </Box>
         </Box>
-        
       </Container>
     </Box>
   );
