@@ -4,6 +4,7 @@ import {
   FaBook,
   FaUniversity,
   FaSchool,
+  FaBalanceScale,
   FaGraduationCap,
   FaChartLine,
   FaAngleRight,
@@ -15,12 +16,67 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-import logo from "../../../Images/logo.jpeg";
-import "./JuniorNav.css";
+import logo from "../../Images/logo.png";
+import "./Navbar.css";
 
 /* ================= MENU DATA ================= */
 
-const NAV_MENU = [
+const MENU_MAIN = [
+  {
+    title: "Competitive Exams",
+    icon: <FaBook />,
+    items: [
+      { name: "IIT JEE", path: "/courses/iit-jee" },
+      { name: "NEET", path: "/courses/neet" },
+      { name: "GATE", path: "/courses/gate" },
+      { name: "ESE", path: "/courses/ese" },
+      { name: "Olympiad", path: "/courses/olympiad" },
+    ],
+  },
+  {
+    title: "Only IAS",
+    icon: <FaUniversity />,
+    items: [
+      { name: "UPSC", path: "/courses/upsc" },
+      { name: "State PSC", path: "/courses/state-psc" },
+    ],
+  },
+  {
+    title: "School Preparation",
+    icon: <FaSchool />,
+    items: [
+      { name: "Foundation (6-10)", path: "/foundation" },
+      { name: "CuriousJr (3-8)", path: "/courses/curious-jr" },
+    ],
+  },
+  {
+    title: "Govt Exams",
+    icon: <FaBalanceScale />,
+    items: [
+      { name: "SSC", path: "/courses/ssc" },
+      { name: "Banking", path: "/courses/banking" },
+      { name: "Railway", path: "/courses/railway" },
+    ],
+  },
+  {
+    title: "UG & PG Entrance",
+    icon: <FaGraduationCap />,
+    items: [
+      { name: "CUET", path: "/courses/cuet" },
+      { name: "CLAT", path: "/courses/clat" },
+    ],
+  },
+  {
+    title: "Finance",
+    icon: <FaChartLine />,
+    items: [
+      { name: "CA", path: "/courses/ca" },
+      { name: "CS", path: "/courses/cs" },
+    ],
+  },
+];
+
+const MENU_JUNIOR = [
   {
     title: "Smart Learning",
     icon: <FaBook />,
@@ -63,7 +119,7 @@ const NAV_MENU = [
 
 /* ================= COMPONENT ================= */
 
-export default function JuniorNavV2() {
+export default function Navbar({ juniorMode = false }) {
   const location = useLocation();
   const navigate = useNavigate();
 
@@ -71,19 +127,18 @@ export default function JuniorNavV2() {
   const [mobileOpen, setMobileOpen] = useState(false);
   const [mobileStep, setMobileStep] = useState("MAIN");
   const [activeMenu, setActiveMenu] = useState(0);
-
-  /* ===== USER ===== */
-  const [user, setUser] = useState(null);
   const [profileOpen, setProfileOpen] = useState(false);
   const profileRef = useRef(null);
 
-  /* ===== LOAD USER ===== */
+  const [user, setUser] = useState(null);
+
+  const MENU = juniorMode ? MENU_JUNIOR : MENU_MAIN;
+
   useEffect(() => {
     const u = localStorage.getItem("user");
     if (u) setUser(JSON.parse(u));
   }, []);
 
-  /* ===== RESET ON ROUTE CHANGE ===== */
   useEffect(() => {
     setDesktopOpen(false);
     setMobileOpen(false);
@@ -91,7 +146,6 @@ export default function JuniorNavV2() {
     setProfileOpen(false);
   }, [location.pathname]);
 
-  /* ===== OUTSIDE CLICK ===== */
   useEffect(() => {
     const handler = (e) => {
       if (profileRef.current && !profileRef.current.contains(e.target)) {
@@ -112,74 +166,60 @@ export default function JuniorNavV2() {
 
   return (
     <>
-      {/* ================= HEADER ================= */}
-      <header className="jnv-header">
-        <div className="jnv-wrapper">
-
-          {/* MOBILE ICON */}
+      {/* ================= NAVBAR / HEADER ================= */}
+      <header className={juniorMode ? "jnv-header" : "navbar"}>
+        <div className={juniorMode ? "jnv-wrapper" : "nav-container"}>
+          {/* MOBILE HAMBURGER */}
           <button
-            className="jnv-hamburger"
+            className={juniorMode ? "jnv-hamburger" : "hamburger"}
+            aria-label="Open menu"
             onClick={() => setMobileOpen(true)}
           >
             <FaBars />
           </button>
 
-         
-      {/* Mascot */}
-      <div className="cj-mascot">
-        <div className="cj-hair"></div>
-        <div className="cj-face">
-          <span className="eye left"></span>
-          <span className="eye right"></span>
-          <span className="smile"></span>
-        </div>
-      </div>
+          {/* LOGO */}
+          <Link to="/" className={juniorMode ? "jnv-logo-wrap" : "logo-wrap"}>
+            <img src={logo} alt="Logo" className="logo" />
+          </Link>
 
-      {/* Text */}
-      <div className="cj-text">
-        <div className="cj-title">
-          Junior<span>-G</span>
-        </div>
-        <div className="cj-sub">
-          Powered by <b>TIW</b>
-        </div>
-      </div>
-
-          {/* COURSES */}
+          {/* DESKTOP COURSES */}
           <div
-            className="jnv-course-trigger"
+            className={juniorMode ? "jnv-course-trigger" : "all-btn"}
             onMouseEnter={() => setDesktopOpen(true)}
             onMouseLeave={() => setDesktopOpen(false)}
           >
-            Explore Courses 🎒
+            {juniorMode ? "Explore Courses 🎒" : "All Courses ▾"}
 
             <AnimatePresence>
               {desktopOpen && (
                 <motion.div
-                  className="jnv-mega-menu"
+                  className={juniorMode ? "jnv-mega-menu" : "dropdown"}
                   initial={{ opacity: 0, y: 12 }}
                   animate={{ opacity: 1, y: 0 }}
                   exit={{ opacity: 0, y: 12 }}
                 >
-                  <div className="jnv-menu-left">
-                    {NAV_MENU.map((m, i) => (
+                  <div className={juniorMode ? "jnv-menu-left" : "left"}>
+                    {MENU.map((m, i) => (
                       <div
                         key={i}
-                        className="jnv-category"
+                        className={juniorMode ? "jnv-category" : "left-item"}
                         onMouseEnter={() => setActiveMenu(i)}
                       >
-                        <span>{m.icon} {m.title}</span>
+                        <span>
+                          {m.icon} {m.title}
+                        </span>
                         <FaAngleRight />
                       </div>
                     ))}
                   </div>
 
-                  <div className="jnv-menu-right">
-                    {NAV_MENU[activeMenu].items.map((it, i) => (
+                  <div className={juniorMode ? "jnv-menu-right" : "right"}>
+                    {MENU[activeMenu].items.map((it, i) => (
                       <Link
                         key={i}
                         to={it.path}
-                        className="jnv-course-card"
+                        className={juniorMode ? "jnv-course-card" : "card"}
                       >
                         {it.name}
                       </Link>
@@ -190,36 +230,61 @@ export default function JuniorNavV2() {
             </AnimatePresence>
           </div>
 
-          {/* LINKS */}
-          <nav className="jnv-links">
-            <NavLink to="/live-courses">Live 🎥</NavLink>
-            <NavLink to="/junior">Projects 🚀</NavLink>
-            <NavLink to="/study-notes">Notes 📘</NavLink>
-            <NavLink to="/tiw-store">Store 🛒</NavLink>
-          </nav>
+          {/* DESKTOP LINKS */}
+          {!juniorMode && (
+            <div className="menu">
+              <NavLink to="/live-courses">Live Courses</NavLink>
+              <NavLink to="/tiw-store">TIW Store</NavLink>
+              <NavLink to="/user-notes">Study Notes</NavLink>
+              <NavLink to="/batch">Batch</NavLink>
+              <NavLink to="/project">Project</NavLink>
+              <NavLink to="/junior">
+                1<sup>th</sup> to 12<sup>th</sup> Class
+              </NavLink>
+            </div>
+          )}
+          {juniorMode && (
+            <nav className="jnv-links">
+              <NavLink to="/live-courses">Live 🎥</NavLink>
+              <NavLink to="/junior">Projects 🚀</NavLink>
+              <NavLink to="/study-notes">Notes 📘</NavLink>
+              <NavLink to="/tiw-store">Store 🛒</NavLink>
+            </nav>
+          )}
 
           {/* AUTH */}
           {!user ? (
-            <Link to="/login" className="jnv-login-btn">
-              Parent Login
+            <Link
+              to="/login"
+              className={juniorMode ? "jnv-login-btn" : "login-btn"}
+            >
+              {juniorMode ? "Parent Login" : "Login / Register"}
             </Link>
           ) : (
-            <div className="jnv-profile" ref={profileRef}>
-              <button onClick={() => setProfileOpen(!profileOpen)}>
-                <span className="jnv-avatar">{avatarLetter}</span>
-                <span>{user.name}</span>
+            <div
+              className={juniorMode ? "jnv-profile" : "profile-wrap"}
+              ref={profileRef}
+            >
+              <button
+                className={juniorMode ? "" : "profile-btn"}
+                onClick={() => setProfileOpen(!profileOpen)}
+              >
+                <span className={juniorMode ? "jnv-avatar" : "avatar"}>
+                  {avatarLetter}
+                </span>
+                <span className="username">{user.name}</span>
               </button>
 
               <AnimatePresence>
                 {profileOpen && (
                   <motion.div
-                    className="jnv-profile-menu"
+                    className={juniorMode ? "jnv-profile-menu" : "profile-dropdown"}
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
                     exit={{ opacity: 0, y: 10 }}
                   >
                     <Link to="/profile">
-                      <FaUserCircle /> My Profile
+                      <FaUserCircle /> Profile
                     </Link>
                     <button onClick={logout}>
                       <FaSignOutAlt /> Logout
@@ -232,44 +297,110 @@ export default function JuniorNavV2() {
         </div>
       </header>
 
-      {/* ================= MOBILE ================= */}
+      {/* ================= MOBILE DRAWER ================= */}
       <AnimatePresence>
         {mobileOpen && (
           <>
             <motion.div
-              className="jnv-mobile-backdrop"
+              className={juniorMode ? "jnv-mobile-backdrop" : "mobile-overlay"}
               onClick={() => setMobileOpen(false)}
             />
-
             <motion.aside
-              className="jnv-mobile-panel"
+              className={juniorMode ? "jnv-mobile-panel" : "mobile-drawer"}
               initial={{ x: "-100%" }}
               animate={{ x: 0 }}
               exit={{ x: "-100%" }}
             >
-              <div className="jnv-mobile-top">
+              {/* MOBILE HEADER */}
+              <div className={juniorMode ? "jnv-mobile-top" : "mobile-header"}>
                 {mobileStep !== "MAIN" ? (
-                  <FaArrowLeft onClick={() => setMobileStep("MAIN")} />
+                  <button onClick={() => setMobileStep("MAIN")}>
+                    <FaArrowLeft />
+                  </button>
                 ) : (
                   <FaTimes onClick={() => setMobileOpen(false)} />
                 )}
-                <img src={logo} alt="logo" />
+                <img src={logo} alt="logo" className="logo" />
               </div>
 
+              {/* MOBILE AUTH */}
+              {user ? (
+                <div className={juniorMode ? "mobile-user" : "jnv-mobile-user"}>
+                  <div className={juniorMode ? "mobile-avatar" : "jnv-avatar"}>
+                    {avatarLetter}
+                  </div>
+                  <p>{user.name}</p>
+                  <Link
+                    to="/profile"
+                    onClick={() => setMobileOpen(false)}
+                  >
+                    <FaUserCircle /> Profile
+                  </Link>
+                  <button onClick={logout}>
+                    <FaSignOutAlt /> Logout
+                  </button>
+                </div>
+              ) : (
+                <Link
+                  to="/login"
+                  className={juniorMode ? "mobile-login" : "jnv-login-btn"}
+                  onClick={() => setMobileOpen(false)}
+                >
+                  {juniorMode ? "Parent Login" : "Login / Register"}
+                </Link>
+              )}
+
+              {/* MOBILE MENU */}
               {mobileStep === "MAIN" && (
-                <ul>
+                <ul className={juniorMode ? "jnv-mobile-main" : "mobile-main"}>
                   <li onClick={() => setMobileStep("CATS")}>
-                    Explore Courses <FaAngleRight />
+                    {juniorMode ? "Explore Courses" : "All Courses"} <FaAngleRight />
                   </li>
-                  <li><Link to="/live-courses">Live</Link></li>
-                  <li><Link to="/junior">Projects</Link></li>
-                  <li><Link to="/study-notes">Notes</Link></li>
+                  {!juniorMode && (
+                    <>
+                      <li>
+                        <Link to="/live-courses">Live Courses</Link>
+                      </li>
+                      <li>
+                        <Link to="/batch">Batch</Link>
+                      </li>
+                      <li>
+                        <Link to="/project">Project</Link>
+                      </li>
+                      <li>
+                        <Link to="/user-notes">Study Notes</Link>
+                      </li>
+                      <li>
+                        <Link to="/tiw-store">TIW Store</Link>
+                      </li>
+                      <li>
+                        <Link to="/junior">1th to 12th Class</Link>
+                      </li>
+                    </>
+                  )}
+                  {juniorMode && (
+                    <>
+                      <li>
+                        <Link to="/live-courses">Live</Link>
+                      </li>
+                      <li>
+                        <Link to="/junior">Projects</Link>
+                      </li>
+                      <li>
+                        <Link to="/study-notes">Notes</Link>
+                      </li>
+                      <li>
+                        <Link to="/tiw-store">Store</Link>
+                      </li>
+                    </>
+                  )}
                 </ul>
               )}
 
+              {/* CATEGORY */}
               {mobileStep === "CATS" && (
-                <ul>
-                  {NAV_MENU.map((m, i) => (
+                <ul className={juniorMode ? "jnv-mobile-cats" : "mobile-category"}>
+                  {MENU.map((m, i) => (
                     <li
                       key={i}
                       onClick={() => {
@@ -283,9 +414,10 @@ export default function JuniorNavV2() {
                 </ul>
               )}
 
+              {/* ITEMS */}
               {mobileStep === "ITEMS" && (
-                <div className="jnv-mobile-items">
-                  {NAV_MENU[activeMenu].items.map((it, i) => (
+                <div className={juniorMode ? "jnv-mobile-items" : "mobile-items"}>
+                  {MENU[activeMenu].items.map((it, i) => (
                     <Link
                       key={i}
                       to={it.path}
