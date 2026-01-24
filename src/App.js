@@ -18,18 +18,8 @@ import PrivacyPolicy from "./pages/PrivacyPolicy";
 import TermsConditions from "./pages/TermsConditions";
 import Disclaimer from "./pages/Disclaimer";
 import RefundPolicy from "./pages/RefundPolicy";
-import FoundationsCourses from "./pages/courses/FoundationsCourses";
-import StudyMaterial from "./pages/StudyMaterial";
+import JuniorHome from "./pages/Juniorcourse/JuniorHome";
 
-/* ===== PLACEHOLDER FOR ClassFoundation ===== */
-const ClassFoundation = () => {
-  return (
-    <div style={{ padding: "50px", textAlign: "center" }}>
-      <h2>Class Foundation Page</h2>
-      <p>This is a placeholder page for course class details.</p>
-    </div>
-  );
-};
 
 /* ===== PUBLIC LAYOUT ===== */
 const PublicLayout = () => (
@@ -37,6 +27,7 @@ const PublicLayout = () => (
     <Navbar />
     <Outlet />
     <Footer />
+    
   </>
 );
 
@@ -54,18 +45,19 @@ export default function App() {
           <Route path="batch" element={<JoinBatch />} />
           <Route path="login" element={<Login />} />
           <Route path="register" element={<Register />} />
-          <Route path="study-notes" element={<UserNotes />} />
+          <Route path="user-notes" element={<UserNotes />} />
           <Route path="privacy-policy" element={<PrivacyPolicy />} />
           <Route path="terms-conditions" element={<TermsConditions />} />
           <Route path="disclaimer" element={<Disclaimer />} />
           <Route path="refundPolicy" element={<RefundPolicy />} />
-          <Route path="foundation" element={<StudyMaterial />}
-          />
+          
         </Route>
+        <Route path="junior" element={<JuniorHome/>}/>
 
         {/* Optional: redirect unknown routes */}
         {/* <Route path="*" element={<Home />} /> */}
       </Routes>
+      
     </Router>
   );
 }

@@ -190,6 +190,7 @@ export default function Navbar() {
             <NavLink to="/user-notes">Study Notes</NavLink>
             <NavLink to="/batch">Batch</NavLink>
             <NavLink to="/project">Project</NavLink>
+             <NavLink to="/junior">1<sup> th</sup> to 12<sup> th</sup> Class</NavLink>
           </div>
 
           {/* DESKTOP AUTH */}
@@ -270,8 +271,9 @@ export default function Navbar() {
                   <li><Link to="/live-courses">Live Courses</Link></li>
                   <li><Link to="/batch">Batch</Link></li>
                   <li><Link to="/project">Project</Link></li>
-                  <li><Link to="/study-notes">Study Notes</Link></li>
+                  <li><Link to="/user-notes">Study Notes</Link></li>
                   <li><Link to="/tiw-store">TIW Store</Link></li>
+                  <li><Link to="/junior">1<sup>th</sup> to 12<sup>th</sup> Class</Link></li>
                 </ul>
               )}
 

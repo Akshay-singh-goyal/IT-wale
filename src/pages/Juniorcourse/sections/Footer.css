@@ -1,0 +1,73 @@
+.cj-text {
+  display: flex;
+  flex-direction: column;
+}
+
+.cj-title {
+  font-size: 26px;
+  font-weight: 800;
+  color: rgb(106, 218, 84);
+  line-height: 1;
+}
+
+.cj-title span {
+  color: #ff7a00;
+}
+
+.cj-sub {
+  font-size: 12px;
+  color: #b5b5b5;
+  margin-top: 3px;
+}
+
+/* Mascot */
+.cj-mascot {
+  width: 52px;
+  height: 52px;
+  position: relative;
+}
+
+.cj-hair {
+  position: absolute;
+  top: -4px;
+  left: 8px;
+  width: 36px;
+  height: 18px;
+  background: #ff7a00;
+  border-radius: 18px 18px 8px 8px;
+}
+
+.cj-face {
+  width: 52px;
+  height: 52px;
+  background: #ffd7b3;
+  border-radius: 50%;
+  position: relative;
+}
+
+.eye {
+  position: absolute;
+  width: 6px;
+  height: 6px;
+  background: #111;
+  border-radius: 50%;
+  top: 20px;
+}
+
+.eye.left {
+  left: 16px;
+}
+
+.eye.right {
+  right: 16px;
+}
+
+.smile {
+  position: absolute;
+  width: 16px;
+  height: 8px;
+  border-bottom: 3px solid #111;
+  border-radius: 0 0 12px 12px;
+  bottom: 14px;
+  left: 18px;
+}
