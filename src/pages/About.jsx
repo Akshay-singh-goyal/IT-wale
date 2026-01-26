@@ -224,7 +224,7 @@ const AboutUs = () => {
           style={styles.founderImage}
         />
         <div>
-          <h3 style={styles.founderName}>Akshay Goyal</h3>
+          <h3 style={styles.founderName}>Mr. G.</h3>
           <p style={styles.founderTitle}>Founder & Head Instructor, The IT Wallah</p>
           <p style={styles.founderDesc}>
             “With a vision to empower learners worldwide, he believes
