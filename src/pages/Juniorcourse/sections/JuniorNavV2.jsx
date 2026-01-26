@@ -16,7 +16,7 @@ import {
 } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 
-import logo from "../../Images/logo.jpeg";
+import logo from "../Images/logo.png";
 import "./JuniorNav.css";
 
 /* ================= MENU DATA ================= */
